@@ -1,5 +1,5 @@
-Welcome to |project| documentation!
-===================================
+Welcome to Pupil Labs' Realtime API documentation!
+==================================================
 
 .. toctree::
    :maxdepth: 1
@@ -7,7 +7,7 @@ Welcome to |project| documentation!
    history
 
 
-.. automodule:: skeleton
+.. automodule:: pupil_labs.realtime_api
     :members:
     :undoc-members:
     :show-inheritance:
