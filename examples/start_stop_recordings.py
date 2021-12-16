@@ -9,6 +9,7 @@ async def main():
         await control.start_recording()
         await asyncio.sleep(5)
         await control.stop_and_save_recording()
+        # await control.cancel_recording()  # uncomment to cancel recording
 
 
 if __name__ == "__main__":
