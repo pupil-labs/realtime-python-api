@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 
-extensions = ['sphinx.ext.autodoc', 'jaraco.packaging.sphinx', 'rst.linker']
+extensions = [
+    'jaraco.packaging.sphinx',
+    'rst.linker',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.viewcode',
+]
 
 master_doc = "index"
 
@@ -35,3 +40,4 @@ intersphinx_mapping = {
 }
 
 html_theme = 'furo'
+autosummary_generate = True
