@@ -11,12 +11,18 @@ from pupil_labs.realtime_api.models import DiscoveredDevice, Status
 logger = logging.getLogger(__name__)
 
 
-class Path(enum.Enum):
+class APIPath(enum.Enum):
     PREFIX = "/api"
     STATUS = "/status"
+    RECORDING_START = "/recording:start"
+    RECORDING_STOP_AND_SAVE = "/recording:stop_and_save"
+    RECORDING_CANCEL = "/recording:cancel"
 
 
 class Control:
+    class Error(Exception):
+        pass
+
     @classmethod
     def for_discovered_device(cls, device: DiscoveredDevice) -> "Control":
         return cls(device.addresses[0], device.port)
@@ -27,11 +33,51 @@ class Control:
         self.session = aiohttp.ClientSession()
 
     async def get_status(self):
-        url = f"http://{self.address}:{self.port}{Path.PREFIX.value}{Path.STATUS.value}"
+        url = (
+            f"http://{self.address}:{self.port}"
+            + APIPath.PREFIX.value
+            + APIPath.STATUS.value
+        )
         async with self.session.get(url) as response:
             result = (await response.json())["result"]
-            logger.debug(f"Received status: {result}")
+            logger.debug(f"[{self}.get_status] Received status: {result}")
             return Status.from_dict(result)
+
+    async def start_recording(self):
+        url = (
+            f"http://{self.address}:{self.port}"
+            + APIPath.PREFIX.value
+            + APIPath.RECORDING_START.value
+        )
+        async with self.session.post(url) as response:
+            confirmation = await response.json()
+            logger.debug(f"[{self}.start_recording] Received response: {confirmation}")
+            if response.status != 200:
+                raise Control.Error(response.status, confirmation["message"])
+
+    async def stop_and_save_recording(self):
+        url = (
+            f"http://{self.address}:{self.port}"
+            + APIPath.PREFIX.value
+            + APIPath.RECORDING_STOP_AND_SAVE.value
+        )
+        async with self.session.post(url) as response:
+            confirmation = await response.json()
+            logger.debug(f"[{self}.stop_recording] Received response: {confirmation}")
+            if response.status != 200:
+                raise Control.Error(response.status, confirmation["message"])
+
+    async def cancel_recording(self):
+        url = (
+            f"http://{self.address}:{self.port}"
+            + APIPath.PREFIX.value
+            + APIPath.RECORDING_CANCEL.value
+        )
+        async with self.session.post(url) as response:
+            confirmation = await response.json()
+            logger.debug(f"[{self}.stop_recording] Received response: {confirmation}")
+            if response.status != 200:
+                raise Control.Error(response.status, confirmation["message"])
 
     async def close(self):
         await self.session.close()
@@ -47,20 +93,26 @@ class Control:
     ) -> None:
         await self.close()
 
+    def __repr__(self) -> str:
+        return f"Control({self.address}, {self.port})"
+
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
 
     async def print_status():
         async with Control("pi.local", 8080) as control:
-            status = await control.get_status()
+            # status = await control.get_status()
 
-            print(f"{status.phone.ip=}")
+            # print(f"{status.phone.ip=}")
 
-            world = status.direct_world_sensor()
-            print(f"{world.connected=} {world.url=}")
+            # world = status.direct_world_sensor()
+            # print(f"{world.connected=} {world.url=}")
 
-            gaze = status.direct_gaze_sensor()
-            print(f"{gaze.connected=} {gaze.url=}")
+            # gaze = status.direct_gaze_sensor()
+            # print(f"{gaze.connected=} {gaze.url=}")
+            await control.start_recording()
+            await asyncio.sleep(5)
+            await control.stop_and_save_recording()
 
     asyncio.run(print_status())
