@@ -1,4 +1,3 @@
-import asyncio
 import enum
 import logging
 import types
@@ -95,21 +94,3 @@ class Control:
 
     def __repr__(self) -> str:
         return f"Control({self.address}, {self.port})"
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-
-    async def print_status():
-        async with Control("pi.local", 8080) as control:
-            status = await control.get_status()
-
-            print(f"{status.phone.ip=}")
-
-            world = status.direct_world_sensor()
-            print(f"{world.connected=} {world.url=}")
-
-            gaze = status.direct_gaze_sensor()
-            print(f"{gaze.connected=} {gaze.url=}")
-
-    asyncio.run(print_status())
