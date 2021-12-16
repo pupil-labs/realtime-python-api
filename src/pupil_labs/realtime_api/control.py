@@ -31,7 +31,7 @@ class Control:
         self.port = port
         self.session = aiohttp.ClientSession()
 
-    def api_url(self, path: APIPath, prefix="/api") -> str:
+    def api_url(self, path, prefix: str = "/api") -> str:
         return f"http://{self.address}:{self.port}" + prefix + path.value
 
     async def get_status(self):
@@ -43,14 +43,15 @@ class Control:
             logger.debug(f"[{self}.get_status] Received status: {result}")
             return Status.from_dict(result)
 
-    async def start_recording(self):
+    async def recording_start(self) -> str:
         async with self.session.post(self.api_url(APIPath.RECORDING_START)) as response:
             confirmation = await response.json()
             logger.debug(f"[{self}.start_recording] Received response: {confirmation}")
             if response.status != 200:
                 raise Control.Error(response.status, confirmation["message"])
+            return confirmation["result"]["id"]
 
-    async def stop_and_save_recording(self):
+    async def recording_stop_and_save(self):
         async with self.session.post(
             self.api_url(APIPath.RECORDING_STOP_AND_SAVE)
         ) as response:
@@ -59,7 +60,7 @@ class Control:
             if response.status != 200:
                 raise Control.Error(response.status, confirmation["message"])
 
-    async def cancel_recording(self):
+    async def recording_cancel(self):
         async with self.session.post(
             self.api_url(APIPath.RECORDING_CANCEL)
         ) as response:
