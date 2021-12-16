@@ -5,17 +5,17 @@ import typing as T
 
 import aiohttp
 
-from pupil_labs.realtime_api.models import DiscoveredDevice, Status
+from pupil_labs.realtime_api.models import DiscoveredDevice, Event, Status
 
 logger = logging.getLogger(__name__)
 
 
 class APIPath(enum.Enum):
-    PREFIX = "/api"
     STATUS = "/status"
     RECORDING_START = "/recording:start"
     RECORDING_STOP_AND_SAVE = "/recording:stop_and_save"
     RECORDING_CANCEL = "/recording:cancel"
+    EVENT = "/event"
 
 
 class Control:
@@ -31,52 +31,58 @@ class Control:
         self.port = port
         self.session = aiohttp.ClientSession()
 
+    def api_url(self, path: APIPath, prefix="/api") -> str:
+        return f"http://{self.address}:{self.port}" + prefix + path.value
+
     async def get_status(self):
-        url = (
-            f"http://{self.address}:{self.port}"
-            + APIPath.PREFIX.value
-            + APIPath.STATUS.value
-        )
-        async with self.session.get(url) as response:
-            result = (await response.json())["result"]
+        async with self.session.get(self.api_url(APIPath.STATUS)) as response:
+            confirmation = await response.json()
+            if response.status != 200:
+                raise Control.Error(response.status, confirmation["message"])
+            result = confirmation["result"]
             logger.debug(f"[{self}.get_status] Received status: {result}")
             return Status.from_dict(result)
 
     async def start_recording(self):
-        url = (
-            f"http://{self.address}:{self.port}"
-            + APIPath.PREFIX.value
-            + APIPath.RECORDING_START.value
-        )
-        async with self.session.post(url) as response:
+        async with self.session.post(self.api_url(APIPath.RECORDING_START)) as response:
             confirmation = await response.json()
             logger.debug(f"[{self}.start_recording] Received response: {confirmation}")
             if response.status != 200:
                 raise Control.Error(response.status, confirmation["message"])
 
     async def stop_and_save_recording(self):
-        url = (
-            f"http://{self.address}:{self.port}"
-            + APIPath.PREFIX.value
-            + APIPath.RECORDING_STOP_AND_SAVE.value
-        )
-        async with self.session.post(url) as response:
+        async with self.session.post(
+            self.api_url(APIPath.RECORDING_STOP_AND_SAVE)
+        ) as response:
             confirmation = await response.json()
             logger.debug(f"[{self}.stop_recording] Received response: {confirmation}")
             if response.status != 200:
                 raise Control.Error(response.status, confirmation["message"])
 
     async def cancel_recording(self):
-        url = (
-            f"http://{self.address}:{self.port}"
-            + APIPath.PREFIX.value
-            + APIPath.RECORDING_CANCEL.value
-        )
-        async with self.session.post(url) as response:
+        async with self.session.post(
+            self.api_url(APIPath.RECORDING_CANCEL)
+        ) as response:
             confirmation = await response.json()
             logger.debug(f"[{self}.stop_recording] Received response: {confirmation}")
             if response.status != 200:
                 raise Control.Error(response.status, confirmation["message"])
+
+    async def send_event(
+        self, event_name: str, event_timestamp_unix_ns: T.Optional[int] = None
+    ):
+        event = {"name": event_name}
+        if event_timestamp_unix_ns is not None:
+            event["timestamp"] = event_timestamp_unix_ns
+
+        async with self.session.post(
+            self.api_url(APIPath.EVENT), json=event
+        ) as response:
+            confirmation = await response.json()
+            logger.debug(f"[{self}.send_event] Received response: {confirmation}")
+            if response.status != 200:
+                raise Control.Error(response.status, confirmation["message"])
+            return Event.from_dict(confirmation["result"])
 
     async def close(self):
         await self.session.close()

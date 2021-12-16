@@ -1,3 +1,4 @@
+import datetime
 import enum
 import logging
 import typing as T
@@ -10,6 +11,29 @@ class DiscoveredDevice(T.NamedTuple):
     server: str
     port: int
     addresses: T.List[str]
+
+
+class Event(T.NamedTuple):
+    recording_id: T.Optional[str]
+    timestamp_unix_ns: int
+
+    @classmethod
+    def from_dict(cls, dct: T.Dict[str, T.Any]) -> "Event":
+        return cls(
+            recording_id=dct.get("recording_id", None),
+            timestamp_unix_ns=dct.get("timestamp"),
+        )
+
+    @property
+    def datetime(self) -> datetime.datetime:
+        return datetime.datetime.fromtimestamp(self.timestamp_unix_ns / 1e9)
+
+    def __repr__(self) -> str:
+        return (
+            f"Event(recording_id={self.recording_id} "
+            f"timestamp_unix_ns={self.timestamp_unix_ns} "
+            f"datetime={self.datetime})"
+        )
 
 
 class Phone(T.NamedTuple):
