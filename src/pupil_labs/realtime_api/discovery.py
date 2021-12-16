@@ -1,5 +1,4 @@
 import asyncio
-import contextlib
 import functools
 import logging
 import typing as T
@@ -56,14 +55,3 @@ async def _request_info_for_valid_services_and_queue_result(
         ['.'.join([str(symbol) for symbol in addr]) for addr in info.addresses],
     )
     await queue.put(device)
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-
-    async def print_discovered_devices():
-        async for device in discover_devices():
-            print(device)
-
-    with contextlib.suppress(KeyboardInterrupt):
-        asyncio.run(print_discovered_devices())
