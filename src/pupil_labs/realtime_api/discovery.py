@@ -11,7 +11,7 @@ from .models import DiscoveredDevice
 logger = logging.getLogger(__name__)
 
 
-async def discover_devices() -> T.Iterator[DiscoveredDevice]:
+async def discover_devices() -> T.AsyncIterator[DiscoveredDevice]:
     """Use Bonjour to find devices in the local network that serve the Realtime API."""
     logger.info("Searching for devices...")
     async with AsyncZeroconf() as aiozeroconf:

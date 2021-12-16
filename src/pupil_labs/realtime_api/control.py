@@ -34,7 +34,7 @@ class Control:
     def api_url(self, path, prefix: str = "/api") -> str:
         return f"http://{self.address}:{self.port}" + prefix + path.value
 
-    async def get_status(self):
+    async def get_status(self) -> Status:
         async with self.session.get(self.api_url(APIPath.STATUS)) as response:
             confirmation = await response.json()
             if response.status != 200:
@@ -71,7 +71,7 @@ class Control:
 
     async def send_event(
         self, event_name: str, event_timestamp_unix_ns: T.Optional[int] = None
-    ):
+    ) -> Event:
         event = {"name": event_name}
         if event_timestamp_unix_ns is not None:
             event["timestamp"] = event_timestamp_unix_ns
