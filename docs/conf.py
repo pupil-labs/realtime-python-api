@@ -41,3 +41,9 @@ intersphinx_mapping = {
 
 html_theme = 'furo'
 autosummary_generate = True
+
+from importlib.metadata import version as import_version
+
+release = import_version('pupil-labs-realtime-api')
+# for example take major/minor
+version = '.'.join(release.split('.')[:2])
