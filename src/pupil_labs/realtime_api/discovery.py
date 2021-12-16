@@ -4,7 +4,7 @@ import logging
 import typing as T
 
 from zeroconf import ServiceStateChange
-from zeroconf.asyncio import AsyncZeroconf, AsyncServiceBrowser, AsyncServiceInfo
+from zeroconf.asyncio import AsyncServiceBrowser, AsyncServiceInfo, AsyncZeroconf
 
 from .models import DiscoveredDevice
 
