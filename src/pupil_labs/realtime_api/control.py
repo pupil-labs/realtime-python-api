@@ -102,17 +102,14 @@ if __name__ == "__main__":
 
     async def print_status():
         async with Control("pi.local", 8080) as control:
-            # status = await control.get_status()
+            status = await control.get_status()
 
-            # print(f"{status.phone.ip=}")
+            print(f"{status.phone.ip=}")
 
-            # world = status.direct_world_sensor()
-            # print(f"{world.connected=} {world.url=}")
+            world = status.direct_world_sensor()
+            print(f"{world.connected=} {world.url=}")
 
-            # gaze = status.direct_gaze_sensor()
-            # print(f"{gaze.connected=} {gaze.url=}")
-            await control.start_recording()
-            await asyncio.sleep(5)
-            await control.stop_and_save_recording()
+            gaze = status.direct_gaze_sensor()
+            print(f"{gaze.connected=} {gaze.url=}")
 
     asyncio.run(print_status())
