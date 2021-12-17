@@ -1,8 +1,15 @@
 import datetime
+import logging
 import typing as T
 
 from aiortsp.rtcp.parser import SR
 from aiortsp.rtsp.reader import RTSPReader
+
+logger = logging.getLogger(__name__)
+
+
+class SDPDataNotAvailableError(Exception):
+    pass
 
 
 class RTSPData(T.NamedTuple):
@@ -19,15 +26,44 @@ class RTSPData(T.NamedTuple):
 
 
 async def receive_raw_rtsp_data(url) -> T.AsyncIterator[RTSPData]:
-    async with WallclockRTSPReader(url) as reader:
-        async for pkt in reader.iter_packets():
+    async with RTSPRawStreamer() as streamer:
+        for datum in streamer.receive(url):
+            yield datum
+
+
+class RTSPRawStreamer:
+    def __init__(self, *args, **kwargs):
+        self._reader = WallclockRTSPReader(*args, **kwargs)
+        self._encoding = None
+
+    async def receive(self) -> T.AsyncIterator[RTSPData]:
+        async with self._reader as reader:
+            async for pkt in reader.iter_packets():
+                try:
+                    timestamp_seconds = reader.absolute_timestamp_from_packet(pkt)
+                except UnknownClockoffsetError:
+                    # The absolute timestamp is not known yet.
+                    # Waiting for the first RTCP SR packet...
+                    continue
+                yield RTSPData(pkt.data, timestamp_seconds)
+
+    @property
+    def reader(self):
+        return self._reader
+
+    @property
+    def encoding(self):
+        """:raises SDPDataNotAvailableError:"""
+        if self._encoding is None:
             try:
-                timestamp_seconds = reader.absolute_timestamp_from_packet(pkt)
-            except UnknownClockoffsetError:
-                # The absolute timestamp is not known yet.
-                # Waiting for the first RTCP SR packet...
-                continue
-            yield RTSPData(pkt.data, timestamp_seconds)
+                attributes = self._reader.session.sdp["medias"][0]["attributes"]
+                rtpmap = attributes["rtpmap"]
+                self._encoding = rtpmap["encoding"].lower()
+            except (IndexError, KeyError) as err:
+                raise SDPDataNotAvailableError(
+                    f"SDP data is missing {err} field"
+                ) from err
+        return self._encoding
 
 
 class UnknownClockoffsetError(Exception):

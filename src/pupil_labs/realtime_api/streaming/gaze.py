@@ -2,7 +2,7 @@ import datetime
 import struct
 import typing as T
 
-from .base import RTSPData, receive_raw_rtsp_data
+from .base import RTSPData, RTSPRawStreamer, receive_raw_rtsp_data
 
 
 class GazeData(T.NamedTuple):
@@ -26,5 +26,12 @@ class GazeData(T.NamedTuple):
 
 
 async def receive_gaze_data(url) -> T.AsyncIterator[GazeData]:
-    async for data in receive_raw_rtsp_data(url):
-        yield GazeData.from_raw(data)
+    async with RTSPGazeStreamer() as streamer:
+        for datum in streamer.receive(url):
+            yield datum
+
+
+class RTSPGazeStreamer(RTSPRawStreamer):
+    async def receive(self) -> T.AsyncIterator[GazeData]:
+        async for data in super().receive():
+            yield GazeData.from_raw(data)
