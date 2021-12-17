@@ -1,3 +1,7 @@
+v0.0.3
+######
+- Move Control.Error to dedicated :py:exc:`ControlError <pupil_labs.realtime_api.control.ControlError>` class
+
 v0.0.2
 ######
 - Require |aiohttp[speedups]|_

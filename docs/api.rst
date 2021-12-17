@@ -4,7 +4,7 @@ API Reference
 Remote Control
 ==============
 
-.. autoclass:: pupil_labs.realtime_api.control.Control
+.. automodule:: pupil_labs.realtime_api.control
     :members:
     :undoc-members:
     :show-inheritance:

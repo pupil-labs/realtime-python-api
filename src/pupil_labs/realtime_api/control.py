@@ -18,10 +18,11 @@ class APIPath(enum.Enum):
     EVENT = "/event"
 
 
-class Control:
-    class Error(Exception):
-        pass
+class ControlError(Exception):
+    pass
 
+
+class Control:
     @classmethod
     def for_discovered_device(cls, device: DiscoveredDevice) -> "Control":
         return cls(device.addresses[0], device.port)
@@ -38,7 +39,7 @@ class Control:
         async with self.session.get(self.api_url(APIPath.STATUS)) as response:
             confirmation = await response.json()
             if response.status != 200:
-                raise Control.Error(response.status, confirmation["message"])
+                raise ControlError(response.status, confirmation["message"])
             result = confirmation["result"]
             logger.debug(f"[{self}.get_status] Received status: {result}")
             return Status.from_dict(result)
@@ -48,7 +49,7 @@ class Control:
             confirmation = await response.json()
             logger.debug(f"[{self}.start_recording] Received response: {confirmation}")
             if response.status != 200:
-                raise Control.Error(response.status, confirmation["message"])
+                raise ControlError(response.status, confirmation["message"])
             return confirmation["result"]["id"]
 
     async def recording_stop_and_save(self):
@@ -58,7 +59,7 @@ class Control:
             confirmation = await response.json()
             logger.debug(f"[{self}.stop_recording] Received response: {confirmation}")
             if response.status != 200:
-                raise Control.Error(response.status, confirmation["message"])
+                raise ControlError(response.status, confirmation["message"])
 
     async def recording_cancel(self):
         async with self.session.post(
@@ -67,7 +68,7 @@ class Control:
             confirmation = await response.json()
             logger.debug(f"[{self}.stop_recording] Received response: {confirmation}")
             if response.status != 200:
-                raise Control.Error(response.status, confirmation["message"])
+                raise ControlError(response.status, confirmation["message"])
 
     async def send_event(
         self, event_name: str, event_timestamp_unix_ns: T.Optional[int] = None
@@ -82,7 +83,7 @@ class Control:
             confirmation = await response.json()
             logger.debug(f"[{self}.send_event] Received response: {confirmation}")
             if response.status != 200:
-                raise Control.Error(response.status, confirmation["message"])
+                raise ControlError(response.status, confirmation["message"])
             return Event.from_dict(confirmation["result"])
 
     async def close(self):
