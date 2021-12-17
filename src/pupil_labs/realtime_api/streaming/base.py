@@ -26,8 +26,8 @@ class RTSPData(T.NamedTuple):
 
 
 async def receive_raw_rtsp_data(url) -> T.AsyncIterator[RTSPData]:
-    async with RTSPRawStreamer() as streamer:
-        for datum in streamer.receive(url):
+    async with RTSPRawStreamer(url) as streamer:
+        for datum in streamer.receive():
             yield datum
 
 
@@ -37,15 +37,14 @@ class RTSPRawStreamer:
         self._encoding = None
 
     async def receive(self) -> T.AsyncIterator[RTSPData]:
-        async with self._reader as reader:
-            async for pkt in reader.iter_packets():
-                try:
-                    timestamp_seconds = reader.absolute_timestamp_from_packet(pkt)
-                except UnknownClockoffsetError:
-                    # The absolute timestamp is not known yet.
-                    # Waiting for the first RTCP SR packet...
-                    continue
-                yield RTSPData(pkt.data, timestamp_seconds)
+        async for pkt in self.reader.iter_packets():
+            try:
+                timestamp_seconds = self.reader.absolute_timestamp_from_packet(pkt)
+            except UnknownClockoffsetError:
+                # The absolute timestamp is not known yet.
+                # Waiting for the first RTCP SR packet...
+                continue
+            yield RTSPData(pkt.data, timestamp_seconds)
 
     @property
     def reader(self):
@@ -64,6 +63,13 @@ class RTSPRawStreamer:
                     f"SDP data is missing {err} field"
                 ) from err
         return self._encoding
+
+    async def __aenter__(self, *args, **kwargs):
+        await self.reader.__aenter__(*args, **kwargs)
+        return self
+
+    async def __aexit__(self, *args, **kwargs):
+        return await self.reader.__aexit__(*args, **kwargs)
 
 
 class UnknownClockoffsetError(Exception):

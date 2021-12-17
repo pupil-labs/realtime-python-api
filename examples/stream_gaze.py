@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import logging
 
 from pupil_labs.realtime_api import Control, receive_gaze_data
@@ -18,4 +19,5 @@ async def main():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    asyncio.run(main())
+    with contextlib.suppress(KeyboardInterrupt):
+        asyncio.run(main())

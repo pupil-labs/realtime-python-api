@@ -26,8 +26,8 @@ class GazeData(T.NamedTuple):
 
 
 async def receive_gaze_data(url) -> T.AsyncIterator[GazeData]:
-    async with RTSPGazeStreamer() as streamer:
-        for datum in streamer.receive(url):
+    async with RTSPGazeStreamer(url) as streamer:
+        async for datum in streamer.receive():
             yield datum
 
 
