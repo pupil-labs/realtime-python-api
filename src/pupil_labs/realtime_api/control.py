@@ -32,10 +32,13 @@ class Control:
         self.port = port
         self.session = aiohttp.ClientSession()
 
-    def api_url(self, path, prefix: str = "/api") -> str:
+    def api_url(self, path: APIPath, prefix: str = "/api") -> str:
         return f"http://{self.address}:{self.port}" + prefix + path.value
 
     async def get_status(self) -> Status:
+        """
+        :raises pupil_labs.realtime_api.control.ControlError: if the request fails
+        """
         async with self.session.get(self.api_url(APIPath.STATUS)) as response:
             confirmation = await response.json()
             if response.status != 200:
@@ -45,6 +48,17 @@ class Control:
             return Status.from_dict(result)
 
     async def recording_start(self) -> str:
+        """
+        :raises pupil_labs.realtime_api.control.ControlError:
+            if the recording could not be started. Possible reasons include
+            - Recording already running
+            - Template has required fields
+            - Low battery
+            - Low storage
+            - No wearer selected
+            - No workspace selected
+            - Setup bottom sheets not completed
+        """
         async with self.session.post(self.api_url(APIPath.RECORDING_START)) as response:
             confirmation = await response.json()
             logger.debug(f"[{self}.start_recording] Received response: {confirmation}")
@@ -53,6 +67,13 @@ class Control:
             return confirmation["result"]["id"]
 
     async def recording_stop_and_save(self):
+        """
+        :raises pupil_labs.realtime_api.control.ControlError:
+            if the recording could not be started
+            Possible reasons include
+            - Recording not running
+            - template has required fields
+        """
         async with self.session.post(
             self.api_url(APIPath.RECORDING_STOP_AND_SAVE)
         ) as response:
@@ -62,6 +83,12 @@ class Control:
                 raise ControlError(response.status, confirmation["message"])
 
     async def recording_cancel(self):
+        """
+        :raises pupil_labs.realtime_api.control.ControlError:
+            if the recording could not be started
+            Possible reasons include
+            - Recording not running
+        """
         async with self.session.post(
             self.api_url(APIPath.RECORDING_CANCEL)
         ) as response:
@@ -73,6 +100,9 @@ class Control:
     async def send_event(
         self, event_name: str, event_timestamp_unix_ns: T.Optional[int] = None
     ) -> Event:
+        """
+        :raises pupil_labs.realtime_api.control.ControlError: if sending the event fails
+        """
         event = {"name": event_name}
         if event_timestamp_unix_ns is not None:
             event["timestamp"] = event_timestamp_unix_ns
