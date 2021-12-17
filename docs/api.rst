@@ -12,10 +12,30 @@ Remote Control
 Streaming
 =========
 
-.. automodule:: pupil_labs.realtime_api.streaming
+Gaze Data
+---------
+
+.. automodule:: pupil_labs.realtime_api.streaming.gaze
     :members:
     :undoc-members:
     :show-inheritance:
+
+Scene Video
+-----------
+
+.. automodule:: pupil_labs.realtime_api.streaming.video
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Raw RTSP Data
+-------------
+
+.. automodule:: pupil_labs.realtime_api.streaming.base
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Device Discovery
 ================

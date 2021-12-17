@@ -1,7 +1,8 @@
 v0.0.3
 ######
 - Move Control.Error to dedicated :py:exc:`ControlError <pupil_labs.realtime_api.control.ControlError>` class
-- Implement :py:mod:`Control <pupil_labs.realtime_api.streaming>`
+- Implement :py:mod:`gaze <pupil_labs.realtime_api.streaming.gaze>` and
+    :py:mod:`video <pupil_labs.realtime_api.streaming.video>` streaming
 
 v0.0.2
 ######

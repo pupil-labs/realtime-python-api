@@ -37,6 +37,7 @@ nitpicky = True
 extensions += ['sphinx.ext.intersphinx']
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
+    'av': ('https://pyav.org/docs/stable', None),
 }
 
 html_theme = 'furo'

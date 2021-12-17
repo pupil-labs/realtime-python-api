@@ -67,7 +67,7 @@ class RTSPVideoFrameStreamer(RTSPRawStreamer):
 
     @property
     def sprop_parameter_set_payloads(self) -> T.Optional[T.List[T.ByteString]]:
-        """:raises SDPDataNotAvailableError:"""
+        """:raises pupil_labs.realtime_api.streaming.base.SDPDataNotAvailableError:"""
         if self._sprop_parameter_set_payloads is None:
             try:
                 attributes = self.reader.session.sdp["medias"][0]["attributes"]

@@ -33,14 +33,14 @@ async def receive_raw_rtsp_data(url) -> T.AsyncIterator[RTSPData]:
 
 class RTSPRawStreamer:
     def __init__(self, *args, **kwargs):
-        self._reader = WallclockRTSPReader(*args, **kwargs)
+        self._reader = _WallclockRTSPReader(*args, **kwargs)
         self._encoding = None
 
     async def receive(self) -> T.AsyncIterator[RTSPData]:
         async for pkt in self.reader.iter_packets():
             try:
                 timestamp_seconds = self.reader.absolute_timestamp_from_packet(pkt)
-            except UnknownClockoffsetError:
+            except _UnknownClockoffsetError:
                 # The absolute timestamp is not known yet.
                 # Waiting for the first RTCP SR packet...
                 continue
@@ -52,7 +52,7 @@ class RTSPRawStreamer:
 
     @property
     def encoding(self):
-        """:raises SDPDataNotAvailableError:"""
+        """:raises pupil_labs.realtime_api.streaming.base.SDPDataNotAvailableError:"""
         if self._encoding is None:
             try:
                 attributes = self._reader.session.sdp["medias"][0]["attributes"]
@@ -72,11 +72,11 @@ class RTSPRawStreamer:
         return await self.reader.__aexit__(*args, **kwargs)
 
 
-class UnknownClockoffsetError(Exception):
+class _UnknownClockoffsetError(Exception):
     pass
 
 
-class WallclockRTSPReader(RTSPReader):
+class _WallclockRTSPReader(RTSPReader):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._relative_to_ntp_clock_offset = None
@@ -99,7 +99,7 @@ class WallclockRTSPReader(RTSPReader):
             )
         except TypeError:
             # self._relative_to_ntp_clock_offset is still None
-            raise UnknownClockoffsetError(
+            raise _UnknownClockoffsetError(
                 "Clock offset between relative and NTP clock is still unknown. "
                 "Waiting for first RTCP SR packet..."
             )
