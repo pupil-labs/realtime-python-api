@@ -77,21 +77,35 @@ class Sensor(T.NamedTuple):
         DIRECT = "DIRECT"
 
 
+class Recording(T.NamedTuple):
+    action: str
+    id: str
+    message: str
+    rec_duration_ns: int
+
+    @property
+    def rec_duration_seconds(self) -> float:
+        return self.rec_duration_ns / 1e9
+
+
 _model_class_map = {
     "Phone": Phone,
     "Hardware": Hardware,
     "Sensor": Sensor,
+    "Recording": Recording,
 }
 
 
 class Status(T.NamedTuple):
-    phone: T.Optional[Phone]
-    hardware: T.Optional[Hardware]
+    phone: Phone
+    hardware: Hardware
     sensors: T.List[Sensor]
+    recording: T.Optional[Recording]
 
     @classmethod
     def from_dict(cls, status_json_result: T.List[T.Dict[str, T.Any]]):
         phone = None  # always present
+        recording = None  # might not be present
         hardware = Hardware()  # won't be present if glasses are not connected
         sensors = []
         for dct in status_json_result:
@@ -106,13 +120,15 @@ class Status(T.NamedTuple):
                     hardware = model
                 elif issubclass(model_class, Sensor):
                     sensors.append(model)
+                elif issubclass(model_class, Recording):
+                    recording = model
                 else:
                     logger.debug(f"Unknown model class: {model_class}")
             except KeyError:
                 logger.debug(f"Unknown model: {model_name}")
                 continue
         sensors.sort(key=lambda s: (not s.connected, s.conn_type, s.sensor))
-        return cls(phone, hardware, sensors)
+        return cls(phone, hardware, sensors, recording)
 
     @staticmethod
     def _init_cls_with_annotated_fields_only(cls, d: T.Dict[str, T.Any]):

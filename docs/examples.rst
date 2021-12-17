@@ -25,7 +25,7 @@ Start, stop and save, and cancel recordings
 
 .. literalinclude:: ../examples/start_stop_recordings.py
    :language: python
-   :emphasize-lines: 4,8-14
+   :emphasize-lines: 4,8-18
    :linenos:
 
 Streaming
