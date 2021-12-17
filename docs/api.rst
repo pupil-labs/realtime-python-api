@@ -9,6 +9,14 @@ Remote Control
     :undoc-members:
     :show-inheritance:
 
+Streaming
+=========
+
+.. automodule:: pupil_labs.realtime_api.streaming
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Device Discovery
 ================
 
