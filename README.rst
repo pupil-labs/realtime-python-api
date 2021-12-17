@@ -25,4 +25,3 @@ Pupil Labs' Realtime API Client
 *******************************
 
 - `Documentation <https://pupil-labs-realtime-api.readthedocs.io/en/latest/>`_
-- For examples see the `examples <tree/main/examples>_` folder
