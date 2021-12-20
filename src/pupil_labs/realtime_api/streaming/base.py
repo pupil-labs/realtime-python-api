@@ -25,8 +25,8 @@ class RTSPData(T.NamedTuple):
         return int(self.timestamp_unix_seconds * 1e9)
 
 
-async def receive_raw_rtsp_data(url) -> T.AsyncIterator[RTSPData]:
-    async with RTSPRawStreamer(url) as streamer:
+async def receive_raw_rtsp_data(url, *args, **kwargs) -> T.AsyncIterator[RTSPData]:
+    async with RTSPRawStreamer(url, *args, **kwargs) as streamer:
         for datum in streamer.receive():
             yield datum
 

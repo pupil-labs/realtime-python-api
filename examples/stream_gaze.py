@@ -13,7 +13,10 @@ async def main():
             logging.error(f"Gaze sensor is not connected to {control}")
             return
 
-        async for gaze in receive_gaze_data(sensor_gaze.url):
+        restart_on_disconnect = True
+        async for gaze in receive_gaze_data(
+            sensor_gaze.url, run_loop=restart_on_disconnect
+        ):
             print(gaze)
 
 

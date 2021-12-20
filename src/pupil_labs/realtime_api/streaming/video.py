@@ -30,8 +30,8 @@ class VideoFrame(T.NamedTuple):
         return self.to_ndarray(format="bgr24")
 
 
-async def receive_video_frames(url) -> T.AsyncIterator[VideoFrame]:
-    async with RTSPVideoFrameStreamer(url) as streamer:
+async def receive_video_frames(url, *args, **kwargs) -> T.AsyncIterator[VideoFrame]:
+    async with RTSPVideoFrameStreamer(url, *args, **kwargs) as streamer:
         async for datum in streamer.receive():
             yield datum
 

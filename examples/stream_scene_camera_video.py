@@ -15,7 +15,10 @@ async def main():
             logging.error(f"Scene camera is not connected to {control}")
             return
 
-        async for frame in receive_video_frames(sensor_world.url):
+        restart_on_disconnect = True
+        async for frame in receive_video_frames(
+            sensor_world.url, run_loop=restart_on_disconnect
+        ):
             bgr_buffer = frame.bgr_buffer()
             draw_time(bgr_buffer, frame.datetime)
             cv2.imshow("Scene Camera - Press ESC to quit", bgr_buffer)
