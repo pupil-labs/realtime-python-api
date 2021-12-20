@@ -47,6 +47,18 @@ Scene Camera Video
    :emphasize-lines: 7,11-18
    :linenos:
 
+Scene Camera Video With Overlayed Gaze
+--------------------------------------
+
+This example processes two streams (video and gaze data) at the same time, matches each
+video frame with its temporally closest gaze point, and previews both in a window.
+
+.. literalinclude:: ../examples/stream_video_with_overlayed_gaze.py
+   :language: python
+   :emphasize-lines: 8,12-41
+   :linenos:
+
+
 Device Discovery
 ================
 
