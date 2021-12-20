@@ -11,6 +11,7 @@ The source code and issue tracker are both hosted on `GitHub`_.
 .. toctree::
    :maxdepth: 4
 
+   guides/index.rst
    examples
    api
    history

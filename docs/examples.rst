@@ -1,8 +1,13 @@
 Code Examples
 *************
 
+.. note::
+   The examples require Python 3.7+ to run and use the :py:mod:`asyncio` framework.
+
 Remote Control
 ==============
+
+.. _get_status_example:
 
 Get Current Status
 ------------------
@@ -46,6 +51,8 @@ Scene Camera Video
    :language: python
    :emphasize-lines: 7,11-18
    :linenos:
+
+.. _stream_video_with_overlayed_gaze_example:
 
 Scene Camera Video With Overlayed Gaze
 --------------------------------------
