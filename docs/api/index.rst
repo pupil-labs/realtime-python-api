@@ -6,3 +6,4 @@ API Reference
 
    basic
    async
+   base
