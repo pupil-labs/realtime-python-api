@@ -6,6 +6,17 @@ import typing as T
 logger = logging.getLogger(__name__)
 
 
+class APIPath(enum.Enum):
+    STATUS = "/status"
+    RECORDING_START = "/recording:start"
+    RECORDING_STOP_AND_SAVE = "/recording:stop_and_save"
+    RECORDING_CANCEL = "/recording:cancel"
+    EVENT = "/event"
+
+    def full_address(self, address: str, port: int, prefix: str = "/api") -> str:
+        return f"http://{address}:{port}" + prefix + self.value
+
+
 class DiscoveredDevice(T.NamedTuple):
     name: str
     server: str

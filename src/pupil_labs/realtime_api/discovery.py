@@ -1,6 +1,7 @@
 import asyncio
 import functools
 import logging
+import time
 import typing as T
 
 from zeroconf import ServiceStateChange
@@ -11,8 +12,14 @@ from .models import DiscoveredDevice
 logger = logging.getLogger(__name__)
 
 
-async def discover_devices() -> T.AsyncIterator[DiscoveredDevice]:
-    """Use Bonjour to find devices in the local network that serve the Realtime API."""
+async def discover_devices(
+    timeout_seconds: T.Optional[float] = None,
+) -> T.AsyncIterator[DiscoveredDevice]:
+    """Use Bonjour to find devices in the local network that serve the Realtime API.
+
+    :param timeout_seconds: Stop after ``timeout_seconds``. If ``None``, run discovery
+        forever.
+    """
     logger.info("Searching for devices...")
     async with AsyncZeroconf() as aiozeroconf:
         queue = asyncio.Queue()
@@ -23,7 +30,15 @@ async def discover_devices() -> T.AsyncIterator[DiscoveredDevice]:
         )
         try:
             while True:
-                yield await queue.get()
+                if timeout_seconds <= 0.0:
+                    return
+                try:
+                    t0 = time.perf_counter()
+                    yield await asyncio.wait_for(queue.get(), timeout=timeout_seconds)
+                    if timeout_seconds is not None:
+                        timeout_seconds -= time.perf_counter() - t0
+                except asyncio.TimeoutError:
+                    return
         finally:
             await browser.async_cancel()
 

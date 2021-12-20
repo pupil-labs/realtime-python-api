@@ -1,39 +1,23 @@
-import enum
 import logging
 import types
 import typing as T
 
 import aiohttp
 
-from pupil_labs.realtime_api.models import DiscoveredDevice, Event, Status
+from .base import ControlBase
+from .models import APIPath, DiscoveredDevice, Event, Status
 
 logger = logging.getLogger(__name__)
-
-
-class APIPath(enum.Enum):
-    STATUS = "/status"
-    RECORDING_START = "/recording:start"
-    RECORDING_STOP_AND_SAVE = "/recording:stop_and_save"
-    RECORDING_CANCEL = "/recording:cancel"
-    EVENT = "/event"
 
 
 class ControlError(Exception):
     pass
 
 
-class Control:
-    @classmethod
-    def for_discovered_device(cls, device: DiscoveredDevice) -> "Control":
-        return cls(device.addresses[0], device.port)
-
-    def __init__(self, address: str, port: int) -> None:
-        self.address = address
-        self.port = port
+class Control(ControlBase):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
         self.session = aiohttp.ClientSession()
-
-    def api_url(self, path: APIPath, prefix: str = "/api") -> str:
-        return f"http://{self.address}:{self.port}" + prefix + path.value
 
     async def get_status(self) -> Status:
         """
