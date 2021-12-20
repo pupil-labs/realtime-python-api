@@ -1,5 +1,7 @@
-API Reference
-*************
+.. _async_api:
+
+Asynchonous API
+***************
 
 Remote Control
 ==============
