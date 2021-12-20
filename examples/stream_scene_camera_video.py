@@ -12,7 +12,7 @@ async def main():
         status = await control.get_status()
         sensor_world = status.direct_world_sensor()
         if not sensor_world.connected:
-            logging.error(f"Gaze sensor is not connected to {control}")
+            logging.error(f"Scene camera is not connected to {control}")
             return
 
         async for frame in receive_video_frames(sensor_world.url):
