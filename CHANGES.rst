@@ -1,3 +1,8 @@
+v0.0.5
+######
+- Add guides to documentation
+- Add :ref:`stream_video_with_overlayed_gaze_example` example
+
 v0.0.4
 ######
 - Include examples in documentation
