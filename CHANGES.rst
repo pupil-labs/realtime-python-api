@@ -2,6 +2,7 @@ v0.0.5
 ######
 - Add guides to documentation
 - Add :ref:`stream_video_with_overlayed_gaze_example` example
+- Add :py:mod:`pupil_labs.realtime_api.basic` API. See the :ref:`basic_examples`.
 
 v0.0.4
 ######
