@@ -4,7 +4,7 @@ import typing as T
 from .base import ControlBase
 from .control import Control as _ControlAsync
 from .discovery import discover_devices as _discover_devices_async
-from .models import Status, Event
+from .models import Event, Status
 
 
 def discovered_devices(search_duration_seconds: float) -> T.List["Control"]:
