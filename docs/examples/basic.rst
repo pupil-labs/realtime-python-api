@@ -11,7 +11,7 @@ Code examples that use the :ref:`basic_api`.
 .. _basic_discovery_example:
 
 Find one or more devices
-========================
+------------------------
 
 .. literalinclude:: ../../examples/basic/discover_devices.py
    :language: python
