@@ -6,13 +6,13 @@ from pupil_labs.realtime_api import Device
 
 
 async def main():
-    async with Device("pi.local", 8080) as control:
+    async with Device("pi.local", 8080) as device:
         # send event without timestamp
-        print(await control.send_event("test event"))
+        print(await device.send_event("test event"))
 
         # send event with current timestamp
         print(
-            await control.send_event(
+            await device.send_event(
                 "test event", event_timestamp_unix_ns=time.time_ns()
             )
         )

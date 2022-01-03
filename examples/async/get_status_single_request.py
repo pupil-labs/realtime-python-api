@@ -5,8 +5,8 @@ from pupil_labs.realtime_api import Device
 
 
 async def main():
-    async with Device("pi.local", 8080) as control:
-        status = await control.get_status()
+    async with Device("pi.local", 8080) as device:
+        status = await device.get_status()
 
         print(f"Device IP address: {status.phone.ip}")
         print(f"Battery level: {status.phone.battery_level} %")

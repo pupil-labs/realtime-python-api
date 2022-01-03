@@ -9,18 +9,18 @@ from pupil_labs.realtime_api import Device, receive_gaze_data, receive_video_fra
 
 
 async def main():
-    async with Device("pi.local", 8080) as control:
-        logging.info(f"Getting status information from {control}")
-        status = await control.get_status()
+    async with Device("pi.local", 8080) as device:
+        logging.info(f"Getting status information from {device}")
+        status = await device.get_status()
 
         sensor_gaze = status.direct_gaze_sensor()
         if not sensor_gaze.connected:
-            logging.error(f"Gaze sensor is not connected to {control}")
+            logging.error(f"Gaze sensor is not connected to {device}")
             return
 
         sensor_world = status.direct_world_sensor()
         if not sensor_world.connected:
-            logging.error(f"Scene camera is not connected to {control}")
+            logging.error(f"Scene camera is not connected to {device}")
             return
 
         restart_on_disconnect = True

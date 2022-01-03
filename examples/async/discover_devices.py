@@ -6,8 +6,8 @@ from pupil_labs.realtime_api.discovery import discover_devices
 
 
 async def main():
-    async for device in discover_devices():
-        print(device)
+    async for device_info in discover_devices():
+        print(device_info)
 
 
 if __name__ == "__main__":

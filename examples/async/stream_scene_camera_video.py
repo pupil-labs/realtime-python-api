@@ -8,11 +8,11 @@ from pupil_labs.realtime_api import Device, receive_video_frames
 
 
 async def main():
-    async with Device("pi.local", 8080) as control:
-        status = await control.get_status()
+    async with Device("pi.local", 8080) as device:
+        status = await device.get_status()
         sensor_world = status.direct_world_sensor()
         if not sensor_world.connected:
-            logging.error(f"Scene camera is not connected to {control}")
+            logging.error(f"Scene camera is not connected to {device}")
             return
 
         restart_on_disconnect = True

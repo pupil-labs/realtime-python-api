@@ -27,24 +27,27 @@ class DiscoveredDeviceInfo(T.NamedTuple):
 
 
 class Event(T.NamedTuple):
+    name: str
     recording_id: T.Optional[str]
-    timestamp_unix_ns: int
+    timestamp: int  # unix epoch, in nanoseconds
 
     @classmethod
     def from_dict(cls, dct: T.Dict[str, T.Any]) -> "Event":
         return cls(
-            recording_id=dct.get("recording_id", None),
-            timestamp_unix_ns=dct.get("timestamp"),
+            name=dct.get("name"),
+            recording_id=dct.get("recording_id"),
+            timestamp=dct.get("timestamp"),
         )
 
     @property
     def datetime(self) -> datetime.datetime:
-        return datetime.datetime.fromtimestamp(self.timestamp_unix_ns / 1e9)
+        return datetime.datetime.fromtimestamp(self.timestamp / 1e9)
 
     def __repr__(self) -> str:
         return (
-            f"Event(recording_id={self.recording_id} "
-            f"timestamp_unix_ns={self.timestamp_unix_ns} "
+            f"Event(name={self.name} "
+            f"recording_id={self.recording_id} "
+            f"timestamp_unix_ns={self.timestamp} "
             f"datetime={self.datetime})"
         )
 
@@ -109,6 +112,7 @@ _model_class_map: T.Dict[str, Component] = {
     "Hardware": Hardware,
     "Sensor": Sensor,
     "Recording": Recording,
+    "Event": Event,
 }
 
 
@@ -120,7 +124,10 @@ def parse_component(raw: ComponentRaw) -> Component:
     model_name = raw["model"]
     data = raw["data"]
     model_class = _model_class_map[model_name]
-    return _init_cls_with_annotated_fields_only(model_class, data)
+    try:
+        return _init_cls_with_annotated_fields_only(model_class, data)
+    except KeyError as err:
+        raise ValueError(f"Could not generate {model_class} from {data}") from err
 
 
 class Status(T.NamedTuple):

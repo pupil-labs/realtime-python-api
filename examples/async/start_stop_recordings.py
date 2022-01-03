@@ -2,20 +2,26 @@ import asyncio
 import logging
 
 from pupil_labs.realtime_api import Device
+from pupil_labs.realtime_api.models import Recording
+
+
+async def print_recording(component):
+    if isinstance(component, Recording):
+        print(f"Update: {component.message}")
 
 
 async def main():
-    async with Device("pi.local", 8080) as control:
-        recording_id = await control.recording_start()
-        print(f"Started recording with id {recording_id}")
+    async with Device("pi.local", 8080) as device:
+        # get update when recording is fully started
+        await device.start_auto_update(update_callback=print_recording)
+        recording_id = await device.recording_start()
+        print(f"Initiated recording with id {recording_id}")
         await asyncio.sleep(5)
-        status = await control.get_status()
-        print(
-            f"Recording is running for {status.recording.rec_duration_seconds} seconds"
-        )
-        await control.recording_stop_and_save()
-        print("Recording stopped and saved")
+        print("Stopping recording")
+        await device.recording_stop_and_save()
         # await control.recording_cancel()  # uncomment to cancel recording
+        await asyncio.sleep(2)  # wait for confirmation via auto-update
+        await device.stop_auto_update()
 
 
 if __name__ == "__main__":

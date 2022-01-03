@@ -14,7 +14,7 @@ Get Current Status
 
 .. literalinclude:: ../../examples/async/get_status_single_request.py
    :language: python
-   :emphasize-lines: 4,8-21
+   :emphasize-lines: 4,8-9
    :linenos:
 
 Auto-update Status
@@ -30,7 +30,7 @@ Send Event
 
 .. literalinclude:: ../../examples/async/send_event.py
    :language: python
-   :emphasize-lines: 5,9-18
+   :emphasize-lines: 11,15-17
    :linenos:
 
 Start, stop and save, and cancel recordings
@@ -38,7 +38,7 @@ Start, stop and save, and cancel recordings
 
 .. literalinclude:: ../../examples/async/start_stop_recordings.py
    :language: python
-   :emphasize-lines: 4,8-18
+   :emphasize-lines: 17,21
    :linenos:
 
 Streaming
