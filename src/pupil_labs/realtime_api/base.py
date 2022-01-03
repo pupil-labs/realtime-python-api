@@ -1,7 +1,7 @@
 import abc
 import typing as T
 
-from .models import APIPath, DiscoveredDevice
+from .models import APIPath, DiscoveredDeviceInfo
 
 
 class ControlBase(abc.ABC):
@@ -28,7 +28,7 @@ class ControlBase(abc.ABC):
         return f"Control(ip={self.address}, port={self.port}, dns={self.dns_name})"
 
     @classmethod
-    def from_discovered_device(cls, device: DiscoveredDevice) -> "ControlBase":
+    def from_discovered_device(cls, device: DiscoveredDeviceInfo) -> "ControlBase":
         return cls(
             device.addresses[0],
             device.port,

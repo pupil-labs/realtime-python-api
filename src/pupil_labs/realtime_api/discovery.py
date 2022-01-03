@@ -7,14 +7,14 @@ import typing as T
 from zeroconf import ServiceStateChange
 from zeroconf.asyncio import AsyncServiceBrowser, AsyncServiceInfo, AsyncZeroconf
 
-from .models import DiscoveredDevice
+from .models import DiscoveredDeviceInfo
 
 logger = logging.getLogger(__name__)
 
 
 async def discover_devices(
     timeout_seconds: T.Optional[float] = None,
-) -> T.AsyncIterator[DiscoveredDevice]:
+) -> T.AsyncIterator[DiscoveredDeviceInfo]:
     """Use Bonjour to find devices in the local network that serve the Realtime API.
 
     :param timeout_seconds: Stop after ``timeout_seconds``. If ``None``, run discovery
@@ -63,7 +63,7 @@ async def _request_info_for_valid_services_and_queue_result(
 ):
     info = AsyncServiceInfo(service_type, name)
     await info.async_request(zeroconf, timeout_ms)
-    device = DiscoveredDevice(
+    device = DiscoveredDeviceInfo(
         name,
         info.server,
         info.port,

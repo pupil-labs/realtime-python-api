@@ -19,7 +19,7 @@ class APIPath(enum.Enum):
         return f"{protocol}://{address}:{port}" + prefix + self.value
 
 
-class DiscoveredDevice(T.NamedTuple):
+class DiscoveredDeviceInfo(T.NamedTuple):
     name: str
     server: str
     port: int
