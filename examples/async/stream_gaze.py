@@ -2,11 +2,11 @@ import asyncio
 import contextlib
 import logging
 
-from pupil_labs.realtime_api import Control, receive_gaze_data
+from pupil_labs.realtime_api import Device, receive_gaze_data
 
 
 async def main():
-    async with Control("pi.local", 8080) as control:
+    async with Device("pi.local", 8080) as control:
         status = await control.get_status()
         sensor_gaze = status.direct_gaze_sensor()
         if not sensor_gaze.connected:

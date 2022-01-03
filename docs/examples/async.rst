@@ -22,7 +22,7 @@ Auto-update Status
 
 .. literalinclude:: ../../examples/async/get_status_auto_update.py
    :language: python
-   :emphasize-lines: 4,14,17
+   :emphasize-lines: 7-8,14,17
    :linenos:
 
 Send Event

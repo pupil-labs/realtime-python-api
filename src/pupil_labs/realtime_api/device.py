@@ -7,17 +7,17 @@ import typing as T
 import aiohttp
 import websockets
 
-from .base import ControlBase
+from .base import DeviceBase
 from .models import APIPath, Component, Event, Status, parse_component
 
 logger = logging.getLogger(__name__)
 
 
-class ControlError(Exception):
+class DeviceError(Exception):
     pass
 
 
-class Control(ControlBase):
+class Device(DeviceBase):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.session = aiohttp.ClientSession()
@@ -25,19 +25,19 @@ class Control(ControlBase):
 
     async def get_status(self) -> Status:
         """
-        :raises pupil_labs.realtime_api.control.ControlError: if the request fails
+        :raises pupil_labs.realtime_api.device.DeviceError: if the request fails
         """
         async with self.session.get(self.api_url(APIPath.STATUS)) as response:
             confirmation = await response.json()
             if response.status != 200:
-                raise ControlError(response.status, confirmation["message"])
+                raise DeviceError(response.status, confirmation["message"])
             result = confirmation["result"]
             logger.debug(f"[{self}.get_status] Received status: {result}")
             return Status.from_dict(result)
 
     async def recording_start(self) -> str:
         """
-        :raises pupil_labs.realtime_api.control.ControlError:
+        :raises pupil_labs.realtime_api.device.DeviceError:
             if the recording could not be started. Possible reasons include
             - Recording already running
             - Template has required fields
@@ -51,12 +51,12 @@ class Control(ControlBase):
             confirmation = await response.json()
             logger.debug(f"[{self}.start_recording] Received response: {confirmation}")
             if response.status != 200:
-                raise ControlError(response.status, confirmation["message"])
+                raise DeviceError(response.status, confirmation["message"])
             return confirmation["result"]["id"]
 
     async def recording_stop_and_save(self):
         """
-        :raises pupil_labs.realtime_api.control.ControlError:
+        :raises pupil_labs.realtime_api.device.DeviceError:
             if the recording could not be started
             Possible reasons include
             - Recording not running
@@ -68,11 +68,11 @@ class Control(ControlBase):
             confirmation = await response.json()
             logger.debug(f"[{self}.stop_recording] Received response: {confirmation}")
             if response.status != 200:
-                raise ControlError(response.status, confirmation["message"])
+                raise DeviceError(response.status, confirmation["message"])
 
     async def recording_cancel(self):
         """
-        :raises pupil_labs.realtime_api.control.ControlError:
+        :raises pupil_labs.realtime_api.device.DeviceError:
             if the recording could not be started
             Possible reasons include
             - Recording not running
@@ -83,13 +83,13 @@ class Control(ControlBase):
             confirmation = await response.json()
             logger.debug(f"[{self}.stop_recording] Received response: {confirmation}")
             if response.status != 200:
-                raise ControlError(response.status, confirmation["message"])
+                raise DeviceError(response.status, confirmation["message"])
 
     async def send_event(
         self, event_name: str, event_timestamp_unix_ns: T.Optional[int] = None
     ) -> Event:
         """
-        :raises pupil_labs.realtime_api.control.ControlError: if sending the event fails
+        :raises pupil_labs.realtime_api.device.DeviceError: if sending the event fails
         """
         event = {"name": event_name}
         if event_timestamp_unix_ns is not None:
@@ -101,7 +101,7 @@ class Control(ControlBase):
             confirmation = await response.json()
             logger.debug(f"[{self}.send_event] Received response: {confirmation}")
             if response.status != 200:
-                raise ControlError(response.status, confirmation["message"])
+                raise DeviceError(response.status, confirmation["message"])
             return Event.from_dict(confirmation["result"])
 
     async def start_auto_update(
@@ -148,7 +148,7 @@ class Control(ControlBase):
         if self._auto_update_task is not None:
             await self.stop_auto_update()
 
-    async def __aenter__(self) -> "Control":
+    async def __aenter__(self) -> "Device":
         return self
 
     async def __aexit__(

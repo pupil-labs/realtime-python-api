@@ -31,7 +31,7 @@ Connecting the client
 ---------------------
 
 The client connects to Pupil Invisible Companion via the
-:py:class:`Control <pupil_labs.realtime_api.control.Control>` class.
+:py:class:`Control <pupil_labs.realtime_api.device.Device>` class.
 
 .. code-block:: python
     :linenos:
@@ -54,7 +54,7 @@ Getting the app's status
 ------------------------
 
 To check the current status of the phone, use the
-:py:meth:`status <pupil_labs.realtime_api.control.Control.get_status()>` method.
+:py:meth:`status <pupil_labs.realtime_api.device.Device.get_status()>` method.
 
 .. code-block:: python
     :linenos:

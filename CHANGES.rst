@@ -3,6 +3,11 @@ v0.0.5
 - Add guides to documentation
 - Add :ref:`stream_video_with_overlayed_gaze_example` example
 - Add :py:mod:`pupil_labs.realtime_api.basic` API. See the :ref:`basic_examples`.
+- Rename ``pupil_labs.realtime_api.control`` to :py:mod:`pupil_labs.realtime_api.device`.
+- Rename ``pupil_labs.realtime_api.base.ControlBase`` to :py:class:`pupil_labs.realtime_api.base.DeviceBase`.
+- Rename ``pupil_labs.realtime_api.basic.Control`` to :py:class:`pupil_labs.realtime_api.basic.Device`.
+- Rename ``pupil_labs.realtime_api.control.Control`` to :py:class:`pupil_labs.realtime_api.device.Device`.
+- Rename ``pupil_labs.realtime_api.models.DiscoveredDevice`` to :py:class:`pupil_labs.realtime_api.models.DiscoveredDeviceInfo`.
 
 v0.0.4
 ######
@@ -12,7 +17,7 @@ v0.0.4
 
 v0.0.3
 ######
-- Move Control.Error to dedicated :py:exc:`ControlError <pupil_labs.realtime_api.control.ControlError>` class
+- Move Control.Error to dedicated :py:exc:`ControlError <pupil_labs.realtime_api.device.DeviceError>` class
 - Implement :py:mod:`gaze <pupil_labs.realtime_api.streaming.gaze>` and
     :py:mod:`video <pupil_labs.realtime_api.streaming.video>` streaming
 
@@ -20,7 +25,7 @@ v0.0.2
 ######
 - Require |aiohttp[speedups]|_
 - Implement :py:func:`discover_devices <pupil_labs.realtime_api.discovery.discover_devices>`
-- Implement :py:class:`Control <pupil_labs.realtime_api.control.Control>`
+- Implement :py:class:`Control <pupil_labs.realtime_api.device.Device>`
 
 .. |aiohttp[speedups]| replace:: ``aiohttp[speedups]``
 .. _aiohttp[speedups]: https://docs.aiohttp.org/en/stable/

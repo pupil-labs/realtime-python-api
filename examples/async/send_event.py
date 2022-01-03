@@ -2,11 +2,11 @@ import asyncio
 import logging
 import time
 
-from pupil_labs.realtime_api import Control
+from pupil_labs.realtime_api import Device
 
 
 async def main():
-    async with Control("pi.local", 8080) as control:
+    async with Device("pi.local", 8080) as control:
         # send event without timestamp
         print(await control.send_event("test event"))
 

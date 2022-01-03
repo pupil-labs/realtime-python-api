@@ -5,11 +5,11 @@ import typing as T
 
 import cv2
 
-from pupil_labs.realtime_api import Control, receive_gaze_data, receive_video_frames
+from pupil_labs.realtime_api import Device, receive_gaze_data, receive_video_frames
 
 
 async def main():
-    async with Control("pi.local", 8080) as control:
+    async with Device("pi.local", 8080) as control:
         logging.info(f"Getting status information from {control}")
         status = await control.get_status()
 

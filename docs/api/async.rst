@@ -6,7 +6,7 @@ Asynchonous API
 Remote Control
 ==============
 
-.. automodule:: pupil_labs.realtime_api.control
+.. automodule:: pupil_labs.realtime_api.device
     :members:
     :undoc-members:
     :show-inheritance:

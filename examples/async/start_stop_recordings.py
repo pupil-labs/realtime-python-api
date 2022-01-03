@@ -1,11 +1,11 @@
 import asyncio
 import logging
 
-from pupil_labs.realtime_api import Control
+from pupil_labs.realtime_api import Device
 
 
 async def main():
-    async with Control("pi.local", 8080) as control:
+    async with Device("pi.local", 8080) as control:
         recording_id = await control.recording_start()
         print(f"Started recording with id {recording_id}")
         await asyncio.sleep(5)

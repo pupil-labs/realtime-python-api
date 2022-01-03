@@ -4,11 +4,11 @@ import logging
 
 import cv2
 
-from pupil_labs.realtime_api import Control, receive_video_frames
+from pupil_labs.realtime_api import Device, receive_video_frames
 
 
 async def main():
-    async with Control("pi.local", 8080) as control:
+    async with Device("pi.local", 8080) as control:
         status = await control.get_status()
         sensor_world = status.direct_world_sensor()
         if not sensor_world.connected:

@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from pupil_labs.realtime_api import Control
+from pupil_labs.realtime_api import Device
 
 
 async def print_component(component):
@@ -9,7 +9,7 @@ async def print_component(component):
 
 
 async def main():
-    async with Control("pi.local", 8080) as control:
+    async with Device("pi.local", 8080) as control:
         print("Starting auto-update")
         await control.start_auto_update(update_callback=print_component)
         await asyncio.sleep(20.0)
