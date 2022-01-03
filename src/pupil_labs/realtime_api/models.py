@@ -13,8 +13,10 @@ class APIPath(enum.Enum):
     RECORDING_CANCEL = "/recording:cancel"
     EVENT = "/event"
 
-    def full_address(self, address: str, port: int, prefix: str = "/api") -> str:
-        return f"http://{address}:{port}" + prefix + self.value
+    def full_address(
+        self, address: str, port: int, protocol: str = "http", prefix: str = "/api"
+    ) -> str:
+        return f"{protocol}://{address}:{port}" + prefix + self.value
 
 
 class DiscoveredDevice(T.NamedTuple):
@@ -99,12 +101,26 @@ class Recording(T.NamedTuple):
         return self.rec_duration_ns / 1e9
 
 
-_model_class_map = {
+Component = T.Union[Phone, Hardware, Sensor, Recording]
+ComponentRaw = T.Dict[str, T.Any]
+
+_model_class_map: T.Dict[str, Component] = {
     "Phone": Phone,
     "Hardware": Hardware,
     "Sensor": Sensor,
     "Recording": Recording,
 }
+
+
+def _init_cls_with_annotated_fields_only(cls, d: T.Dict[str, T.Any]):
+    return cls(**{attr: d[attr] for attr in cls.__annotations__})
+
+
+def parse_component(raw: ComponentRaw) -> Component:
+    model_name = raw["model"]
+    data = raw["data"]
+    model_class = _model_class_map[model_name]
+    return _init_cls_with_annotated_fields_only(model_class, data)
 
 
 class Status(T.NamedTuple):
@@ -114,36 +130,29 @@ class Status(T.NamedTuple):
     recording: T.Optional[Recording]
 
     @classmethod
-    def from_dict(cls, status_json_result: T.List[T.Dict[str, T.Any]]):
+    def from_dict(cls, status_json_result: T.List[ComponentRaw]) -> "Status":
         phone = None  # always present
         recording = None  # might not be present
         hardware = Hardware()  # won't be present if glasses are not connected
         sensors = []
         for dct in status_json_result:
-            model_name = dct["model"]
-            data = dct["data"]
             try:
-                model_class = _model_class_map[model_name]
-                model = cls._init_cls_with_annotated_fields_only(model_class, data)
-                if issubclass(model_class, Phone):
-                    phone = model
-                elif issubclass(model_class, Hardware):
-                    hardware = model
-                elif issubclass(model_class, Sensor):
-                    sensors.append(model)
-                elif issubclass(model_class, Recording):
-                    recording = model
-                else:
-                    logger.debug(f"Unknown model class: {model_class}")
+                component = parse_component(dct)
             except KeyError:
-                logger.debug(f"Unknown model: {model_name}")
+                logger.debug(f"Unknown component: {component}")
                 continue
+            if isinstance(component, Phone):
+                phone = component
+            elif isinstance(component, Hardware):
+                hardware = component
+            elif isinstance(component, Sensor):
+                sensors.append(component)
+            elif isinstance(component, Recording):
+                recording = component
+            else:
+                logger.debug(f"Unknown model class: {type(component).__name__}")
         sensors.sort(key=lambda s: (not s.connected, s.conn_type, s.sensor))
         return cls(phone, hardware, sensors, recording)
-
-    @staticmethod
-    def _init_cls_with_annotated_fields_only(cls, d: T.Dict[str, T.Any]):
-        return cls(**{attr: d[attr] for attr in cls.__annotations__})
 
     def matching_sensors(self, name: Sensor.Name, connection: Sensor.Connection):
         for sensor in self.sensors:

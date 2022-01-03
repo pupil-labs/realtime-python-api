@@ -5,14 +5,24 @@ from .models import APIPath, DiscoveredDevice
 
 
 class ControlBase(abc.ABC):
-    def __init__(self, address, port, full_name, dns_name):
+    def __init__(
+        self,
+        address: str,
+        port: int,
+        full_name: T.Optional[str] = None,
+        dns_name: T.Optional[str] = None,
+    ):
         self.address = address
         self.port = port
         self.full_name = full_name
         self.dns_name = dns_name
 
-    def api_url(self, path: APIPath, prefix: str = "/api") -> str:
-        return path.full_address(self.address, self.port, prefix)
+    def api_url(
+        self, path: APIPath, protocol: str = "http", prefix: str = "/api"
+    ) -> str:
+        return path.full_address(
+            self.address, self.port, protocol=protocol, prefix=prefix
+        )
 
     def __repr__(self) -> str:
         return f"Control(ip={self.address}, port={self.port}, dns={self.dns_name})"

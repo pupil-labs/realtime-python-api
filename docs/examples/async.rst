@@ -12,9 +12,17 @@ Remote Control
 Get Current Status
 ------------------
 
-.. literalinclude:: ../../examples/async/get_status.py
+.. literalinclude:: ../../examples/async/get_status_single_request.py
    :language: python
    :emphasize-lines: 4,8-21
+   :linenos:
+
+Auto-update Status
+------------------
+
+.. literalinclude:: ../../examples/async/get_status_auto_update.py
+   :language: python
+   :emphasize-lines: 4,14,17
    :linenos:
 
 Send Event

@@ -1,11 +1,14 @@
+import asyncio
+import json
 import logging
 import types
 import typing as T
 
 import aiohttp
+import websockets
 
 from .base import ControlBase
-from .models import APIPath, DiscoveredDevice, Event, Status
+from .models import APIPath, Component, Event, Status, parse_component
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +21,7 @@ class Control(ControlBase):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.session = aiohttp.ClientSession()
+        self._auto_update_task = None
 
     async def get_status(self) -> Status:
         """
@@ -100,8 +104,49 @@ class Control(ControlBase):
                 raise ControlError(response.status, confirmation["message"])
             return Event.from_dict(confirmation["result"])
 
+    async def start_auto_update(
+        self, update_callback: T.Optional[T.Callable[[Component], None]] = None
+    ) -> None:
+        if self._auto_update_task is not None:
+            logger.debug("Auto-update already started!")
+            return
+        self._auto_update_task = asyncio.create_task(
+            self._auto_update(update_callback=update_callback)
+        )
+
+    async def stop_auto_update(self):
+        if self._auto_update_task is None:
+            logger.debug("Auto-update is not running!")
+            return
+        self._auto_update_task.cancel()
+        self._auto_update_task = None
+
+    async def _auto_update(
+        self,
+        update_callback: T.Optional[T.Callable[[Component], T.Awaitable[None]]] = None,
+    ) -> None:
+        # Auto-reconnect, see
+        # https://websockets.readthedocs.io/en/stable/reference/client.html#websockets.client.connect
+        websocket_status_endpoint = self.api_url(APIPath.STATUS, protocol="ws")
+        async for websocket in websockets.connect(websocket_status_endpoint):
+            try:
+                async for message_raw in websocket:
+                    message_json = json.loads(message_raw)
+                    component = parse_component(message_json)
+                    logger.debug(f"{self} updated status for {component}")
+                    if update_callback is not None:
+                        await update_callback(component)
+            except websockets.ConnectionClosed:
+                continue
+            except asyncio.CancelledError:
+                break
+            except Exception:
+                logger.exception("Exception during auto-update")
+
     async def close(self):
         await self.session.close()
+        if self._auto_update_task is not None:
+            await self.stop_auto_update()
 
     async def __aenter__(self) -> "Control":
         return self

@@ -40,7 +40,9 @@ class Control(ControlBase):
     """
 
     def get_status(self) -> Status:
-        """Wraps :py:meth:`pupil_labs.realtime_api.control.Control.get_status`
+        """Request the device's current status.
+
+        Wraps :py:meth:`pupil_labs.realtime_api.control.Control.get_status`
 
         :raises pupil_labs.realtime_api.control.ControlError: if the request fails
         """
