@@ -1,4 +1,5 @@
 import datetime
+import dataclasses
 import enum
 import logging
 import typing as T
@@ -130,7 +131,8 @@ def parse_component(raw: ComponentRaw) -> Component:
         raise ValueError(f"Could not generate {model_class} from {data}") from err
 
 
-class Status(T.NamedTuple):
+@dataclasses.dataclass
+class Status:
     phone: Phone
     hardware: Hardware
     sensors: T.List[Sensor]
@@ -160,6 +162,22 @@ class Status(T.NamedTuple):
                 logger.debug(f"Unknown model class: {type(component).__name__}")
         sensors.sort(key=lambda s: (not s.connected, s.conn_type, s.sensor))
         return cls(phone, hardware, sensors, recording)
+
+    def update(self, component: Component) -> None:
+        if isinstance(component, Phone):
+            self.phone = component
+        elif isinstance(component, Hardware):
+            self.hardware = component
+        elif isinstance(component, Recording):
+            self.recording = component
+        elif isinstance(component, Sensor):
+            for idx, sensor in enumerate(self.sensors):
+                if (
+                    sensor.sensor == component.sensor
+                    and sensor.conn_type == component.conn_type
+                ):
+                    self.sensors[idx] = component
+                    break
 
     def matching_sensors(self, name: Sensor.Name, connection: Sensor.Connection):
         for sensor in self.sensors:
