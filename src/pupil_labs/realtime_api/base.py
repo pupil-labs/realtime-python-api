@@ -25,7 +25,7 @@ class DeviceBase(abc.ABC):
         )
 
     def __repr__(self) -> str:
-        return f"Control(ip={self.address}, port={self.port}, dns={self.dns_name})"
+        return f"Device(ip={self.address}, port={self.port}, dns={self.dns_name})"
 
     @classmethod
     def from_discovered_device(cls, device: DiscoveredDeviceInfo) -> "DeviceBase":

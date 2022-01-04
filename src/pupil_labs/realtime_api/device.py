@@ -158,6 +158,3 @@ class Device(DeviceBase):
         exc_tb: T.Optional[types.TracebackType],
     ) -> None:
         await self.close()
-
-    def __repr__(self) -> str:
-        return f"Control({self.address}, {self.port})"
