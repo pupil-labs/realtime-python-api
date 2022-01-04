@@ -12,6 +12,9 @@ from .models import APIPath, Component, Event, Status, parse_component
 
 logger = logging.getLogger(__name__)
 
+UpdateCallback = T.Optional[T.Callable[[Component], None]]
+UpdateCallbackAsync = T.Optional[T.Callable[[Component], T.Awaitable[None]]]
+
 
 class DeviceError(Exception):
     pass
@@ -105,13 +108,18 @@ class Device(DeviceBase):
             return Event.from_dict(confirmation["result"])
 
     async def start_auto_update(
-        self, update_callback: T.Optional[T.Callable[[Component], None]] = None
+        self,
+        update_callback: UpdateCallback,
+        update_callback_async: UpdateCallbackAsync = None,
     ) -> None:
         if self._auto_update_task is not None:
             logger.debug("Auto-update already started!")
             return
         self._auto_update_task = asyncio.create_task(
-            self._auto_update(update_callback=update_callback)
+            self._auto_update(
+                update_callback=update_callback,
+                update_callback_async=update_callback_async,
+            )
         )
 
     async def stop_auto_update(self):
@@ -123,7 +131,8 @@ class Device(DeviceBase):
 
     async def _auto_update(
         self,
-        update_callback: T.Optional[T.Callable[[Component], T.Awaitable[None]]] = None,
+        update_callback: UpdateCallback = None,
+        update_callback_async: UpdateCallbackAsync = None,
     ) -> None:
         # Auto-reconnect, see
         # https://websockets.readthedocs.io/en/stable/reference/client.html#websockets.client.connect
@@ -135,7 +144,9 @@ class Device(DeviceBase):
                     component = parse_component(message_json)
                     logger.debug(f"{self} updated status for {component}")
                     if update_callback is not None:
-                        await update_callback(component)
+                        update_callback(component)
+                    if update_callback_async is not None:
+                        await update_callback_async(component)
             except websockets.ConnectionClosed:
                 continue
             except asyncio.CancelledError:
