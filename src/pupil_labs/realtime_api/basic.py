@@ -1,6 +1,7 @@
 import asyncio
 import threading
 import typing as T
+import weakref
 
 from .base import DeviceBase
 from .device import Device as _DeviceAsync
@@ -48,16 +49,22 @@ class Device(DeviceBase):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._status = self._get_status()
+        auto_update_started = threading.Event()
         self._auto_update_thread = threading.Thread(
             target=self._auto_update,
+            kwargs=dict(
+                device_weakref=weakref.ref(self),
+                auto_update_started_flag=auto_update_started,
+            ),
             name=f"{self} auto-update thread",
         )
         self._auto_update_thread.start()
+        auto_update_started.wait()
 
     def close(self) -> None:
         self._should_close_flag.set()
         self._auto_update_thread.join()
-    
+
     def __del__(self):
         self.close()
 
@@ -139,12 +146,20 @@ class Device(DeviceBase):
 
         return asyncio.run(_get_status())
 
-    def _auto_update(self):
+    @staticmethod
+    def _auto_update(
+        device_weakref: weakref.ReferenceType["Device"],
+        auto_update_started_flag: threading.Event,
+    ):
         async def _auto_update_until_closed():
-            async with _DeviceAsync.convert_from(self) as device:
-                self._should_close_flag = asyncio.Event()
-                await device.start_auto_update(self._status.update)
-                await self._should_close_flag.wait()
+            async with _DeviceAsync.convert_from(device_weakref()) as device:
+                should_close_flag = asyncio.Event()
+                device_weakref()._should_close_flag = should_close_flag
+                await device.start_auto_update(
+                    update_callback=device_weakref()._status.update
+                )
+                auto_update_started_flag.set()
+                await should_close_flag.wait()
                 await device.stop_auto_update()
 
         return asyncio.run(_auto_update_until_closed())

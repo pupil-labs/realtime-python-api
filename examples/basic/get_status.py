@@ -22,4 +22,5 @@ print(f"World sensor: connected={world.connected} url={world.url}")
 
 gaze = device._status.direct_gaze_sensor()
 print(f"Gaze sensor: connected={gaze.connected} url={gaze.url}")
-device.close()
+
+device.close()  # explicitly stop auto-update
