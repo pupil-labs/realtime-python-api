@@ -55,12 +55,12 @@ class Event(T.NamedTuple):
 
 class Phone(T.NamedTuple):
     battery_level: int
-    battery_state: str
+    battery_state: T.Literal["OK", "LOW", "CRITICAL"]
     device_id: str
     device_name: str
     ip: str
     memory: int
-    memory_state: str
+    memory_state: T.Literal["OK", "LOW", "CRITICAL"]
 
 
 class Hardware(T.NamedTuple):

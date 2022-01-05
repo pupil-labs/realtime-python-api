@@ -6,7 +6,7 @@ import weakref
 from .base import DeviceBase
 from .device import Device as _DeviceAsync
 from .discovery import discover_devices as _discover_devices_async
-from .models import Event, Status, DiscoveredDeviceInfo
+from .models import DiscoveredDeviceInfo, Event, Sensor, Status
 
 
 def discovered_devices(search_duration_seconds: float) -> T.List["Device"]:
@@ -67,6 +67,54 @@ class Device(DeviceBase):
 
     def __del__(self):
         self.close()
+
+    @property
+    def phone_name(self) -> str:
+        return self._status.phone.device_name
+
+    @property
+    def phone_id(self) -> str:
+        return self._status.phone.device_id
+
+    @property
+    def phone_ip(self) -> str:
+        return self._status.phone.ip
+
+    @property
+    def battery_level_percent(self) -> int:
+        return self._status.phone.battery_level
+
+    @property
+    def battery_state(self) -> T.Literal["OK", "LOW", "CRITICAL"]:
+        return self._status.phone.battery_level
+
+    @property
+    def memory_num_free_bytes(self) -> int:
+        return self._status.phone.memory
+
+    @property
+    def memory_state(self) -> T.Literal["OK", "LOW", "CRITICAL"]:
+        return self._status.phone.memory_state
+
+    @property
+    def version_glasses(self) -> str:
+        return self._status.hardware.version
+
+    @property
+    def serial_number_glasses(self) -> T.Union[str, None, T.Literal["default"]]:
+        """Returns ``None`` or ``"default"`` if no glasses are connected"""
+        return self._status.hardware.glasses_serial
+
+    @property
+    def serial_number_scene_cam(self) -> T.Optional[str]:
+        """Returns ``None`` if no scene camera is connected"""
+        return self._status.hardware.world_camera_serial
+
+    def world_sensor(self) -> T.Optional[Sensor]:
+        return self._status.direct_world_sensor()
+
+    def gaze_sensor(self) -> T.Optional[Sensor]:
+        return self._status.direct_gaze_sensor()
 
     def recording_start(self) -> str:
         """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.recording_start`
