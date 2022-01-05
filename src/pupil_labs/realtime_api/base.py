@@ -3,8 +3,12 @@ import typing as T
 
 from .models import APIPath, DiscoveredDeviceInfo
 
+DeviceType = T.TypeVar("DeviceType", bound="DeviceBase")
+
 
 class DeviceBase(abc.ABC):
+    """Abstract base class representing Realtime API host devices"""
+
     def __init__(
         self,
         address: str,
@@ -28,7 +32,9 @@ class DeviceBase(abc.ABC):
         return f"Device(ip={self.address}, port={self.port}, dns={self.dns_name})"
 
     @classmethod
-    def from_discovered_device(cls, device: DiscoveredDeviceInfo) -> "DeviceBase":
+    def from_discovered_device(
+        cls: T.Type[DeviceType], device: DiscoveredDeviceInfo
+    ) -> DeviceType:
         return cls(
             device.addresses[0],
             device.port,
@@ -37,7 +43,7 @@ class DeviceBase(abc.ABC):
         )
 
     @classmethod
-    def convert_from(cls, other: "DeviceBase") -> "DeviceBase":
+    def convert_from(cls: T.Type[DeviceType], other: DeviceType) -> DeviceType:
         return cls(
             other.address,
             other.port,

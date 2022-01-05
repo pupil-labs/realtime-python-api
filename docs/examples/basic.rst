@@ -23,7 +23,6 @@ Get Current Status
 
 .. literalinclude:: ../../examples/basic/get_status.py
    :language: python
-   :emphasize-lines: 11
    :linenos:
 
 

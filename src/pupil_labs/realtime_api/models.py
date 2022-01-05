@@ -28,7 +28,7 @@ class DiscoveredDeviceInfo(T.NamedTuple):
 
 
 class Event(T.NamedTuple):
-    name: str
+    name: T.Optional[str]
     recording_id: T.Optional[str]
     timestamp: int  # unix epoch, in nanoseconds
 
@@ -37,7 +37,7 @@ class Event(T.NamedTuple):
         return cls(
             name=dct.get("name"),
             recording_id=dct.get("recording_id"),
-            timestamp=dct.get("timestamp"),
+            timestamp=dct["timestamp"],
         )
 
     @property
@@ -79,9 +79,10 @@ class Sensor(T.NamedTuple):
     protocol: str = "rtsp"
 
     @property
-    def url(self) -> str:
+    def url(self) -> T.Optional[str]:
         if self.connected:
             return f"{self.protocol}://{self.ip}:{self.port}/?{self.params}"
+        return None
 
     class Name(enum.Enum):
         ANY = None
@@ -105,7 +106,7 @@ class Recording(T.NamedTuple):
         return self.rec_duration_ns / 1e9
 
 
-Component = T.Union[Phone, Hardware, Sensor, Recording]
+Component = T.Union[T.Type[Phone], T.Type[Hardware], T.Type[Sensor], T.Type[Recording]]
 ComponentRaw = T.Dict[str, T.Any]
 
 _model_class_map: T.Dict[str, Component] = {

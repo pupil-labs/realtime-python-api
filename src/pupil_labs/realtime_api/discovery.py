@@ -30,7 +30,7 @@ async def discover_devices(
         )
         try:
             while True:
-                if timeout_seconds <= 0.0:
+                if timeout_seconds is not None and timeout_seconds <= 0.0:
                     return
                 try:
                     t0 = time.perf_counter()

@@ -24,7 +24,7 @@ class Device(DeviceBase):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.session = aiohttp.ClientSession()
-        self._auto_update_task = None
+        self._auto_update_task: T.Optional[asyncio.Task] = None
 
     async def get_status(self) -> Status:
         """
@@ -94,7 +94,7 @@ class Device(DeviceBase):
         """
         :raises pupil_labs.realtime_api.device.DeviceError: if sending the event fails
         """
-        event = {"name": event_name}
+        event: T.Dict[str, T.Any] = {"name": event_name}
         if event_timestamp_unix_ns is not None:
             event["timestamp"] = event_timestamp_unix_ns
 

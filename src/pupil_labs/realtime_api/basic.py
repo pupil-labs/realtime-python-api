@@ -29,13 +29,15 @@ def discover_one_device(
 ) -> T.Optional["Device"]:
     """Search until one device is found."""
 
-    async def _return_first_device() -> DiscoveredDeviceInfo:
+    async def _return_first_device() -> T.Optional[DiscoveredDeviceInfo]:
         async for dev_info in _discover_devices_async(max_search_duration_seconds):
             return dev_info
+        return None
 
     dev_info = asyncio.run(_return_first_device())
     if dev_info is not None:
         return Device.from_discovered_device(dev_info)
+    return None
 
 
 class Device(DeviceBase):
@@ -49,6 +51,7 @@ class Device(DeviceBase):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._status = self._get_status()
+        self._should_close_flag: T.Optional[asyncio.Event] = None
         auto_update_started = threading.Event()
         self._auto_update_thread = threading.Thread(
             target=self._auto_update,
@@ -62,8 +65,9 @@ class Device(DeviceBase):
         auto_update_started.wait()
 
     def close(self) -> None:
-        self._should_close_flag.set()
-        self._auto_update_thread.join()
+        if self._should_close_flag:
+            self._should_close_flag.set()
+            self._auto_update_thread.join()
 
     def __del__(self):
         self.close()
@@ -86,7 +90,7 @@ class Device(DeviceBase):
 
     @property
     def battery_state(self) -> T.Literal["OK", "LOW", "CRITICAL"]:
-        return self._status.phone.battery_level
+        return self._status.phone.battery_state
 
     @property
     def memory_num_free_bytes(self) -> int:
