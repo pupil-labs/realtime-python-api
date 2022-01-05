@@ -46,11 +46,3 @@ Device Discovery
     :members:
     :undoc-members:
     :show-inheritance:
-
-Model Classes
-=============
-
-.. automodule:: pupil_labs.realtime_api.models
-    :members:
-    :undoc-members:
-    :show-inheritance:

@@ -6,4 +6,5 @@ API Reference
 
    basic
    async
+   models
    base
