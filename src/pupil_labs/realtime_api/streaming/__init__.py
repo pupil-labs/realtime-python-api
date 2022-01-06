@@ -1,3 +1,5 @@
+import typing as T
+
 from .base import (
     RTSPData,
     RTSPRawStreamer,
@@ -6,6 +8,9 @@ from .base import (
 )
 from .gaze import GazeData, RTSPGazeStreamer, receive_gaze_data
 from .video import RTSPVideoFrameStreamer, VideoFrame, receive_video_frames
+
+RTSPStreamerType = T.TypeVar("RTSPStreamerType", bound="RTSPRawStreamer")
+"""Type annotation for RTSP Streamer classes"""
 
 __all__ = [
     "GazeData",

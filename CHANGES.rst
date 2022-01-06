@@ -9,6 +9,8 @@ v0.0.5
 - Rename ``pupil_labs.realtime_api.control.Control`` to :py:class:`pupil_labs.realtime_api.device.Device`.
 - Rename ``pupil_labs.realtime_api.models.DiscoveredDevice`` to :py:class:`pupil_labs.realtime_api.models.DiscoveredDeviceInfo`.
 - Add sensor property accessors to :py:class:`pupil_labs.realtime_api.basic.Device`.
+- Add basic streaming with :py:class:`pupil_labs.realtime_api.basic.Device.read_scene_video_frame`
+  and :py:class:`pupil_labs.realtime_api.basic.Device.read_gaze_datum`.
 
 v0.0.4
 ######

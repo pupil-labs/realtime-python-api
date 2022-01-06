@@ -49,7 +49,7 @@ Gaze Data
 
 .. literalinclude:: ../../examples/async/stream_gaze.py
    :language: python
-   :emphasize-lines: 5,9-17
+   :emphasize-lines: 5,11,17-19
    :linenos:
 
 Scene Camera Video
@@ -57,7 +57,7 @@ Scene Camera Video
 
 .. literalinclude:: ../../examples/async/stream_scene_camera_video.py
    :language: python
-   :emphasize-lines: 7,11-18
+   :emphasize-lines: 7,13,19-21
    :linenos:
 
 .. _stream_video_with_overlayed_gaze_example:

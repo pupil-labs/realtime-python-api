@@ -1,12 +1,22 @@
 import asyncio
+from asyncio import events
+import collections
+import logging
 import threading
 import typing as T
 import weakref
+from pupil_labs.realtime_api.streaming.gaze import GazeData
+
+from pupil_labs.realtime_api.streaming.video import VideoFrame
 
 from .base import DeviceBase
 from .device import Device as _DeviceAsync
+from .streaming import RTSPGazeStreamer, RTSPVideoFrameStreamer
 from .discovery import discover_devices as _discover_devices_async
-from .models import DiscoveredDeviceInfo, Event, Sensor, Status
+from .models import Component, DiscoveredDeviceInfo, Event, Sensor, Status
+from pupil_labs.realtime_api import streaming
+
+logger = logging.getLogger(__name__)
 
 
 def discovered_devices(search_duration_seconds: float) -> T.List["Device"]:
@@ -51,22 +61,33 @@ class Device(DeviceBase):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._status = self._get_status()
-        self._should_close_flag: T.Optional[asyncio.Event] = None
-        auto_update_started = threading.Event()
+        self._event_should_close: T.Optional[asyncio.Event] = None
+
+        # streaming
+        self._most_recent_item = {
+            Sensor.Name.GAZE.value: collections.deque(maxlen=1),
+            Sensor.Name.WORLD.value: collections.deque(maxlen=1),
+        }
+        self._event_new_item = {
+            Sensor.Name.GAZE.value: threading.Event(),
+            Sensor.Name.WORLD.value: threading.Event(),
+        }
+
+        event_auto_update_started = threading.Event()
         self._auto_update_thread = threading.Thread(
             target=self._auto_update,
             kwargs=dict(
-                device_weakref=weakref.ref(self),
-                auto_update_started_flag=auto_update_started,
+                device_weakref=weakref.ref(self),  # weak ref to avoid cycling ref
+                auto_update_started_flag=event_auto_update_started,
             ),
             name=f"{self} auto-update thread",
         )
         self._auto_update_thread.start()
-        auto_update_started.wait()
+        event_auto_update_started.wait()
 
     def close(self) -> None:
-        if self._should_close_flag:
-            self._should_close_flag.set()
+        if self._event_should_close:
+            self._event_should_close.set()
             self._auto_update_thread.join()
 
     def __del__(self):
@@ -184,6 +205,29 @@ class Device(DeviceBase):
 
         return asyncio.run(_send_event())
 
+    def read_scene_video_frame(
+        self, timeout_seconds: T.Optional[float] = None
+    ) -> T.Optional[VideoFrame]:
+        return self._read_item(Sensor.Name.WORLD, timeout_seconds)
+
+    def read_gaze_datum(
+        self, timeout_seconds: T.Optional[float] = None
+    ) -> T.Optional[GazeData]:
+        return self._read_item(Sensor.Name.GAZE, timeout_seconds)
+
+    def _read_item(
+        self, sensor: Sensor.Name, timeout_seconds: T.Optional[float] = None
+    ) -> T.Optional[T.Union[VideoFrame, GazeData]]:
+        try:
+            return self._most_recent_item[sensor.value].popleft()
+        except IndexError:
+            # no cached frame available, waiting for new one
+            event_new_item = self._event_new_item[sensor.value]
+            event_new_item.clear()
+            if event_new_item.wait(timeout=timeout_seconds):
+                return self._most_recent_item[sensor.value].popleft()
+            return None
+
     def _get_status(self) -> Status:
         """Request the device's current status.
 
@@ -203,15 +247,67 @@ class Device(DeviceBase):
         device_weakref: weakref.ReferenceType["Device"],
         auto_update_started_flag: threading.Event,
     ):
+        stream_managers = {
+            Sensor.Name.GAZE.value: _StreamManager(device_weakref, RTSPGazeStreamer),
+            Sensor.Name.WORLD.value: _StreamManager(
+                device_weakref, RTSPVideoFrameStreamer
+            ),
+        }
+
+        async def _process_status_changes(changed: Component):
+            if (
+                isinstance(changed, Sensor)
+                and changed.conn_type == Sensor.Connection.DIRECT.value
+            ):
+                if changed.sensor in stream_managers:
+                    await stream_managers[changed.sensor].handle_sensor_update(changed)
+                else:
+                    logger.debug(f"Unhandled DIRECT sensor {changed.name}")
+
         async def _auto_update_until_closed():
             async with _DeviceAsync.convert_from(device_weakref()) as device:
                 should_close_flag = asyncio.Event()
-                device_weakref()._should_close_flag = should_close_flag
+                device_weakref()._event_should_close = should_close_flag
                 await device.auto_update_start(
-                    update_callback=device_weakref()._status.update
+                    update_callback=device_weakref()._status.update,
+                    update_callback_async=_process_status_changes,
                 )
                 auto_update_started_flag.set()
                 await should_close_flag.wait()
                 await device.auto_update_stop()
 
         return asyncio.run(_auto_update_until_closed())
+
+
+class _StreamManager:
+    def __init__(
+        self,
+        device_weakref: weakref.ReferenceType["Device"],
+        streaming_cls: T.Union[
+            T.Type[RTSPVideoFrameStreamer], T.Type[RTSPGazeStreamer]
+        ],
+    ) -> None:
+        self._device = device_weakref
+        self._streaming_cls = streaming_cls
+        self._streaming_task = None
+
+    async def handle_sensor_update(self, sensor: Sensor):
+        if self._streaming_task is not None:
+            logger.debug(
+                f"Cancelling prior streaming connection to "
+                f"{self._streaming_task.get_name()}"
+            )
+            self._streaming_task.cancel()
+            self._streaming_task = None
+
+        if sensor.connected:
+            logger.debug(f"Starting stream to {sensor}")
+            self._streaming_task = asyncio.create_task(
+                self.append_data_from_sensor_to_queue(sensor), name=str(sensor)
+            )
+
+    async def append_data_from_sensor_to_queue(self, sensor: Sensor):
+        async with self._streaming_cls(sensor.url, run_loop=True) as streamer:
+            async for item in streamer.receive():
+                self._device()._most_recent_item[sensor.sensor].append(item)
+                self._device()._event_new_item[sensor.sensor].set()

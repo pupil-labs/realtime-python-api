@@ -11,14 +11,16 @@ Code examples that use the :ref:`basic_api`.
 .. _basic_discovery_example:
 
 Find one or more devices
-------------------------
+========================
 
 .. literalinclude:: ../../examples/basic/discover_devices.py
    :language: python
    :linenos:
 
+Remote control devices
+======================
 
-Get Current Status
+Get current status
 ------------------
 
 .. literalinclude:: ../../examples/basic/get_status.py
@@ -26,7 +28,7 @@ Get Current Status
    :linenos:
 
 
-Send Event
+Send event
 ----------
 
 .. literalinclude:: ../../examples/basic/send_event.py
@@ -40,4 +42,24 @@ Start, stop and save, and cancel recordings
 .. literalinclude:: ../../examples/basic/start_stop_recordings.py
    :language: python
    :emphasize-lines: 13,20,23
+   :linenos:
+
+
+Streaming
+=========
+
+Gaze data
+---------
+
+.. literalinclude:: ../../examples/basic/stream_gaze.py
+   :language: python
+   :emphasize-lines: 12
+   :linenos:
+
+Scene camera video
+------------------
+
+.. literalinclude:: ../../examples/basic/stream_scene_camera_video.py
+   :language: python
+   :emphasize-lines: 15,16
    :linenos:
