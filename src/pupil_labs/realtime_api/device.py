@@ -7,13 +7,21 @@ import typing as T
 import aiohttp
 import websockets
 
+import pupil_labs
 from .base import DeviceBase
 from .models import APIPath, Component, Event, Status, parse_component
 
 logger = logging.getLogger(__name__)
 
-UpdateCallback = T.Optional[T.Callable[[Component], None]]
-UpdateCallbackAsync = T.Optional[T.Callable[[Component], T.Awaitable[None]]]
+UpdateCallback = T.Callable[['pupil_labs.realtime_api.models.Component'], None]
+
+"""Type annotation for synchronous update callbacks"""
+
+UpdateCallbackAsync = T.Callable[
+    ['pupil_labs.realtime_api.models.Component'], T.Awaitable[None]
+]
+
+"""Type annotation for asynchronous update callbacks"""
 
 
 class DeviceError(Exception):
@@ -107,10 +115,10 @@ class Device(DeviceBase):
                 raise DeviceError(response.status, confirmation["message"])
             return Event.from_dict(confirmation["result"])
 
-    async def start_auto_update(
+    async def auto_update_start(
         self,
-        update_callback: UpdateCallback,
-        update_callback_async: UpdateCallbackAsync = None,
+        update_callback: T.Optional[UpdateCallbackAsync] = None,
+        update_callback_async: T.Optional[UpdateCallbackAsync] = None,
     ) -> None:
         if self._auto_update_task is not None:
             logger.debug("Auto-update already started!")
@@ -122,7 +130,7 @@ class Device(DeviceBase):
             )
         )
 
-    async def stop_auto_update(self):
+    async def auto_update_stop(self):
         if self._auto_update_task is None:
             logger.debug("Auto-update is not running!")
             return
@@ -131,8 +139,8 @@ class Device(DeviceBase):
 
     async def _auto_update(
         self,
-        update_callback: UpdateCallback = None,
-        update_callback_async: UpdateCallbackAsync = None,
+        update_callback: T.Optional[UpdateCallback] = None,
+        update_callback_async: T.Optional[UpdateCallbackAsync] = None,
     ) -> None:
         # Auto-reconnect, see
         # https://websockets.readthedocs.io/en/stable/reference/client.html#websockets.client.connect
@@ -157,7 +165,7 @@ class Device(DeviceBase):
     async def close(self):
         await self.session.close()
         if self._auto_update_task is not None:
-            await self.stop_auto_update()
+            await self.auto_update_stop()
 
     async def __aenter__(self) -> "Device":
         return self

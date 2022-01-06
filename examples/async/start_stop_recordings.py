@@ -13,7 +13,7 @@ async def print_recording(component):
 async def main():
     async with Device("pi.local", 8080) as device:
         # get update when recording is fully started
-        await device.start_auto_update(update_callback=print_recording)
+        await device.auto_update_start(update_callback=print_recording)
         recording_id = await device.recording_start()
         print(f"Initiated recording with id {recording_id}")
         await asyncio.sleep(5)
@@ -21,7 +21,7 @@ async def main():
         await device.recording_stop_and_save()
         # await control.recording_cancel()  # uncomment to cancel recording
         await asyncio.sleep(2)  # wait for confirmation via auto-update
-        await device.stop_auto_update()
+        await device.auto_update_stop()
 
 
 if __name__ == "__main__":

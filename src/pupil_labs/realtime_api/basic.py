@@ -207,11 +207,11 @@ class Device(DeviceBase):
             async with _DeviceAsync.convert_from(device_weakref()) as device:
                 should_close_flag = asyncio.Event()
                 device_weakref()._should_close_flag = should_close_flag
-                await device.start_auto_update(
+                await device.auto_update_start(
                     update_callback=device_weakref()._status.update
                 )
                 auto_update_started_flag.set()
                 await should_close_flag.wait()
-                await device.stop_auto_update()
+                await device.auto_update_stop()
 
         return asyncio.run(_auto_update_until_closed())

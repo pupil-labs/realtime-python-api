@@ -106,10 +106,13 @@ class Recording(T.NamedTuple):
         return self.rec_duration_ns / 1e9
 
 
-Component = T.Union[T.Type[Phone], T.Type[Hardware], T.Type[Sensor], T.Type[Recording]]
-ComponentRaw = T.Dict[str, T.Any]
+Component = T.Union[Phone, Hardware, Sensor, Recording]
+"""Type annotation for :py:class:`Status <.Status>` components."""
 
-_model_class_map: T.Dict[str, Component] = {
+ComponentRaw = T.Dict[str, T.Any]
+"""Type annotation for json-parsed responses from the REST and Websocket API."""
+
+_model_class_map: T.Dict[str, T.Type[Component]] = {
     "Phone": Phone,
     "Hardware": Hardware,
     "Sensor": Sensor,

@@ -4,6 +4,10 @@ import typing as T
 from .models import APIPath, DiscoveredDeviceInfo
 
 DeviceType = T.TypeVar("DeviceType", bound="DeviceBase")
+"""
+Type annotation for concrete sub-classes of :py:class:`DeviceBase
+<pupil_labs.realtime_api.base.DeviceBase>`.
+"""
 
 
 class DeviceBase(abc.ABC):
