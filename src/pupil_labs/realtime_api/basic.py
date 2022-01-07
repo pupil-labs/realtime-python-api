@@ -4,15 +4,15 @@ import logging
 import threading
 import typing as T
 import weakref
-from pupil_labs.realtime_api.streaming.gaze import GazeData
 
+from pupil_labs.realtime_api.streaming.gaze import GazeData
 from pupil_labs.realtime_api.streaming.video import VideoFrame
 
 from .base import DeviceBase
 from .device import Device as _DeviceAsync
-from .streaming import RTSPGazeStreamer, RTSPVideoFrameStreamer
 from .discovery import discover_devices as _discover_devices_async
 from .models import Component, DiscoveredDeviceInfo, Event, Sensor, Status
+from .streaming import RTSPGazeStreamer, RTSPVideoFrameStreamer
 
 logger = logging.getLogger(__name__)
 

@@ -1,5 +1,7 @@
 import logging
+
 import cv2
+
 from pupil_labs.realtime_api.basic import discover_one_device
 
 logging.basicConfig(level=logging.WARNING)
