@@ -1,5 +1,4 @@
 import asyncio
-from asyncio import events
 import collections
 import logging
 import threading
@@ -14,9 +13,13 @@ from .device import Device as _DeviceAsync
 from .streaming import RTSPGazeStreamer, RTSPVideoFrameStreamer
 from .discovery import discover_devices as _discover_devices_async
 from .models import Component, DiscoveredDeviceInfo, Event, Sensor, Status
-from pupil_labs.realtime_api import streaming
 
 logger = logging.getLogger(__name__)
+
+
+class MatchedItem(T.NamedTuple):
+    frame: VideoFrame
+    gaze: GazeData
 
 
 def discovered_devices(search_duration_seconds: float) -> T.List["Device"]:
@@ -61,29 +64,7 @@ class Device(DeviceBase):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._status = self._get_status()
-        self._event_should_close: T.Optional[asyncio.Event] = None
-
-        # streaming
-        self._most_recent_item = {
-            Sensor.Name.GAZE.value: collections.deque(maxlen=1),
-            Sensor.Name.WORLD.value: collections.deque(maxlen=1),
-        }
-        self._event_new_item = {
-            Sensor.Name.GAZE.value: threading.Event(),
-            Sensor.Name.WORLD.value: threading.Event(),
-        }
-
-        event_auto_update_started = threading.Event()
-        self._auto_update_thread = threading.Thread(
-            target=self._auto_update,
-            kwargs=dict(
-                device_weakref=weakref.ref(self),  # weak ref to avoid cycling ref
-                auto_update_started_flag=event_auto_update_started,
-            ),
-            name=f"{self} auto-update thread",
-        )
-        self._auto_update_thread.start()
-        event_auto_update_started.wait()
+        self._start_background_worker()
 
     def close(self) -> None:
         if self._event_should_close:
@@ -208,25 +189,61 @@ class Device(DeviceBase):
     def read_scene_video_frame(
         self, timeout_seconds: T.Optional[float] = None
     ) -> T.Optional[VideoFrame]:
-        return self._read_item(Sensor.Name.WORLD, timeout_seconds)
+        return self._read_item(Sensor.Name.WORLD.value, timeout_seconds)
 
     def read_gaze_datum(
         self, timeout_seconds: T.Optional[float] = None
     ) -> T.Optional[GazeData]:
-        return self._read_item(Sensor.Name.GAZE, timeout_seconds)
+        return self._read_item(Sensor.Name.GAZE.value, timeout_seconds)
+
+    def read_matched_scene_video_frame_and_gaze(
+        self, timeout_seconds: T.Optional[float] = None
+    ) -> T.Optional[MatchedItem]:
+        return self._read_item(self._MATCHED_ITEM, timeout_seconds)
 
     def _read_item(
-        self, sensor: Sensor.Name, timeout_seconds: T.Optional[float] = None
+        self, sensor: str, timeout_seconds: T.Optional[float] = None
     ) -> T.Optional[T.Union[VideoFrame, GazeData]]:
         try:
-            return self._most_recent_item[sensor.value].popleft()
+            return self._most_recent_item[sensor].popleft()
         except IndexError:
             # no cached frame available, waiting for new one
-            event_new_item = self._event_new_item[sensor.value]
+            event_new_item = self._event_new_item[sensor]
             event_new_item.clear()
             if event_new_item.wait(timeout=timeout_seconds):
-                return self._most_recent_item[sensor.value].popleft()
+                return self._most_recent_item[sensor].popleft()
             return None
+
+    _MATCHED_ITEM = "matched_gaze_and_scene_video"
+
+    def _start_background_worker(self):
+        self._event_should_close: T.Optional[asyncio.Event] = None
+
+        # List of sensors that will
+        sensor_names = [
+            Sensor.Name.GAZE.value,
+            Sensor.Name.WORLD.value,
+            self._MATCHED_ITEM,
+        ]
+        self._most_recent_item = {
+            name: collections.deque(maxlen=1) for name in sensor_names
+        }
+        self._event_new_item = {name: threading.Event() for name in sensor_names}
+        # only cache 3-4 seconds worth of gaze data in case no scene camera is connected
+        GazeCacheType = T.Deque[T.Tuple[float, GazeData]]
+        self._cached_gaze_for_matching: GazeCacheType = collections.deque(maxlen=200)
+
+        event_auto_update_started = threading.Event()
+        self._auto_update_thread = threading.Thread(
+            target=self._auto_update,
+            kwargs=dict(
+                device_weakref=weakref.ref(self),  # weak ref to avoid cycling ref
+                auto_update_started_flag=event_auto_update_started,
+            ),
+            name=f"{self} auto-update thread",
+        )
+        self._auto_update_thread.start()
+        event_auto_update_started.wait()
 
     def _get_status(self) -> Status:
         """Request the device's current status.
@@ -307,7 +324,64 @@ class _StreamManager:
             )
 
     async def append_data_from_sensor_to_queue(self, sensor: Sensor):
-        async with self._streaming_cls(sensor.url, run_loop=True) as streamer:
+        self._device()._cached_gaze_for_matching.clear()
+        async with self._streaming_cls(
+            sensor.url, run_loop=True, log_level=logging.WARNING
+        ) as streamer:
             async for item in streamer.receive():
-                self._device()._most_recent_item[sensor.sensor].append(item)
-                self._device()._event_new_item[sensor.sensor].set()
+                device = self._device()
+                if device is None:
+                    logger.debug("Device reference does no longer exist")
+                    break
+                name = sensor.sensor
+                logger.debug(f"{self} received {item}")
+                device._most_recent_item[name].append(item)
+                if name == Sensor.Name.GAZE.value:
+                    device._cached_gaze_for_matching.append(
+                        (item.timestamp_unix_seconds, item)
+                    )
+                elif name == Sensor.Name.WORLD.value:
+                    try:
+                        logger.debug(
+                            f"Searching closest gaze datum in cache "
+                            f"(len={len(device._cached_gaze_for_matching)})..."
+                        )
+                        gaze = self._get_closest_item(
+                            device._cached_gaze_for_matching,
+                            item.timestamp_unix_seconds,
+                        )
+                    except IndexError:
+                        logger.debug("No cached gaze data available for matching")
+                    else:
+                        match_time_difference = (
+                            item.timestamp_unix_seconds - gaze.timestamp_unix_seconds
+                        )
+                        logger.debug(
+                            f"Found matching sample (time difference: "
+                            f"{match_time_difference:.3f} seconds)"
+                        )
+                        device._most_recent_item[Device._MATCHED_ITEM].append(
+                            MatchedItem(item, gaze)
+                        )
+                        device._event_new_item[Device._MATCHED_ITEM].set()
+                else:
+                    logger.error(f"Unhandled {item} for sensor {name}")
+
+                device._event_new_item[name].set()
+                del device  # remove Device reference
+
+    @staticmethod
+    def _get_closest_item(cache: T.Deque[GazeData], timestamp) -> GazeData:
+        item_ts, item = cache.popleft()
+        # assumes monotonically increasing timestamps
+        if item_ts > timestamp:
+            return item
+        while True:
+            try:
+                next_item_ts, next_item = cache.popleft()
+            except IndexError:
+                return item
+            else:
+                if next_item_ts > timestamp:
+                    return next_item
+                item_ts, item = next_item_ts, next_item

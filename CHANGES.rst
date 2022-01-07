@@ -1,3 +1,8 @@
+v0.0.6
+######
+- Add :py:meth:`pupil_labs.realtime_api.basic.Device.read_matched_scene_video_frame_and_gaze`
+- Add basic :ref:`stream_video_with_overlayed_gaze_example_basic` example
+
 v0.0.5
 ######
 - Add guides to documentation
