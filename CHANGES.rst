@@ -1,3 +1,7 @@
+v0.0.7
+######
+- Fix Python 3.7 and 3.8 compatibility
+
 v0.0.6
 ######
 - Add :py:meth:`pupil_labs.realtime_api.basic.Device.read_matched_scene_video_frame_and_gaze`

@@ -4,6 +4,12 @@ import enum
 import logging
 import typing as T
 
+try:
+    from typing import Literal
+except ImportError:
+    # FIXME: Remove when dropping py3.7 support
+    from typing_extensions import Literal
+
 logger = logging.getLogger(__name__)
 
 
@@ -55,12 +61,12 @@ class Event(T.NamedTuple):
 
 class Phone(T.NamedTuple):
     battery_level: int
-    battery_state: T.Literal["OK", "LOW", "CRITICAL"]
+    battery_state: Literal["OK", "LOW", "CRITICAL"]
     device_id: str
     device_name: str
     ip: str
     memory: int
-    memory_state: T.Literal["OK", "LOW", "CRITICAL"]
+    memory_state: Literal["OK", "LOW", "CRITICAL"]
 
 
 class Hardware(T.NamedTuple):

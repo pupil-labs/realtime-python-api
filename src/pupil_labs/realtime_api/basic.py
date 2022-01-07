@@ -5,6 +5,12 @@ import threading
 import typing as T
 import weakref
 
+try:
+    from typing import Literal
+except ImportError:
+    # FIXME: Remove when dropping py3.7 support
+    from typing_extensions import Literal
+
 from pupil_labs.realtime_api.streaming.gaze import GazeData
 from pupil_labs.realtime_api.streaming.video import VideoFrame
 
@@ -91,7 +97,7 @@ class Device(DeviceBase):
         return self._status.phone.battery_level
 
     @property
-    def battery_state(self) -> T.Literal["OK", "LOW", "CRITICAL"]:
+    def battery_state(self) -> Literal["OK", "LOW", "CRITICAL"]:
         return self._status.phone.battery_state
 
     @property
@@ -99,7 +105,7 @@ class Device(DeviceBase):
         return self._status.phone.memory
 
     @property
-    def memory_state(self) -> T.Literal["OK", "LOW", "CRITICAL"]:
+    def memory_state(self) -> Literal["OK", "LOW", "CRITICAL"]:
         return self._status.phone.memory_state
 
     @property
@@ -107,7 +113,7 @@ class Device(DeviceBase):
         return self._status.hardware.version
 
     @property
-    def serial_number_glasses(self) -> T.Union[str, None, T.Literal["default"]]:
+    def serial_number_glasses(self) -> T.Union[str, None, Literal["default"]]:
         """Returns ``None`` or ``"default"`` if no glasses are connected"""
         return self._status.hardware.glasses_serial
 
@@ -261,7 +267,7 @@ class Device(DeviceBase):
 
     @staticmethod
     def _auto_update(
-        device_weakref: weakref.ReferenceType["Device"],
+        device_weakref: weakref.ReferenceType,
         auto_update_started_flag: threading.Event,
     ):
         stream_managers = {
@@ -299,7 +305,7 @@ class Device(DeviceBase):
 class _StreamManager:
     def __init__(
         self,
-        device_weakref: weakref.ReferenceType["Device"],
+        device_weakref: weakref.ReferenceType,
         streaming_cls: T.Union[
             T.Type[RTSPVideoFrameStreamer], T.Type[RTSPGazeStreamer]
         ],

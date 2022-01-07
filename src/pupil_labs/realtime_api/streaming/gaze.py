@@ -2,7 +2,7 @@ import datetime
 import struct
 import typing as T
 
-from .base import RTSPData, RTSPRawStreamer, receive_raw_rtsp_data
+from .base import RTSPData, RTSPRawStreamer
 
 
 class GazeData(T.NamedTuple):

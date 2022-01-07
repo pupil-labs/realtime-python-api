@@ -10,7 +10,7 @@ import websockets
 import pupil_labs
 
 from .base import DeviceBase
-from .models import APIPath, Component, Event, Status, parse_component
+from .models import APIPath, Event, Status, parse_component
 
 logger = logging.getLogger(__name__)
 
