@@ -61,7 +61,7 @@ Scene camera video
 
 .. literalinclude:: ../../examples/basic/stream_scene_camera_video.py
    :language: python
-   :emphasize-lines: 15,16
+   :emphasize-lines: 23,24
    :linenos:
 
 .. _stream_video_with_overlayed_gaze_example_basic:
