@@ -1,25 +1,29 @@
+v0.0.8
+######
+- Rename ``pupil_labs.realtime_api.basic`` to :py:mod:`pupil_labs.realtime_api.simple`
+
 v0.0.7
 ######
 - Fix Python 3.7 and 3.8 compatibility
 
 v0.0.6
 ######
-- Add :py:meth:`pupil_labs.realtime_api.basic.Device.read_matched_scene_video_frame_and_gaze`
-- Add basic :ref:`stream_video_with_overlayed_gaze_example_basic` example
+- Add :py:meth:`pupil_labs.realtime_api.simple.Device.read_matched_scene_video_frame_and_gaze`
+- Add simple :ref:`stream_video_with_overlayed_gaze_example_simple` example
 
 v0.0.5
 ######
 - Add guides to documentation
 - Add :ref:`stream_video_with_overlayed_gaze_example` example
-- Add :py:mod:`pupil_labs.realtime_api.basic` API. See the :ref:`basic_examples`.
+- Add :py:mod:`pupil_labs.realtime_api.simple` API. See the :ref:`simple_examples`.
 - Rename ``pupil_labs.realtime_api.control`` to :py:mod:`pupil_labs.realtime_api.device`.
 - Rename ``pupil_labs.realtime_api.base.ControlBase`` to :py:class:`pupil_labs.realtime_api.base.DeviceBase`.
-- Rename ``pupil_labs.realtime_api.basic.Control`` to :py:class:`pupil_labs.realtime_api.basic.Device`.
+- Rename ``pupil_labs.realtime_api.simple.Control`` to :py:class:`pupil_labs.realtime_api.simple.Device`.
 - Rename ``pupil_labs.realtime_api.control.Control`` to :py:class:`pupil_labs.realtime_api.device.Device`.
 - Rename ``pupil_labs.realtime_api.models.DiscoveredDevice`` to :py:class:`pupil_labs.realtime_api.models.DiscoveredDeviceInfo`.
-- Add sensor property accessors to :py:class:`pupil_labs.realtime_api.basic.Device`.
-- Add basic streaming with :py:class:`pupil_labs.realtime_api.basic.Device.read_scene_video_frame`
-  and :py:class:`pupil_labs.realtime_api.basic.Device.read_gaze_datum`.
+- Add sensor property accessors to :py:class:`pupil_labs.realtime_api.simple.Device`.
+- Add simple streaming with :py:class:`pupil_labs.realtime_api.simple.Device.read_scene_video_frame`
+  and :py:class:`pupil_labs.realtime_api.simple.Device.read_gaze_datum`.
 
 v0.0.4
 ######

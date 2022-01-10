@@ -4,7 +4,7 @@ API Reference
 .. toctree::
    :maxdepth: 5
 
-   basic
+   simple
    async
    models
    base

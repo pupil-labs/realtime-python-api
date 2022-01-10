@@ -1,6 +1,6 @@
 import time
 
-from pupil_labs.realtime_api.basic import discover_one_device
+from pupil_labs.realtime_api.simple import discover_one_device
 
 # Look for devices. Returns as soon as it has found the first device.
 print("Looking for the next best device...")

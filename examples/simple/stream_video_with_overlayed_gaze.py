@@ -2,7 +2,7 @@ import logging
 
 import cv2
 
-from pupil_labs.realtime_api.basic import discover_one_device
+from pupil_labs.realtime_api.simple import discover_one_device
 
 logging.basicConfig(level=logging.WARNING)
 # suppress decoding warnings due to incomplete data transmissions
@@ -22,10 +22,17 @@ def main():
 
     try:
         while True:
-            frame = device.read_scene_video_frame()
+            frame, gaze = device.read_matched_scene_video_frame_and_gaze()
             bgr_buffer = frame.bgr_buffer()
-            draw_time(bgr_buffer, frame.datetime)
-            cv2.imshow("Scene Camera - Press ESC to quit", bgr_buffer)
+            cv2.circle(
+                bgr_buffer,
+                (int(gaze.x), int(gaze.y)),
+                radius=80,
+                color=(0, 0, 255),
+                thickness=15,
+            )
+
+            cv2.imshow("Scene camera with gaze overlay", bgr_buffer)
             if cv2.waitKey(1) & 0xFF == 27:
                 break
     except KeyboardInterrupt:
@@ -33,26 +40,6 @@ def main():
     finally:
         print("Stopping...")
         device.close()  # explicitly stop auto-update
-
-
-def draw_time(frame, time):
-    frame_txt_font_name = cv2.FONT_HERSHEY_SIMPLEX
-    frame_txt_font_scale = 1.0
-    frame_txt_thickness = 1
-
-    # first line: frame index
-    frame_txt = str(time)
-
-    cv2.putText(
-        frame,
-        frame_txt,
-        (20, 50),
-        frame_txt_font_name,
-        frame_txt_font_scale,
-        (255, 255, 255),
-        thickness=frame_txt_thickness,
-        lineType=cv2.LINE_8,
-    )
 
 
 if __name__ == "__main__":

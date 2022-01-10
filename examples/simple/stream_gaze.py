@@ -1,6 +1,4 @@
-import time
-
-from pupil_labs.realtime_api.basic import discover_one_device
+from pupil_labs.realtime_api.simple import discover_one_device
 
 # Look for devices. Returns as soon as it has found the first device.
 print("Looking for the next best device...")
@@ -9,7 +7,11 @@ if device is None:
     print("No device found.")
     raise SystemExit(-1)
 
-print(device.send_event("test event"))
-
-# send event with current timestamp
-print(device.send_event("test event", event_timestamp_unix_ns=time.time_ns()))
+try:
+    while True:
+        print(device.read_gaze_datum())
+except KeyboardInterrupt:
+    pass
+finally:
+    print("Stopping...")
+    device.close()  # explicitly stop auto-update

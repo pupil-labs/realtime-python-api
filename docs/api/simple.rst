@@ -1,11 +1,11 @@
-.. _basic_api:
+.. _simple_api:
 
-Basic API
-*********
+Simple API
+**********
 
 A simple, blocking API that wraps the :ref:`async_api`.
 
-.. automodule:: pupil_labs.realtime_api.basic
+.. automodule:: pupil_labs.realtime_api.simple
     :members:
     :undoc-members:
     :show-inheritance:
