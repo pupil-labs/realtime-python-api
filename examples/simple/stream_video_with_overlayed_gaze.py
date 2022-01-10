@@ -23,16 +23,15 @@ def main():
     try:
         while True:
             frame, gaze = device.receive_matched_scene_video_frame_and_gaze()
-            bgr_buffer = frame.bgr_buffer()
             cv2.circle(
-                bgr_buffer,
+                frame.bgr_pixels,
                 (int(gaze.x), int(gaze.y)),
                 radius=80,
                 color=(0, 0, 255),
                 thickness=15,
             )
 
-            cv2.imshow("Scene camera with gaze overlay", bgr_buffer)
+            cv2.imshow("Scene camera with gaze overlay", frame.bgr_pixels)
             if cv2.waitKey(1) & 0xFF == 27:
                 break
     except KeyboardInterrupt:

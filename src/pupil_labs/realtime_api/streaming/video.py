@@ -4,11 +4,15 @@ import logging
 import typing as T
 
 import av
+import nptyping as npt
 
 from .base import RTSPRawStreamer, SDPDataNotAvailableError
 from .nal_unit import extract_payload_from_nal_unit
 
 logger = logging.getLogger(__name__)
+
+BGRBuffer = npt.NDArray[(1080, 1088, 3), npt.UInt8]
+"""Type annotation for raw BGR image buffers of the scene camera"""
 
 
 class VideoFrame(T.NamedTuple):
@@ -26,7 +30,7 @@ class VideoFrame(T.NamedTuple):
     def to_ndarray(self, *args, **kwargs):
         return self.av_frame.to_ndarray(*args, **kwargs)
 
-    def bgr_buffer(self):
+    def bgr_buffer(self) -> BGRBuffer:
         return self.to_ndarray(format="bgr24")
 
 

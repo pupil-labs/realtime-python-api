@@ -1,5 +1,6 @@
 import asyncio
 import collections
+import datetime
 import logging
 import threading
 import typing as T
@@ -19,12 +20,30 @@ from .device import Device as _DeviceAsync
 from .discovery import discover_devices as _discover_devices_async
 from .models import Component, DiscoveredDeviceInfo, Event, Sensor, Status
 from .streaming import RTSPGazeStreamer, RTSPVideoFrameStreamer
+from .streaming.video import BGRBuffer
 
 logger = logging.getLogger(__name__)
 
 
+class SimpleVideoFrame(T.NamedTuple):
+    bgr_pixels: BGRBuffer
+    timestamp_unix_seconds: float
+
+    @classmethod
+    def from_video_frame(cls, vf: VideoFrame) -> "SimpleVideoFrame":
+        return cls(vf.bgr_buffer(), vf.timestamp_unix_seconds)
+
+    @property
+    def datetime(self):
+        return datetime.datetime.fromtimestamp(self.timestamp_unix_seconds)
+
+    @property
+    def timestamp_unix_ns(self):
+        return int(self.timestamp_unix_seconds * 1e9)
+
+
 class MatchedItem(T.NamedTuple):
-    frame: VideoFrame
+    frame: SimpleVideoFrame
     gaze: GazeData
 
 
@@ -194,7 +213,7 @@ class Device(DeviceBase):
 
     def receive_scene_video_frame(
         self, timeout_seconds: T.Optional[float] = None
-    ) -> T.Optional[VideoFrame]:
+    ) -> T.Optional[SimpleVideoFrame]:
         return self._receive_item(Sensor.Name.WORLD.value, timeout_seconds)
 
     def receive_gaze_datum(
@@ -340,6 +359,11 @@ class _StreamManager:
                     logger.debug("Device reference does no longer exist")
                     break
                 name = sensor.sensor
+
+                if name == Sensor.Name.WORLD.value:
+                    # convert to simple video frame
+                    item = SimpleVideoFrame.from_video_frame(item)
+
                 logger.debug(f"{self} received {item}")
                 device._most_recent_item[name].append(item)
                 if name == Sensor.Name.GAZE.value:

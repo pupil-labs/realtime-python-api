@@ -31,6 +31,13 @@ link_files = {
 
 # Be strict about any broken references:
 nitpicky = True
+nitpick_ignore = [
+    # FIXME: Add link to https://github.com/ramonhagenaars/nptyping as soon as
+    # they have public sphinx documentation
+    ("py:class", "nptyping.types._ndarray.NDArray"),
+    ("py:class", "nptyping.types._number.UInt"),
+]
+
 
 # Include Python intersphinx mapping to prevent failures
 # jaraco/skeleton#51

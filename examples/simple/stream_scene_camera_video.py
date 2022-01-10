@@ -22,10 +22,9 @@ def main():
 
     try:
         while True:
-            frame = device.receive_scene_video_frame()
-            bgr_buffer = frame.bgr_buffer()
-            draw_time(bgr_buffer, frame.datetime)
-            cv2.imshow("Scene Camera - Press ESC to quit", bgr_buffer)
+            bgr_pixels, frame_datetime = device.receive_scene_video_frame()
+            draw_time(bgr_pixels, frame_datetime)
+            cv2.imshow("Scene Camera - Press ESC to quit", bgr_pixels)
             if cv2.waitKey(1) & 0xFF == 27:
                 break
     except KeyboardInterrupt:
