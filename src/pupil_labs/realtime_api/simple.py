@@ -28,7 +28,7 @@ class MatchedItem(T.NamedTuple):
     gaze: GazeData
 
 
-def discovered_devices(search_duration_seconds: float) -> T.List["Device"]:
+def discover_devices(search_duration_seconds: float) -> T.List["Device"]:
     """Return all devices that could be found in the given search duration."""
 
     async def _collect_device_information() -> T.List[DiscoveredDeviceInfo]:
@@ -62,7 +62,7 @@ def discover_one_device(
 class Device(DeviceBase):
     """
     .. hint::
-        Use :py:func:`.discover_one_device` or :py:func:`.discovered_devices` instead of
+        Use :py:func:`.discover_one_device` or :py:func:`.discover_devices` instead of
         initializing the class manually. See the :ref:`simple_discovery_example` example.
 
     """

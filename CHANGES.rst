@@ -2,6 +2,8 @@ v0.0.8
 ######
 - Rename ``pupil_labs.realtime_api.basic`` to :py:mod:`pupil_labs.realtime_api.simple`
 - Rename ``pupil_labs.realtime_api.basic.Device.read_*()`` methods to ``Device.receive_*()``
+- Rename ``pupil_labs.realtime_api.simple.discovered_devices`` to :py:func:`pupil_labs.realtime_api.simple.discover_devices`
+
 
 v0.0.7
 ######
