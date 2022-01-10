@@ -9,7 +9,7 @@ if device is None:
 
 try:
     while True:
-        print(device.read_gaze_datum())
+        print(device.receive_gaze_datum())
 except KeyboardInterrupt:
     pass
 finally:

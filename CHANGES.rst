@@ -1,6 +1,7 @@
 v0.0.8
 ######
 - Rename ``pupil_labs.realtime_api.basic`` to :py:mod:`pupil_labs.realtime_api.simple`
+- Rename ``pupil_labs.realtime_api.basic.Device.read_*()`` methods to ``Device.receive_*()``
 
 v0.0.7
 ######
@@ -8,7 +9,7 @@ v0.0.7
 
 v0.0.6
 ######
-- Add :py:meth:`pupil_labs.realtime_api.simple.Device.read_matched_scene_video_frame_and_gaze`
+- Add :py:meth:`pupil_labs.realtime_api.simple.Device.receive_matched_scene_video_frame_and_gaze`
 - Add simple :ref:`stream_video_with_overlayed_gaze_example_simple` example
 
 v0.0.5
@@ -22,8 +23,8 @@ v0.0.5
 - Rename ``pupil_labs.realtime_api.control.Control`` to :py:class:`pupil_labs.realtime_api.device.Device`.
 - Rename ``pupil_labs.realtime_api.models.DiscoveredDevice`` to :py:class:`pupil_labs.realtime_api.models.DiscoveredDeviceInfo`.
 - Add sensor property accessors to :py:class:`pupil_labs.realtime_api.simple.Device`.
-- Add simple streaming with :py:class:`pupil_labs.realtime_api.simple.Device.read_scene_video_frame`
-  and :py:class:`pupil_labs.realtime_api.simple.Device.read_gaze_datum`.
+- Add simple streaming with :py:class:`pupil_labs.realtime_api.simple.Device.receive_scene_video_frame`
+  and :py:class:`pupil_labs.realtime_api.simple.Device.receive_gaze_datum`.
 
 v0.0.4
 ######

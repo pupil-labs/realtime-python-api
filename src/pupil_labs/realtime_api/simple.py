@@ -192,22 +192,22 @@ class Device(DeviceBase):
 
         return asyncio.run(_send_event())
 
-    def read_scene_video_frame(
+    def receive_scene_video_frame(
         self, timeout_seconds: T.Optional[float] = None
     ) -> T.Optional[VideoFrame]:
-        return self._read_item(Sensor.Name.WORLD.value, timeout_seconds)
+        return self._receive_item(Sensor.Name.WORLD.value, timeout_seconds)
 
-    def read_gaze_datum(
+    def receive_gaze_datum(
         self, timeout_seconds: T.Optional[float] = None
     ) -> T.Optional[GazeData]:
-        return self._read_item(Sensor.Name.GAZE.value, timeout_seconds)
+        return self._receive_item(Sensor.Name.GAZE.value, timeout_seconds)
 
-    def read_matched_scene_video_frame_and_gaze(
+    def receive_matched_scene_video_frame_and_gaze(
         self, timeout_seconds: T.Optional[float] = None
     ) -> T.Optional[MatchedItem]:
-        return self._read_item(self._MATCHED_ITEM, timeout_seconds)
+        return self._receive_item(self._MATCHED_ITEM, timeout_seconds)
 
-    def _read_item(
+    def _receive_item(
         self, sensor: str, timeout_seconds: T.Optional[float] = None
     ) -> T.Optional[T.Union[VideoFrame, GazeData]]:
         try:

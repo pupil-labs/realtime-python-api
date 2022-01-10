@@ -22,7 +22,7 @@ def main():
 
     try:
         while True:
-            frame, gaze = device.read_matched_scene_video_frame_and_gaze()
+            frame, gaze = device.receive_matched_scene_video_frame_and_gaze()
             bgr_buffer = frame.bgr_buffer()
             cv2.circle(
                 bgr_buffer,
