@@ -1,4 +1,5 @@
 import abc
+import logging
 import typing as T
 
 from .models import APIPath, DiscoveredDeviceInfo
@@ -19,11 +20,16 @@ class DeviceBase(abc.ABC):
         port: int,
         full_name: T.Optional[str] = None,
         dns_name: T.Optional[str] = None,
+        suppress_decoding_warnings: bool = True,
     ):
         self.address = address
         self.port = port
         self.full_name = full_name
         self.dns_name = dns_name
+        if suppress_decoding_warnings:
+            # suppress decoding warnings due to incomplete data transmissions
+            logging.getLogger("libav.h264").setLevel(logging.CRITICAL)
+            logging.getLogger("libav.swscaler").setLevel(logging.ERROR)
 
     def api_url(
         self, path: APIPath, protocol: str = "http", prefix: str = "/api"

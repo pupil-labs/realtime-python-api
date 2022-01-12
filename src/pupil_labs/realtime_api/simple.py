@@ -86,8 +86,21 @@ class Device(DeviceBase):
 
     """
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        address: str,
+        port: int,
+        full_name: T.Optional[str] = None,
+        dns_name: T.Optional[str] = None,
+        suppress_decoding_warnings: bool = True,
+    ) -> None:
+        super().__init__(
+            address,
+            port,
+            full_name=full_name,
+            dns_name=dns_name,
+            suppress_decoding_warnings=suppress_decoding_warnings,
+        )
         self._status = self._get_status()
         self._start_background_worker()
 

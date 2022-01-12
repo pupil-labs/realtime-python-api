@@ -1,13 +1,6 @@
-import logging
-
 import cv2
 
 from pupil_labs.realtime_api.simple import discover_one_device
-
-logging.basicConfig(level=logging.WARNING)
-# suppress decoding warnings due to incomplete data transmissions
-logging.getLogger("libav.h264").setLevel(logging.CRITICAL)
-logging.getLogger("libav.swscaler").setLevel(logging.ERROR)
 
 
 def main():
