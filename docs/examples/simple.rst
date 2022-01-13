@@ -1,7 +1,7 @@
 .. _simple_examples:
 
-Basic Examples
-**************
+Simple Examples
+***************
 
 Code examples that use the :ref:`simple_api`.
 
@@ -24,6 +24,18 @@ Get current status
 ------------------
 
 .. literalinclude:: ../../examples/simple/get_status.py
+   :language: python
+   :linenos:
+
+.. _simple_auto_update_example:
+
+Automatic status updates
+------------------------
+
+The :py:class:`Device <pupil_labs.realtime_api.simple.Device>` class monitors Companion
+device in the background and mirrors its state accordingly.
+
+.. literalinclude:: ../../examples/simple/status_auto_update.py
    :language: python
    :linenos:
 
