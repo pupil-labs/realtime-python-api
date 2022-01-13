@@ -1,7 +1,7 @@
 """pupil_labs.realtime_api"""
 
 # .version is generated on install via setuptools_scm, see pyproject.toml
-from .device import APIPath, Device, DeviceError
+from .device import APIPath, Device, DeviceError, StatusUpdateNotifier
 from .discovery import discover_devices
 from .streaming import (
     GazeData,
@@ -31,5 +31,6 @@ __all__ = [
     "RTSPGazeStreamer",
     "RTSPRawStreamer",
     "RTSPVideoFrameStreamer",
+    "StatusUpdateNotifier",
     "VideoFrame",
 ]

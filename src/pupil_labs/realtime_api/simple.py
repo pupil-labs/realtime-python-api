@@ -16,7 +16,7 @@ from pupil_labs.realtime_api.streaming.gaze import GazeData
 from pupil_labs.realtime_api.streaming.video import VideoFrame
 
 from .base import DeviceBase
-from .device import Device as _DeviceAsync
+from .device import Device as _DeviceAsync, StatusUpdateNotifier
 from .discovery import discover_devices as _discover_devices_async
 from .models import Component, DiscoveredDeviceInfo, Event, Sensor, Status
 from .streaming import RTSPGazeStreamer, RTSPVideoFrameStreamer
@@ -323,13 +323,17 @@ class Device(DeviceBase):
             async with _DeviceAsync.convert_from(device_weakref()) as device:
                 should_close_flag = asyncio.Event()
                 device_weakref()._event_should_close = should_close_flag
-                await device.auto_update_start(
-                    update_callback=device_weakref()._status.update,
-                    update_callback_async=_process_status_changes,
+                notifier = StatusUpdateNotifier(
+                    device,
+                    callbacks=[
+                        device_weakref()._status.update,
+                        _process_status_changes,
+                    ],
                 )
+                await notifier.receive_updates_start()
                 auto_update_started_flag.set()
                 await should_close_flag.wait()
-                await device.auto_update_stop()
+                await notifier.receive_updates_stop()
 
         return asyncio.run(_auto_update_until_closed())
 

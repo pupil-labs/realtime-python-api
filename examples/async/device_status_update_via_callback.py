@@ -1,27 +1,22 @@
 import asyncio
 import logging
 
-from pupil_labs.realtime_api import Device
+from pupil_labs.realtime_api import Device, StatusUpdateNotifier
 
 
 def print_component(component):
     print(component)
 
 
-async def async_callback_example(component):
-    await asyncio.sleep(0.1)
-
-
 async def main():
     async with Device("pi.local", 8080) as device:
         print("Starting auto-update")
-        await device.auto_update_start(
-            update_callback=print_component,
-            update_callback_async=async_callback_example,
-        )
+        # callbacks can be awaitable, too
+        notifier = StatusUpdateNotifier(device, callbacks=[print_component])
+        await notifier.receive_updates_start()
         await asyncio.sleep(20.0)
         print("Stopping auto-update")
-        await device.auto_update_stop()
+        await notifier.receive_updates_stop()
 
 
 if __name__ == "__main__":

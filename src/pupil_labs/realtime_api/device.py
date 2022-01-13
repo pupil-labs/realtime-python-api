@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import json
 import logging
 import types
@@ -9,20 +10,21 @@ import websockets
 
 import pupil_labs
 
-from .base import DeviceBase
-from .models import APIPath, Event, Status, parse_component
+from .base import DeviceBase, DeviceType
+from .models import APIPath, Component, Event, Status, parse_component
 
 logger = logging.getLogger(__name__)
 
-UpdateCallback = T.Callable[['pupil_labs.realtime_api.models.Component'], None]
-
+UpdateCallbackSync = T.Callable[['pupil_labs.realtime_api.models.Component'], None]
 """Type annotation for synchronous update callbacks"""
 
 UpdateCallbackAsync = T.Callable[
     ['pupil_labs.realtime_api.models.Component'], T.Awaitable[None]
 ]
-
 """Type annotation for asynchronous update callbacks"""
+
+UpdateCallback = T.Union[UpdateCallbackSync, UpdateCallbackAsync]
+"""Type annotation for synchronous and asynchronous callbacks"""
 
 
 class DeviceError(Exception):
@@ -33,7 +35,6 @@ class Device(DeviceBase):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.session = aiohttp.ClientSession()
-        self._auto_update_task: T.Optional[asyncio.Task] = None
 
     async def get_status(self) -> Status:
         """
@@ -46,6 +47,21 @@ class Device(DeviceBase):
             result = confirmation["result"]
             logger.debug(f"[{self}.get_status] Received status: {result}")
             return Status.from_dict(result)
+
+    async def status_updates(self) -> T.AsyncIterator[Component]:
+        # Auto-reconnect, see
+        # https://websockets.readthedocs.io/en/stable/reference/client.html#websockets.client.connect
+        websocket_status_endpoint = self.api_url(APIPath.STATUS, protocol="ws")
+        async for websocket in websockets.connect(websocket_status_endpoint):
+            try:
+                async for message_raw in websocket:
+                    message_json = json.loads(message_raw)
+                    component = parse_component(message_json)
+                    yield component
+            except websockets.ConnectionClosed:
+                continue
+            except asyncio.CancelledError:
+                break
 
     async def recording_start(self) -> str:
         """
@@ -116,57 +132,8 @@ class Device(DeviceBase):
                 raise DeviceError(response.status, confirmation["message"])
             return Event.from_dict(confirmation["result"])
 
-    async def auto_update_start(
-        self,
-        update_callback: T.Optional[UpdateCallbackAsync] = None,
-        update_callback_async: T.Optional[UpdateCallbackAsync] = None,
-    ) -> None:
-        if self._auto_update_task is not None:
-            logger.debug("Auto-update already started!")
-            return
-        self._auto_update_task = asyncio.create_task(
-            self._auto_update(
-                update_callback=update_callback,
-                update_callback_async=update_callback_async,
-            )
-        )
-
-    async def auto_update_stop(self):
-        if self._auto_update_task is None:
-            logger.debug("Auto-update is not running!")
-            return
-        self._auto_update_task.cancel()
-        self._auto_update_task = None
-
-    async def _auto_update(
-        self,
-        update_callback: T.Optional[UpdateCallback] = None,
-        update_callback_async: T.Optional[UpdateCallbackAsync] = None,
-    ) -> None:
-        # Auto-reconnect, see
-        # https://websockets.readthedocs.io/en/stable/reference/client.html#websockets.client.connect
-        websocket_status_endpoint = self.api_url(APIPath.STATUS, protocol="ws")
-        async for websocket in websockets.connect(websocket_status_endpoint):
-            try:
-                async for message_raw in websocket:
-                    message_json = json.loads(message_raw)
-                    component = parse_component(message_json)
-                    logger.debug(f"{self} updated status for {component}")
-                    if update_callback is not None:
-                        update_callback(component)
-                    if update_callback_async is not None:
-                        await update_callback_async(component)
-            except websockets.ConnectionClosed:
-                continue
-            except asyncio.CancelledError:
-                break
-            except Exception:
-                logger.exception("Exception during auto-update")
-
     async def close(self):
         await self.session.close()
-        if self._auto_update_task is not None:
-            await self.auto_update_stop()
 
     async def __aenter__(self) -> "Device":
         return self
@@ -178,3 +145,46 @@ class Device(DeviceBase):
         exc_tb: T.Optional[types.TracebackType],
     ) -> None:
         await self.close()
+
+
+class StatusUpdateNotifier:
+    def __init__(self, device: Device, callbacks: T.List[UpdateCallback]) -> None:
+        self._auto_update_task: T.Optional[asyncio.Task] = None
+        self._device = device
+        self._callbacks = callbacks
+
+    async def receive_updates_start(self) -> None:
+        if self._auto_update_task is not None:
+            logger.debug("Auto-update already started!")
+            return
+        self._auto_update_task = asyncio.create_task(self._auto_update())
+
+    async def receive_updates_stop(self):
+        if self._auto_update_task is None:
+            logger.debug("Auto-update is not running!")
+            return
+        self._auto_update_task.cancel()
+        try:
+            # wait for the task to be cancelled
+            await self._auto_update_task
+        except asyncio.CancelledError:
+            pass  # task has been successfully cancelled
+        self._auto_update_task = None
+
+    async def __aenter__(self):
+        await self.receive_updates_start()
+
+    async def __aexit__(
+        self,
+        exc_type: T.Optional[T.Type[BaseException]],
+        exc_val: T.Optional[BaseException],
+        exc_tb: T.Optional[types.TracebackType],
+    ):
+        await self.receive_updates_stop()
+
+    async def _auto_update(self) -> None:
+        async for changed in self._device.status_updates():
+            for callback in self._callbacks:
+                result = callback(changed)
+                if inspect.isawaitable(result):
+                    await result

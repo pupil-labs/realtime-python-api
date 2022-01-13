@@ -3,7 +3,8 @@ v0.0.8
 - Rename ``pupil_labs.realtime_api.basic`` to :py:mod:`pupil_labs.realtime_api.simple`
 - Rename ``pupil_labs.realtime_api.basic.Device.read_*()`` methods to ``Device.receive_*()``
 - Rename ``pupil_labs.realtime_api.simple.discovered_devices`` to :py:func:`pupil_labs.realtime_api.simple.discover_devices`
-
+- Add :py:func:`pupil_labs.realtime_api.device.Device.status_updates()` generator
+- Move status update callback functionality into :py:class:`pupil_labs.realtime_api.device.StatusUpdateNotifier`
 
 v0.0.7
 ######

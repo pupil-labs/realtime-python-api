@@ -12,17 +12,26 @@ Remote Control
 Get Current Status
 ------------------
 
-.. literalinclude:: ../../examples/async/get_status_single_request.py
+.. literalinclude:: ../../examples/async/device_status_get_current.py
    :language: python
    :emphasize-lines: 4,8-9
    :linenos:
 
-Auto-update Status
-------------------
+Status Updates
+--------------
 
-.. literalinclude:: ../../examples/async/get_status_auto_update.py
+Wait for status updates from the device
+
+.. literalinclude:: ../../examples/async/device_status_update_wait.py
    :language: python
-   :emphasize-lines: 7-8,11-12,18-21,24
+   :emphasize-lines: 11
+   :linenos:
+
+Get a callback when there is a new status updates
+
+.. literalinclude:: ../../examples/async/device_status_update_via_callback.py
+   :language: python
+   :emphasize-lines: 15,16,19
    :linenos:
 
 Send Event
