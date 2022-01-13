@@ -79,7 +79,7 @@ video frame with its temporally closest gaze point, and previews both in a windo
 
 .. literalinclude:: ../../examples/async/stream_video_with_overlayed_gaze.py
    :language: python
-   :emphasize-lines: 8,12-41
+   :emphasize-lines: 33,39,44,60,61
    :linenos:
 
 

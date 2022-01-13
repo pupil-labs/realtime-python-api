@@ -28,17 +28,23 @@ async def main():
         queue_video = asyncio.Queue()
         queue_gaze = asyncio.Queue()
 
-        await asyncio.gather(
+        process_video = asyncio.create_task(
             enqueue_sensor_data(
                 receive_video_frames(sensor_world.url, run_loop=restart_on_disconnect),
                 queue_video,
-            ),
+            )
+        )
+        process_gaze = asyncio.create_task(
             enqueue_sensor_data(
                 receive_gaze_data(sensor_gaze.url, run_loop=restart_on_disconnect),
                 queue_gaze,
-            ),
-            match_and_draw(queue_video, queue_gaze),
+            )
         )
+        try:
+            await match_and_draw(queue_video, queue_gaze)
+        finally:
+            process_video.cancel()
+            process_gaze.cancel()
 
 
 async def enqueue_sensor_data(sensor: T.AsyncIterator, queue: asyncio.Queue) -> None:
