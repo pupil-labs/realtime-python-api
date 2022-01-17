@@ -6,6 +6,7 @@ from pupil_labs.realtime_api.discovery import discover_devices
 
 
 async def main():
+    print("Waiting for device announcements... hit ctrl-c to stop.")
     async for device_info in discover_devices():
         print(device_info)
 

@@ -31,7 +31,7 @@ Get a callback when there is a new status updates
 
 .. literalinclude:: ../../examples/async/device_status_update_via_callback.py
    :language: python
-   :emphasize-lines: 15,16,19
+   :emphasize-lines: 16,17,20
    :linenos:
 
 Send Event
@@ -47,7 +47,7 @@ Start, stop and save, and cancel recordings
 
 .. literalinclude:: ../../examples/async/start_stop_recordings.py
    :language: python
-   :emphasize-lines: 17,21
+   :emphasize-lines: 18,22
    :linenos:
 
 Streaming
@@ -88,5 +88,5 @@ Device Discovery
 
 .. literalinclude:: ../../examples/async/discover_devices.py
    :language: python
-   :emphasize-lines: 5,9-10
+   :emphasize-lines: 10
    :linenos:

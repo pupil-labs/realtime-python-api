@@ -7,7 +7,7 @@ from pupil_labs.realtime_api import Device
 
 async def main():
     async with Device("pi.local", 8080) as device:
-        print("Waiting for status updates...")
+        print("Waiting for status updates... hit ctrl-c to stop.")
         async for changed in device.status_updates():
             print(changed)
 
