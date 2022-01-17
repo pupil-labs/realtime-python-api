@@ -141,6 +141,20 @@ class Device(DeviceBase):
         return self._status.phone.memory_state
 
     @property
+    def recording_recent_action(self) -> T.Optional[str]:
+        rec = self._status.recording
+        if rec is not None:
+            return self._status.recording.action
+        return None
+
+    @property
+    def recording_duration_seconds(self) -> T.Optional[float]:
+        rec = self._status.recording
+        if rec is not None:
+            return rec.rec_duration_seconds
+        return None
+
+    @property
     def version_glasses(self) -> str:
         return self._status.hardware.version
 
