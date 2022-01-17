@@ -14,10 +14,13 @@ recording_id = device.recording_start()
 print(f"Started recording with id {recording_id}")
 
 time.sleep(5)
-status = device.get_status()
 
-print(f"Recording is running for {status.recording.rec_duration_seconds} seconds")
 device.recording_stop_and_save()
 
 print("Recording stopped and saved")
 # device.recording_cancel()  # uncomment to cancel recording
+
+time.sleep(2)  # wait for auto-update to arrive
+print(f"Recording ran for {device.recording_duration_seconds} seconds")
+
+device.close()

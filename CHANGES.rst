@@ -6,7 +6,12 @@ v0.0.8
 - Add :py:func:`pupil_labs.realtime_api.device.Device.status_updates()` generator
 - Move status update callback functionality into :py:class:`pupil_labs.realtime_api.device.StatusUpdateNotifier`
 - Add :ref:`simple_auto_update_example` example
-- Add :py:func:`pupil_labs.realtime_api.simple.Device.recording_recent_action` and :py:func:`pupil_labs.realtime_api.simple.Device.recording_duration_seconds`
+- Add :py:attr:`pupil_labs.realtime_api.simple.Device.recording_recent_action` and :py:attr:`pupil_labs.realtime_api.simple.Device.recording_duration_seconds`
+- Add streaming control functionality to :py:class:`pupil_labs.realtime_api.simple.Device`
+    - :py:func:`pupil_labs.realtime_api.simple.Device.streaming_start`
+    - :py:func:`pupil_labs.realtime_api.simple.Device.streaming_stop`
+    - :py:attr:`pupil_labs.realtime_api.simple.Device.is_currently_streaming`
+- Fix examples
 
 v0.0.7
 ######

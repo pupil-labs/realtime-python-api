@@ -13,3 +13,5 @@ print(device.send_event("test event"))
 
 # send event with current timestamp
 print(device.send_event("test event", event_timestamp_unix_ns=time.time_ns()))
+
+device.close()

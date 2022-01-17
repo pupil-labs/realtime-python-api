@@ -59,8 +59,10 @@ class Device(DeviceBase):
                     component = parse_component(message_json)
                     yield component
             except websockets.ConnectionClosed:
+                logger.debug("Websocket connection closed. Reconnecting...")
                 continue
             except asyncio.CancelledError:
+                logger.debug("status_updates() cancelled")
                 break
 
     async def recording_start(self) -> str:

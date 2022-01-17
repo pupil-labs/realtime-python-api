@@ -7,6 +7,8 @@ if device is None:
     print("No device found.")
     raise SystemExit(-1)
 
+# device.streaming_start()  # optional, if not called, stream is started on-demand
+
 try:
     while True:
         print(device.receive_gaze_datum())
@@ -14,4 +16,5 @@ except KeyboardInterrupt:
     pass
 finally:
     print("Stopping...")
+    # device.streaming_stop()  # optional, if not called, stream is stopped on close
     device.close()  # explicitly stop auto-update

@@ -1,10 +1,13 @@
 import asyncio
 import collections
 import datetime
+import enum
 import logging
 import threading
 import typing as T
 import weakref
+from collections.abc import Iterable, Hashable, Mapping
+from types import MappingProxyType
 
 try:
     from typing import Literal
@@ -23,6 +26,8 @@ from .streaming import RTSPGazeStreamer, RTSPVideoFrameStreamer
 from .streaming.video import BGRBuffer
 
 logger = logging.getLogger(__name__)
+logger_receive_data = logging.getLogger(__name__ + ".Device.receive_data")
+logger_receive_data.setLevel(logging.INFO)
 
 
 class SimpleVideoFrame(T.NamedTuple):
@@ -92,6 +97,7 @@ class Device(DeviceBase):
         port: int,
         full_name: T.Optional[str] = None,
         dns_name: T.Optional[str] = None,
+        start_streaming_by_default: bool = False,
         suppress_decoding_warnings: bool = True,
     ) -> None:
         super().__init__(
@@ -102,15 +108,7 @@ class Device(DeviceBase):
             suppress_decoding_warnings=suppress_decoding_warnings,
         )
         self._status = self._get_status()
-        self._start_background_worker()
-
-    def close(self) -> None:
-        if self._event_should_close:
-            self._event_should_close.set()
-            self._auto_update_thread.join()
-
-    def __del__(self):
-        self.close()
+        self._start_background_worker(start_streaming_by_default)
 
     @property
     def phone_name(self) -> str:
@@ -256,6 +254,9 @@ class Device(DeviceBase):
     def _receive_item(
         self, sensor: str, timeout_seconds: T.Optional[float] = None
     ) -> T.Optional[T.Union[VideoFrame, GazeData]]:
+        if not self.is_currently_streaming:
+            logger.debug("receive_* called without being streaming")
+            self.streaming_start()
         try:
             return self._most_recent_item[sensor].popleft()
         except IndexError:
@@ -266,10 +267,44 @@ class Device(DeviceBase):
                 return self._most_recent_item[sensor].popleft()
             return None
 
+    def streaming_start(self):
+        self._streaming_trigger_action(self._EVENT.SHOULD_STREAMS_START)
+
+    def streaming_stop(self):
+        self._streaming_trigger_action(self._EVENT.SHOULD_STREAMS_STOP)
+
+    def _streaming_trigger_action(self, action):
+        if self._event_manager and self._background_loop:
+            logger.debug(f"Sending {action.name} trigger")
+            self._event_manager.trigger_threadsafe(action)
+        else:
+            logger.debug(f"Could send {action.name} trigger")
+
+    @property
+    def is_currently_streaming(self) -> bool:
+        is_streaming = self._is_streaming_flag.is_set()
+        return is_streaming
+
+    def close(self) -> None:
+        if self._event_manager:
+            if self.is_currently_streaming:
+                self.streaming_stop()
+            self._event_manager.trigger_threadsafe(self._EVENT.SHOULD_WORKER_CLOSE)
+            self._auto_update_thread.join()
+
+    def __del__(self):
+        self.close()
+
     _MATCHED_ITEM = "matched_gaze_and_scene_video"
 
-    def _start_background_worker(self):
-        self._event_should_close: T.Optional[asyncio.Event] = None
+    class _EVENT(enum.Enum):
+        SHOULD_WORKER_CLOSE = "should worker close"
+        SHOULD_STREAMS_START = "should stream start"
+        SHOULD_STREAMS_STOP = "should streams stop"
+
+    def _start_background_worker(self, start_streaming_by_default):
+        self._event_manager = None
+        self._background_loop = None
 
         # List of sensors that will
         sensor_names = [
@@ -286,11 +321,14 @@ class Device(DeviceBase):
         self._cached_gaze_for_matching: GazeCacheType = collections.deque(maxlen=200)
 
         event_auto_update_started = threading.Event()
+        self._is_streaming_flag = threading.Event()
         self._auto_update_thread = threading.Thread(
             target=self._auto_update,
             kwargs=dict(
                 device_weakref=weakref.ref(self),  # weak ref to avoid cycling ref
                 auto_update_started_flag=event_auto_update_started,
+                is_streaming_flag=self._is_streaming_flag,
+                start_streaming_by_default=start_streaming_by_default,
             ),
             name=f"{self} auto-update thread",
         )
@@ -315,11 +353,19 @@ class Device(DeviceBase):
     def _auto_update(
         device_weakref: weakref.ReferenceType,
         auto_update_started_flag: threading.Event,
+        is_streaming_flag: threading.Event,
+        start_streaming_by_default: bool = False,
     ):
         stream_managers = {
-            Sensor.Name.GAZE.value: _StreamManager(device_weakref, RTSPGazeStreamer),
+            Sensor.Name.GAZE.value: _StreamManager(
+                device_weakref,
+                RTSPGazeStreamer,
+                should_be_streaming_by_default=start_streaming_by_default,
+            ),
             Sensor.Name.WORLD.value: _StreamManager(
-                device_weakref, RTSPVideoFrameStreamer
+                device_weakref,
+                RTSPVideoFrameStreamer,
+                should_be_streaming_by_default=start_streaming_by_default,
             ),
         }
 
@@ -335,8 +381,10 @@ class Device(DeviceBase):
 
         async def _auto_update_until_closed():
             async with _DeviceAsync.convert_from(device_weakref()) as device:
-                should_close_flag = asyncio.Event()
-                device_weakref()._event_should_close = should_close_flag
+                event_manager = _AsyncEventManager(Device._EVENT)
+                device_weakref()._event_manager = event_manager
+                device_weakref()._background_loop = asyncio.get_running_loop()
+
                 notifier = StatusUpdateNotifier(
                     device,
                     callbacks=[
@@ -346,10 +394,75 @@ class Device(DeviceBase):
                 )
                 await notifier.receive_updates_start()
                 auto_update_started_flag.set()
-                await should_close_flag.wait()
+                if start_streaming_by_default:
+                    logger.debug("Streaming started by default")
+                    is_streaming_flag.set()
+
+                while True:
+                    logger.debug(f"Background worker waiting for event...")
+                    event = await event_manager.wait_for_first_event()
+                    logger.debug(f"Background worker received {event}")
+                    if event is Device._EVENT.SHOULD_WORKER_CLOSE:
+                        break
+                    elif event is Device._EVENT.SHOULD_STREAMS_START:
+                        for manager in stream_managers.values():
+                            manager.should_be_streaming = True
+                        is_streaming_flag.set()
+                        logger.debug("Streaming started")
+                    elif event is Device._EVENT.SHOULD_STREAMS_STOP:
+                        for manager in stream_managers.values():
+                            manager.should_be_streaming = False
+                        is_streaming_flag.clear()
+                        logger.debug("Streaming stopped")
+                    else:
+                        raise RuntimeError(f"Unhandled {event!r}")
+
                 await notifier.receive_updates_stop()
+                device_weakref()._event_manager = None
 
         return asyncio.run(_auto_update_until_closed())
+
+
+EventKey = T.TypeVar("EventKey", bound=Hashable, covariant=True)
+
+
+class _AsyncEventManager(T.Generic[EventKey]):
+    def __init__(
+        self,
+        names_to_register: Iterable[EventKey],
+    ) -> None:
+        self._loop = asyncio.get_running_loop()
+        self._events = {name: asyncio.Event() for name in names_to_register}
+        if not self._events:
+            raise ValueError("Requires at least one event key to register")
+
+    @property
+    def events(self) -> Mapping[EventKey, asyncio.Event]:
+        return MappingProxyType(self._events)
+
+    def trigger(self, name: EventKey) -> None:
+        self._events[name].set()
+
+    def trigger_threadsafe(
+        self, name: EventKey, loop: T.Optional[asyncio.AbstractEventLoop] = None
+    ) -> None:
+        loop = loop or self._loop
+        loop.call_soon_threadsafe(self.trigger, name)
+
+    async def wait_for_first_event(self) -> EventKey:
+        tasks = {
+            asyncio.create_task(event.wait()): name
+            for name, event in self._events.items()
+        }
+        done, pending = await asyncio.wait(
+            tasks.keys(), return_when=asyncio.FIRST_COMPLETED
+        )
+        for task in pending:
+            task.cancel()
+        first_task = next(iter(done))
+        event_key = tasks[first_task]
+        self._events[event_key].clear()
+        return event_key
 
 
 class _StreamManager:
@@ -359,25 +472,48 @@ class _StreamManager:
         streaming_cls: T.Union[
             T.Type[RTSPVideoFrameStreamer], T.Type[RTSPGazeStreamer]
         ],
+        should_be_streaming_by_default: bool = False,
     ) -> None:
         self._device = device_weakref
         self._streaming_cls = streaming_cls
         self._streaming_task = None
+        self._should_be_streaming = should_be_streaming_by_default
+        self._recent_sensor = None
+
+    @property
+    def should_be_streaming(self) -> bool:
+        return self._should_be_streaming
+
+    @should_be_streaming.setter
+    def should_be_streaming(self, should_stream: bool):
+        if self._should_be_streaming == should_stream:
+            return  # state is already set to desired value
+        self._should_be_streaming = should_stream
+        if should_stream and self._recent_sensor is not None:
+            self._start_streaming_task_if_intended(self._recent_sensor)
+        elif not should_stream:
+            self._stop_streaming_task_if_running()
 
     async def handle_sensor_update(self, sensor: Sensor):
+        self._stop_streaming_task_if_running()
+        self._start_streaming_task_if_intended(sensor)
+        self._recent_sensor = sensor
+
+    def _start_streaming_task_if_intended(self, sensor):
+        if sensor.connected and self.should_be_streaming:
+            logger_receive_data.info(f"Starting stream to {sensor}")
+            self._streaming_task = asyncio.create_task(
+                self.append_data_from_sensor_to_queue(sensor), name=str(sensor)
+            )
+
+    def _stop_streaming_task_if_running(self):
         if self._streaming_task is not None:
-            logger.debug(
+            logger_receive_data.info(
                 f"Cancelling prior streaming connection to "
                 f"{self._streaming_task.get_name()}"
             )
             self._streaming_task.cancel()
             self._streaming_task = None
-
-        if sensor.connected:
-            logger.debug(f"Starting stream to {sensor}")
-            self._streaming_task = asyncio.create_task(
-                self.append_data_from_sensor_to_queue(sensor), name=str(sensor)
-            )
 
     async def append_data_from_sensor_to_queue(self, sensor: Sensor):
         self._device()._cached_gaze_for_matching.clear()
@@ -387,7 +523,7 @@ class _StreamManager:
             async for item in streamer.receive():
                 device = self._device()
                 if device is None:
-                    logger.debug("Device reference does no longer exist")
+                    logger_receive_data.info("Device reference does no longer exist")
                     break
                 name = sensor.sensor
 
@@ -395,7 +531,7 @@ class _StreamManager:
                     # convert to simple video frame
                     item = SimpleVideoFrame.from_video_frame(item)
 
-                logger.debug(f"{self} received {item}")
+                logger_receive_data.debug(f"{self} received {item}")
                 device._most_recent_item[name].append(item)
                 if name == Sensor.Name.GAZE.value:
                     device._cached_gaze_for_matching.append(
@@ -403,7 +539,7 @@ class _StreamManager:
                     )
                 elif name == Sensor.Name.WORLD.value:
                     try:
-                        logger.debug(
+                        logger_receive_data.debug(
                             f"Searching closest gaze datum in cache "
                             f"(len={len(device._cached_gaze_for_matching)})..."
                         )
@@ -412,12 +548,14 @@ class _StreamManager:
                             item.timestamp_unix_seconds,
                         )
                     except IndexError:
-                        logger.debug("No cached gaze data available for matching")
+                        logger_receive_data.info(
+                            "No cached gaze data available for matching"
+                        )
                     else:
                         match_time_difference = (
                             item.timestamp_unix_seconds - gaze.timestamp_unix_seconds
                         )
-                        logger.debug(
+                        logger_receive_data.info(
                             f"Found matching sample (time difference: "
                             f"{match_time_difference:.3f} seconds)"
                         )

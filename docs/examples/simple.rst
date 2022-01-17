@@ -53,7 +53,7 @@ Start, stop and save, and cancel recordings
 
 .. literalinclude:: ../../examples/simple/start_stop_recordings.py
    :language: python
-   :emphasize-lines: 13,20,23
+   :emphasize-lines: 13,18,21,24
    :linenos:
 
 
@@ -65,7 +65,7 @@ Gaze data
 
 .. literalinclude:: ../../examples/simple/stream_gaze.py
    :language: python
-   :emphasize-lines: 12
+   :emphasize-lines: 10,14,19
    :linenos:
 
 Scene camera video
