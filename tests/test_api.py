@@ -7,6 +7,6 @@ def test_package_metadata() -> None:
 
 
 def test_import_basic() -> None:
-    import pupil_labs.realtime_api.basic as basic_module
+    import pupil_labs.realtime_api.simple as simple_module
 
-    assert basic_module
+    assert simple_module
