@@ -1,26 +1,35 @@
 import asyncio
 import contextlib
-import logging
 import typing as T
 
 import cv2
 
-from pupil_labs.realtime_api import Device, receive_gaze_data, receive_video_frames
+from pupil_labs.realtime_api import (
+    Device,
+    discover_one_device,
+    receive_gaze_data,
+    receive_video_frames,
+)
 
 
 async def main():
-    async with Device("pi.local", 8080) as device:
-        logging.info(f"Getting status information from {device}")
+    dev_info = await discover_one_device(max_search_duration_seconds=5)
+    if dev_info is None:
+        print("No device could be found! Abort")
+        return
+
+    async with Device.from_discovered_device(dev_info) as device:
+        print(f"Getting status information from {device}")
         status = await device.get_status()
 
         sensor_gaze = status.direct_gaze_sensor()
         if not sensor_gaze.connected:
-            logging.error(f"Gaze sensor is not connected to {device}")
+            print(f"Gaze sensor is not connected to {device}")
             return
 
         sensor_world = status.direct_world_sensor()
         if not sensor_world.connected:
-            logging.error(f"Scene camera is not connected to {device}")
+            print(f"Scene camera is not connected to {device}")
             return
 
         restart_on_disconnect = True
@@ -52,7 +61,7 @@ async def enqueue_sensor_data(sensor: T.AsyncIterator, queue: asyncio.Queue) -> 
         try:
             queue.put_nowait((datum.datetime, datum))
         except asyncio.QueueFull:
-            logging.warning(f"Queue is full, dropping {datum}")
+            print(f"Queue is full, dropping {datum}")
 
 
 async def match_and_draw(queue_video, queue_gaze):
@@ -102,6 +111,5 @@ async def get_closest_item(queue, timestamp):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
     with contextlib.suppress(KeyboardInterrupt):
         asyncio.run(main())

@@ -1,7 +1,6 @@
 import asyncio
-import logging
 
-from pupil_labs.realtime_api import Device, StatusUpdateNotifier
+from pupil_labs.realtime_api import Device, StatusUpdateNotifier, discover_one_device
 from pupil_labs.realtime_api.models import Recording
 
 
@@ -11,7 +10,12 @@ async def print_recording(component):
 
 
 async def main():
-    async with Device("pi.local", 8080) as device:
+    dev_info = await discover_one_device(max_search_duration_seconds=5)
+    if dev_info is None:
+        print("No device could be found! Abort")
+        return
+
+    async with Device.from_discovered_device(dev_info) as device:
         # get update when recording is fully started
         notifier = StatusUpdateNotifier(device, callbacks=[print_recording])
         await notifier.receive_updates_start()
@@ -26,5 +30,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
     asyncio.run(main())

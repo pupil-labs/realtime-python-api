@@ -14,7 +14,7 @@ Get Current Status
 
 .. literalinclude:: ../../examples/async/device_status_get_current.py
    :language: python
-   :emphasize-lines: 4,8-9
+   :emphasize-lines: 7,12,13
    :linenos:
 
 Status Updates
@@ -24,14 +24,14 @@ Wait for status updates from the device
 
 .. literalinclude:: ../../examples/async/device_status_update_wait.py
    :language: python
-   :emphasize-lines: 11
+   :emphasize-lines: 15
    :linenos:
 
 Get a callback when there is a new status updates
 
 .. literalinclude:: ../../examples/async/device_status_update_via_callback.py
    :language: python
-   :emphasize-lines: 16,17,20
+   :emphasize-lines: 20,21,24
    :linenos:
 
 Send Event
@@ -39,7 +39,7 @@ Send Event
 
 .. literalinclude:: ../../examples/async/send_event.py
    :language: python
-   :emphasize-lines: 11,15-17
+   :emphasize-lines: 15,19-21
    :linenos:
 
 Start, stop and save, and cancel recordings
@@ -47,7 +47,7 @@ Start, stop and save, and cancel recordings
 
 .. literalinclude:: ../../examples/async/start_stop_recordings.py
    :language: python
-   :emphasize-lines: 18,22
+   :emphasize-lines: 22,26
    :linenos:
 
 Streaming
@@ -58,7 +58,7 @@ Gaze Data
 
 .. literalinclude:: ../../examples/async/stream_gaze.py
    :language: python
-   :emphasize-lines: 5,11,17-19
+   :emphasize-lines: 15,21-23
    :linenos:
 
 Scene Camera Video
@@ -66,7 +66,7 @@ Scene Camera Video
 
 .. literalinclude:: ../../examples/async/stream_scene_camera_video.py
    :language: python
-   :emphasize-lines: 7,13,19-21
+   :emphasize-lines: 17,23-25
    :linenos:
 
 .. _stream_video_with_overlayed_gaze_example:
@@ -79,7 +79,7 @@ video frame with its temporally closest gaze point, and previews both in a windo
 
 .. literalinclude:: ../../examples/async/stream_video_with_overlayed_gaze.py
    :language: python
-   :emphasize-lines: 33,39,44,60,61
+   :emphasize-lines: 42,48,69,70
    :linenos:
 
 
@@ -88,5 +88,5 @@ Device Discovery
 
 .. literalinclude:: ../../examples/async/discover_devices.py
    :language: python
-   :emphasize-lines: 10
+   :emphasize-lines: 9,13
    :linenos:
