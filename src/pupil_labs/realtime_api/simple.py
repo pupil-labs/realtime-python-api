@@ -6,7 +6,7 @@ import logging
 import threading
 import typing as T
 import weakref
-from collections.abc import Iterable, Hashable, Mapping
+from collections.abc import Hashable, Iterable, Mapping
 from types import MappingProxyType
 
 try:
@@ -19,7 +19,8 @@ from pupil_labs.realtime_api.streaming.gaze import GazeData
 from pupil_labs.realtime_api.streaming.video import VideoFrame
 
 from .base import DeviceBase
-from .device import Device as _DeviceAsync, StatusUpdateNotifier
+from .device import Device as _DeviceAsync
+from .device import StatusUpdateNotifier
 from .discovery import discover_devices as _discover_devices_async
 from .models import Component, DiscoveredDeviceInfo, Event, Sensor, Status
 from .streaming import RTSPGazeStreamer, RTSPVideoFrameStreamer
