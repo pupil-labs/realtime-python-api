@@ -1,3 +1,8 @@
+v0.0.9
+######
+- Fix Python 3.7 compatibility
+- Add :py:func:`pupil_labs.realtime_api.discovery.discover_one_device`
+
 v0.0.8
 ######
 - Rename ``pupil_labs.realtime_api.basic`` to :py:mod:`pupil_labs.realtime_api.simple`

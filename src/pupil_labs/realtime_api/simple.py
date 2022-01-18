@@ -24,6 +24,7 @@ from .base import DeviceBase
 from .device import Device as _DeviceAsync
 from .device import StatusUpdateNotifier
 from .discovery import discover_devices as _discover_devices_async
+from .discovery import discover_one_device as _discover_one_device_async
 from .models import Component, DiscoveredDeviceInfo, Event, Sensor, Status
 from .streaming import RTSPGazeStreamer, RTSPVideoFrameStreamer
 from .streaming.video import BGRBuffer
@@ -38,7 +39,7 @@ class SimpleVideoFrame(T.NamedTuple):
     timestamp_unix_seconds: float
 
     @classmethod
-    def from_video_frame(cls, vf: VideoFrame) -> "SimpleVideoFrame":
+    def from_video_frame(cls, vf: VideoFrame) -> SimpleVideoFrame:
         return cls(vf.bgr_buffer(), vf.timestamp_unix_seconds)
 
     @property
@@ -55,7 +56,7 @@ class MatchedItem(T.NamedTuple):
     gaze: GazeData
 
 
-def discover_devices(search_duration_seconds: float) -> T.List["Device"]:
+def discover_devices(search_duration_seconds: float) -> T.List[Device]:
     """Return all devices that could be found in the given search duration."""
 
     async def _collect_device_information() -> T.List[DiscoveredDeviceInfo]:
@@ -72,15 +73,9 @@ def discover_devices(search_duration_seconds: float) -> T.List["Device"]:
 
 def discover_one_device(
     max_search_duration_seconds: T.Optional[float],
-) -> T.Optional["Device"]:
+) -> T.Optional[Device]:
     """Search until one device is found."""
-
-    async def _return_first_device() -> T.Optional[DiscoveredDeviceInfo]:
-        async for dev_info in _discover_devices_async(max_search_duration_seconds):
-            return dev_info
-        return None
-
-    dev_info = asyncio.run(_return_first_device())
+    dev_info = asyncio.run(_discover_one_device_async(max_search_duration_seconds))
     if dev_info is not None:
         return Device.from_discovered_device(dev_info)
     return None

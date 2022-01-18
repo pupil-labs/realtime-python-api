@@ -43,6 +43,15 @@ async def discover_devices(
             await browser.async_cancel()
 
 
+async def discover_one_device(
+    max_search_duration_seconds: T.Optional[float] = None,
+) -> T.Optional[DiscoveredDeviceInfo]:
+    """Search until one device is found."""
+    async for dev_info in discover_devices(max_search_duration_seconds):
+        return dev_info
+    return None
+
+
 def is_valid_service_name(name: str) -> bool:
     return name.split(":")[0] == "PI monitor"
 

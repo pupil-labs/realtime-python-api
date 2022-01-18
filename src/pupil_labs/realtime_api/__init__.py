@@ -2,7 +2,7 @@
 
 # .version is generated on install via setuptools_scm, see pyproject.toml
 from .device import APIPath, Device, DeviceError, StatusUpdateNotifier
-from .discovery import discover_devices
+from .discovery import discover_devices, discover_one_device
 from .streaming import (
     GazeData,
     RTSPData,
@@ -23,6 +23,7 @@ __all__ = [
     "Device",
     "DeviceError",
     "discover_devices",
+    "discover_one_device",
     "GazeData",
     "receive_gaze_data",
     "receive_raw_rtsp_data",
