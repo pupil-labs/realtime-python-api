@@ -1,6 +1,7 @@
 v0.0.10
 #######
 - Remove ``pupil_labs.realtime_api.simple.Device.recording_recent_action`` and ``pupil_labs.realtime_api.simple.Device.recording_duration_seconds``
+- Fix Python 3.7 incompatiblity due to using the ``name`` argument in :py:func:`asyncio.create_task` (added in Python 3.8)
 
 v0.0.9
 ######

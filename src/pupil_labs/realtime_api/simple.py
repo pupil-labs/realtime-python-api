@@ -462,7 +462,7 @@ class _StreamManager:
         self._streaming_cls = streaming_cls
         self._streaming_task = None
         self._should_be_streaming = should_be_streaming_by_default
-        self._recent_sensor = None
+        self._recent_sensor: T.Optional[Sensor] = None
 
     @property
     def should_be_streaming(self) -> bool:
@@ -487,14 +487,14 @@ class _StreamManager:
         if sensor.connected and self.should_be_streaming:
             logger_receive_data.info(f"Starting stream to {sensor}")
             self._streaming_task = asyncio.create_task(
-                self.append_data_from_sensor_to_queue(sensor), name=str(sensor)
+                self.append_data_from_sensor_to_queue(sensor)
             )
 
     def _stop_streaming_task_if_running(self):
         if self._streaming_task is not None:
             logger_receive_data.info(
                 f"Cancelling prior streaming connection to "
-                f"{self._streaming_task.get_name()}"
+                f"{self._recent_sensor.sensor}"
             )
             self._streaming_task.cancel()
             self._streaming_task = None
