@@ -53,7 +53,7 @@ Start, stop and save, and cancel recordings
 
 .. literalinclude:: ../../examples/simple/start_stop_recordings.py
    :language: python
-   :emphasize-lines: 13,18,21,24
+   :emphasize-lines: 13,18,21
    :linenos:
 
 
