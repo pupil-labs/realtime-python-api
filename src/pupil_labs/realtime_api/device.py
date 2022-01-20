@@ -8,9 +8,9 @@ import typing as T
 import aiohttp
 import websockets
 
-import pupil_labs
+import pupil_labs  # noqa: F401
 
-from .base import DeviceBase, DeviceType
+from .base import DeviceBase
 from .models import APIPath, Component, Event, Status, parse_component
 
 logger = logging.getLogger(__name__)

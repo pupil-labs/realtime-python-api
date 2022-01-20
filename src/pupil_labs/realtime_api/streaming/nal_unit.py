@@ -7,7 +7,8 @@ def extract_payload_from_nal_unit(unit: T.ByteString) -> T.ByteString:
     - prepend NAL unit start code to payload if necessary
     - handle fragemented units (of type FU-A)
 
-    Inspired by https://github.com/runtheops/rtsp-rtp/blob/master/transport/primitives/nal_unit.py
+    Inspired by
+    https://github.com/runtheops/rtsp-rtp/blob/master/transport/primitives/nal_unit.py
     Rewritten due to licensing issues.
     """
     start_code = b"\x00\x00\x00\x01"

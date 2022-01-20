@@ -32,10 +32,12 @@ async def receive_raw_rtsp_data(url, *args, **kwargs) -> T.AsyncIterator[RTSPDat
 
 
 class RTSPRawStreamer:
+    """Forwards all arguments to
+    `aiortsp.rtsp.reader.RTSPReader
+    <https://github.com/marss/aiortsp/blob/master/aiortsp/rtsp/reader.py#L31-L32>`_
+    """
+
     def __init__(self, *args, **kwargs):
-        """Forwards all arguments to
-        `aiortsp.rtsp.reader.RTSPReader <https://github.com/marss/aiortsp/blob/master/aiortsp/rtsp/reader.py#L31-L32>`_
-        """
         self._reader = _WallclockRTSPReader(*args, **kwargs)
         self._encoding = None
 
