@@ -22,10 +22,14 @@ class DeviceBase(abc.ABC):
         dns_name: T.Optional[str] = None,
         suppress_decoding_warnings: bool = True,
     ):
-        self.address = address
-        self.port = port
-        self.full_name = full_name
-        self.dns_name = dns_name
+        self.address: str = address
+        """REST API server address"""
+        self.port: int = port
+        """REST API server port"""
+        self.full_name: T.Optional[str] = full_name
+        """Full service discovery name"""
+        self.dns_name: T.Optional[str] = dns_name
+        """REST API server DNS name, e.g. ``pi.local.``"""
         if suppress_decoding_warnings:
             # suppress decoding warnings due to incomplete data transmissions
             logging.getLogger("libav.h264").setLevel(logging.CRITICAL)
