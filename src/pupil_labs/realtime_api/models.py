@@ -28,9 +28,15 @@ class APIPath(enum.Enum):
 
 class DiscoveredDeviceInfo(T.NamedTuple):
     name: str
+    """Full mDNS service name.
+    Follows ``'PI monitor:<phone name>:<hardware id>._http._tcp.local.'`` naming pattern
+    """
     server: str
+    "e.g. ``'pi.local.'``"
     port: int
+    "e.g. `8080`"
     addresses: T.List[str]
+    "e.g. ``['192.168.0.2']``"
 
 
 class Event(T.NamedTuple):
