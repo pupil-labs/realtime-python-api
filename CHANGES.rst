@@ -1,3 +1,7 @@
+v0.0.11
+#######
+- Add :py:class:`pupil_labs.realtime_api.models.NetworkDevice`
+
 v0.0.10
 #######
 - Remove ``pupil_labs.realtime_api.simple.Device.recording_recent_action`` and ``pupil_labs.realtime_api.simple.Device.recording_duration_seconds``

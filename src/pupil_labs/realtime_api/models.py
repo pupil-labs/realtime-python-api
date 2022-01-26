@@ -75,6 +75,25 @@ class Hardware(T.NamedTuple):
     world_camera_serial: str = "unknown"
 
 
+class NetworkDevice(T.NamedTuple):
+    """Information about devices discovered by the host device, not the client.
+
+    .. note::
+        This class represents device information made available via the websocket update
+        connection by the host device (exposed via
+        :py:meth:`pupil_labs.realtime_api.device.Device.status_updates`). Devices
+        discovered directly by this library are represented as
+        :py:class:`.DiscoveredDeviceInfo` and returned by
+        :py:func:`pupil_labs.realtime_api.discovery.discover_devices` and
+        :py:func:`pupil_labs.realtime_api.discovery.discover_one_device`.
+    """
+
+    ip: str
+    device_id: str
+    device_name: str
+    connected: bool
+
+
 class Sensor(T.NamedTuple):
     sensor: str
     conn_type: str
@@ -112,7 +131,7 @@ class Recording(T.NamedTuple):
         return self.rec_duration_ns / 1e9
 
 
-Component = T.Union[Phone, Hardware, Sensor, Recording]
+Component = T.Union[Phone, Hardware, Sensor, Recording, NetworkDevice]
 """Type annotation for :py:class:`Status <.Status>` components."""
 
 ComponentRaw = T.Dict[str, T.Any]
@@ -124,6 +143,7 @@ _model_class_map: T.Dict[str, T.Type[Component]] = {
     "Sensor": Sensor,
     "Recording": Recording,
     "Event": Event,
+    "NetworkDevice": NetworkDevice,
 }
 
 
