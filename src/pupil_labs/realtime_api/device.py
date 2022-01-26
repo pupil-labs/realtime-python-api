@@ -11,7 +11,14 @@ import websockets
 import pupil_labs  # noqa: F401
 
 from .base import DeviceBase
-from .models import APIPath, Component, Event, Status, parse_component
+from .models import (
+    APIPath,
+    Component,
+    Event,
+    Status,
+    UnknownComponentError,
+    parse_component,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +63,11 @@ class Device(DeviceBase):
             try:
                 async for message_raw in websocket:
                     message_json = json.loads(message_raw)
-                    component = parse_component(message_json)
+                    try:
+                        component = parse_component(message_json)
+                    except UnknownComponentError:
+                        logger.warning(f"Dropping unknown component: {component}")
+                        continue
                     yield component
             except websockets.ConnectionClosed:
                 logger.debug("Websocket connection closed. Reconnecting...")

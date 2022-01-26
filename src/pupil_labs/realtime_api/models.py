@@ -157,14 +157,28 @@ def _init_cls_with_annotated_fields_only(cls, d: T.Dict[str, T.Any]):
     return cls(**{attr: d[attr] for attr in cls.__annotations__})
 
 
+class UnknownComponentError(ValueError):
+    pass
+
+
 def parse_component(raw: ComponentRaw) -> Component:
+    """Initialize an explicitly modelled representation
+    (:py:obj:`pupil_labs.realtime_api.models.Component`) from the json-parsed dictionary
+    (:py:obj:`pupil_labs.realtime_api.models.ComponentRaw`) received from the API.
+
+    :raises UnknownComponentError: if the component name cannot be mapped to an
+        explicitly modelled class or the contained data does not fit the modelled
+        fields.
+    """
     model_name = raw["model"]
     data = raw["data"]
-    model_class = _model_class_map[model_name]
     try:
+        model_class = _model_class_map[model_name]
         return _init_cls_with_annotated_fields_only(model_class, data)
     except KeyError as err:
-        raise ValueError(f"Could not generate {model_class} from {data}") from err
+        raise UnknownComponentError(
+            f"Could not generate component for {model_name} from {data}"
+        ) from err
 
 
 @dataclasses.dataclass
@@ -183,8 +197,8 @@ class Status:
         for dct in status_json_result:
             try:
                 component = parse_component(dct)
-            except KeyError:
-                logger.debug(f"Unknown component: {component}")
+            except UnknownComponentError:
+                logger.warning(f"Dropping unknown component: {component}")
                 continue
             if isinstance(component, Phone):
                 phone = component
@@ -195,7 +209,7 @@ class Status:
             elif isinstance(component, Recording):
                 recording = component
             else:
-                logger.debug(f"Unknown model class: {type(component).__name__}")
+                logger.warning(f"Unknown model class: {type(component).__name__}")
         sensors.sort(key=lambda s: (not s.connected, s.conn_type, s.sensor))
         return cls(phone, hardware, sensors, recording)
 

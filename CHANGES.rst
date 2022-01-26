@@ -1,3 +1,11 @@
+v0.0.12
+#######
+- Add :py:exc:`pupil_labs.realtime_api.models.UnknownComponentError` and let
+  :py:func:`pupil_labs.realtime_api.models.parse_component` raise it when a component
+  could not be parsed/mapped
+- Drop unknown components in :py:meth:`pupil_labs.realtime_api.models.Status.from_dict`
+  and :py:func:`pupil_labs.realtime_api.device.Device.status_updates`, and warn about it
+
 v0.0.11
 #######
 - Add :py:class:`pupil_labs.realtime_api.models.NetworkDevice`
