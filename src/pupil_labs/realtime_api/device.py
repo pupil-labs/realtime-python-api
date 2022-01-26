@@ -34,7 +34,7 @@ class DeviceError(Exception):
 class Device(DeviceBase):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.session = aiohttp.ClientSession()
+        self._create_client_session()
 
     async def get_status(self) -> Status:
         """
@@ -136,8 +136,11 @@ class Device(DeviceBase):
 
     async def close(self):
         await self.session.close()
+        self.session = None
 
     async def __aenter__(self) -> "Device":
+        if self.session is None:
+            self._create_client_session()
         return self
 
     async def __aexit__(
@@ -147,6 +150,9 @@ class Device(DeviceBase):
         exc_tb: T.Optional[types.TracebackType],
     ) -> None:
         await self.close()
+
+    def _create_client_session(self):
+        self.session = aiohttp.ClientSession()
 
 
 class StatusUpdateNotifier:

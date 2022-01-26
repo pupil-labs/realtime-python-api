@@ -1,6 +1,7 @@
 v0.0.11
 #######
 - Add :py:class:`pupil_labs.realtime_api.models.NetworkDevice`
+- Create a new HTTP client session if necessary on :py:class:`pupil_labs.realtime_api.device.Device`'s ``__aenter__`` method
 
 v0.0.10
 #######
