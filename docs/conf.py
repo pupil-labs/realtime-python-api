@@ -46,6 +46,7 @@ extensions += ['sphinx.ext.intersphinx']
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'av': ('https://pyav.org/docs/stable', None),
+    'zeroconf': ('https://python-zeroconf.readthedocs.io/en/stable/', None),
 }
 
 html_theme = 'furo'
