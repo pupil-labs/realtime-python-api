@@ -2,7 +2,7 @@
 
 # .version is generated on install via setuptools_scm, see pyproject.toml
 from .device import APIPath, Device, DeviceError, StatusUpdateNotifier
-from .discovery import discover_devices, Network
+from .discovery import Network, discover_devices
 from .streaming import (
     GazeData,
     RTSPData,

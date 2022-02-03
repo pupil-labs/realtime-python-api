@@ -1,5 +1,5 @@
 from .device import Device
-from .discovery import discover_devices, Network
+from .discovery import Network, discover_devices
 from .models import MatchedItem, SimpleVideoFrame
 
 __all__ = [

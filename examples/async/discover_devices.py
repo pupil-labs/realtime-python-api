@@ -1,7 +1,7 @@
 import asyncio
 import contextlib
 
-from pupil_labs.realtime_api.discovery import discover_devices, Network
+from pupil_labs.realtime_api.discovery import Network, discover_devices
 
 
 async def main():

@@ -1,6 +1,10 @@
+v1.0.0rc2
+##########
+- Apply pre-commit fixes
+
 v1.0.0rc1
 ##########
-- Split :py:mod:`pupil_labs.realtime_api.simple` into multiple files 
+- Split :py:mod:`pupil_labs.realtime_api.simple` into multiple files
 - Remove ``pupil_labs.realtime_api.discovery.discover_one_device``
 - Remove ``pupil_labs.realtime_api.simple.discover_one_device``
 - Add :py:class:`pupil_labs.realtime_api.simple.Network`
