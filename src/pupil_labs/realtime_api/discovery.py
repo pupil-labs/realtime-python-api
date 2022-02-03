@@ -30,7 +30,7 @@ class Network:
             await self._aiozeroconf.async_close()
             self._devices.clear()
             self._devices = None
-            while self._new_devices:
+            while not self._new_devices.empty():
                 self._new_devices.get_nowait()
             self._aiobrowser = None
             self._aiozeroconf = None

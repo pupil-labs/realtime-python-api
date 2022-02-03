@@ -1,10 +1,10 @@
 import time
 
-from pupil_labs.realtime_api.simple import Network
+from pupil_labs.realtime_api.simple import discover_one_device
 
 # Look for devices. Returns as soon as it has found the first device.
 print("Looking for the next best device...")
-device = Network().wait_for_new_device(timeout_seconds=10)
+device = discover_one_device(max_search_duration_seconds=10)
 if device is None:
     print("No device found.")
     raise SystemExit(-1)

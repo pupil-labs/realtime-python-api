@@ -1,6 +1,8 @@
 v1.0.0rc3
 #########
 - Fix documentation
+- Revert: Remove :py:func:`pupil_labs.realtime_api.simple.discover_one_device`
+- Revert: Add ``pupil_labs.realtime_api.simple.Network``
 
 v1.0.0rc2
 #########
