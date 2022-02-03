@@ -1,3 +1,11 @@
+v1.0.0.rc1
+##########
+- Split :py:mod:`pupil_labs.realtime_api.simple` into multiple files 
+- Remove ``pupil_labs.realtime_api.discovery.discover_one_device``
+- Remove ``pupil_labs.realtime_api.simple.discover_one_device``
+- Add :py:class:`pupil_labs.realtime_api.simple.Network`
+- Add :py:class:`pupil_labs.realtime_api.discovery.Network`
+
 v0.0.12
 #######
 - Add :py:exc:`pupil_labs.realtime_api.models.UnknownComponentError` and let
@@ -19,7 +27,7 @@ v0.0.10
 v0.0.9
 ######
 - Fix Python 3.7 compatibility
-- Add :py:func:`pupil_labs.realtime_api.discovery.discover_one_device`
+- Add ``pupil_labs.realtime_api.discovery.discover_one_device``
 
 v0.0.8
 ######

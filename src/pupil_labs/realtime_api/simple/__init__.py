@@ -1,11 +1,11 @@
 from .device import Device
-from .discovery import discover_devices, discover_one_device
+from .discovery import discover_devices, Network
 from .models import MatchedItem, SimpleVideoFrame
 
 __all__ = [
     "MatchedItem",
     "SimpleVideoFrame",
     "Device",
-    "discover_one_device",
+    "Network",
     "discover_devices",
 ]

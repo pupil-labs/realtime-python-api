@@ -23,9 +23,8 @@ from .models import MATCHED_ITEM_LABEL, MatchedItem, SimpleVideoFrame, VideoFram
 class Device(DeviceBase):
     """
     .. hint::
-        Use :py:func:`.discover_one_device` or :py:func:`.discover_devices` instead of
-        initializing the class manually. See the :ref:`simple_discovery_example`
-        example.
+        Use :py:class:`pupil_labs.realtime_api.simple.Network` instead of initializing
+        the class manually. See the :ref:`simple_discovery_example` example.
     """
 
     def __init__(

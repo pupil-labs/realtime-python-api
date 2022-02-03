@@ -91,7 +91,7 @@ class NetworkDevice(T.NamedTuple):
         discovered directly by this library are represented as
         :py:class:`.DiscoveredDeviceInfo` and returned by
         :py:func:`pupil_labs.realtime_api.discovery.discover_devices` and
-        :py:func:`pupil_labs.realtime_api.discovery.discover_one_device`.
+        :py:class:`pupil_labs.realtime_api.discovery.Network`.
     """
 
     ip: str
