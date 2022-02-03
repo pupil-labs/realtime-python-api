@@ -37,6 +37,9 @@ Get a callback when there is a new status updates
 Send Event
 ----------
 
+An event without an explicit timestamp, will be timestamped on arrival at the Pupil
+Invincible Companion device.
+
 .. literalinclude:: ../../examples/async/send_event.py
    :language: python
    :emphasize-lines: 15,19-21
@@ -88,5 +91,5 @@ Device Discovery
 
 .. literalinclude:: ../../examples/async/discover_devices.py
    :language: python
-   :emphasize-lines: 9,13
+   :emphasize-lines: 8,10,15,20
    :linenos:

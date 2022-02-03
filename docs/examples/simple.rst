@@ -32,8 +32,8 @@ Get current status
 Automatic status updates
 ------------------------
 
-The :py:class:`Device <pupil_labs.realtime_api.simple.Device>` class monitors Companion
-device in the background and mirrors its state accordingly.
+The :py:class:`Device <pupil_labs.realtime_api.simple.Device>` class monitors a
+Pupil Invisible Companion device in the background and mirrors its state accordingly.
 
 .. literalinclude:: ../../examples/simple/status_auto_update.py
    :language: python
@@ -42,6 +42,9 @@ device in the background and mirrors its state accordingly.
 
 Send event
 ----------
+
+An event without an explicit timestamp, will be timestamped on arrival at the Pupil
+Invincible Companion device.
 
 .. literalinclude:: ../../examples/simple/send_event.py
    :language: python
