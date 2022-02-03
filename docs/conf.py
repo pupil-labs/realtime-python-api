@@ -5,6 +5,7 @@ extensions = [
     'jaraco.packaging.sphinx',
     'rst.linker',
     'sphinx.ext.autodoc',
+    'sphinx.ext.todo',
     'sphinx.ext.viewcode',
 ]
 
@@ -55,3 +56,6 @@ autosummary_generate = True
 release = import_version('pupil-labs-realtime-api')
 # for example take major/minor
 version = '.'.join(release.split('.')[:2])
+
+todo_include_todos = True
+todo_emit_warnings = True
