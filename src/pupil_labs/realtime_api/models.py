@@ -208,6 +208,8 @@ class Status:
                 sensors.append(component)
             elif isinstance(component, Recording):
                 recording = component
+            elif isinstance(component, NetworkDevice):
+                pass  # no need to handle NetworkDevice updates here
             else:
                 logger.warning(f"Unknown model class: {type(component).__name__}")
         sensors.sort(key=lambda s: (not s.connected, s.conn_type, s.sensor))
