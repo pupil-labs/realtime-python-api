@@ -1,4 +1,4 @@
-v1.0.0.rc1
+v1.0.0rc1
 ##########
 - Split :py:mod:`pupil_labs.realtime_api.simple` into multiple files 
 - Remove ``pupil_labs.realtime_api.discovery.discover_one_device``
