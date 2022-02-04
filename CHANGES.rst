@@ -1,3 +1,8 @@
+v1.0.0rc4
+#########
+- Fix examples and documentation
+- Finalize first draft of the :ref:`under_the_hood_guide` guide
+
 v1.0.0rc3
 #########
 - Fix documentation

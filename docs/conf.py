@@ -41,6 +41,7 @@ nitpick_ignore = [
     # they have public sphinx documentation
     ("py:class", "nptyping.types._ndarray.NDArray"),
     ("py:class", "nptyping.types._number.UInt"),
+    ("py:class", "aiortsp.rtsp.reader.RTSPReader"),
 ]
 
 
