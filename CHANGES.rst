@@ -13,7 +13,7 @@ v1.0.0rc1
 - Split :py:mod:`pupil_labs.realtime_api.simple` into multiple files
 - Remove ``pupil_labs.realtime_api.discovery.discover_one_device``
 - Remove ``pupil_labs.realtime_api.simple.discover_one_device``
-- Add :py:class:`pupil_labs.realtime_api.simple.Network`
+- Add ``pupil_labs.realtime_api.simple.Network``
 - Add :py:class:`pupil_labs.realtime_api.discovery.Network`
 
 v0.0.12
