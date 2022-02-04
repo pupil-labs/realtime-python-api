@@ -3,6 +3,14 @@
 Asynchonous API
 ***************
 
+Device Discovery
+================
+
+.. automodule:: pupil_labs.realtime_api.discovery
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Remote Control
 ==============
 
@@ -30,6 +38,8 @@ Scene Video
     :undoc-members:
     :show-inheritance:
 
+.. autofunction:: pupil_labs.realtime_api.streaming.nal_unit.extract_payload_from_nal_unit
+
 Raw RTSP Data
 -------------
 
@@ -37,12 +47,5 @@ Raw RTSP Data
     :members:
     :undoc-members:
     :show-inheritance:
+    :private-members:
 
-
-Device Discovery
-================
-
-.. automodule:: pupil_labs.realtime_api.discovery
-    :members:
-    :undoc-members:
-    :show-inheritance:
