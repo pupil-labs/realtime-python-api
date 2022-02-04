@@ -3,11 +3,12 @@ import contextlib
 
 import cv2
 
-from pupil_labs.realtime_api import Device, discover_one_device, receive_video_frames
+from pupil_labs.realtime_api import Device, Network, receive_video_frames
 
 
 async def main():
-    dev_info = await discover_one_device(max_search_duration_seconds=5)
+    async with Network() as network:
+        dev_info = await network.wait_for_new_device(timeout_seconds=5)
     if dev_info is None:
         print("No device could be found! Abort")
         return
