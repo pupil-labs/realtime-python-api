@@ -8,8 +8,11 @@ The source code and issue tracker are both hosted on `GitHub`_.
 
 .. _GitHub: https://github.com/pupil-labs/realtime-python-api
 
+Table of Contents
+-----------------
+
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 3
 
    guides/index
    examples/index
