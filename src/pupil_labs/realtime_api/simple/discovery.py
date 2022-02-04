@@ -36,7 +36,7 @@ def discover_one_device(
 
     async def _discover():
         async with AsyncNetwork() as network:
-            return await network.wait_for_new_device(max_search_duration_seconds)
+            return await network.wait_for_new_device(timeout_seconds)
 
     device = asyncio.run(_discover())
     return None if device is None else Device.from_discovered_device(device)
