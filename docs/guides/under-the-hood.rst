@@ -26,7 +26,7 @@ available devices.
     The device serves the built-in monitor web app (to be released soon!) at the
     document root ``/``. The API is served under the ``/api`` path. You can find the
     full `OpenAPI 3 <https://swagger.io/specification/>`_ specification of the REST API
-    `here <https://github.com/pupil-labs/realtime-network-api/blob/main/openapi_specification.yaml>`__.
+    `here <https://pupil-labs.github.io/realtime-network-api/>`__.
 
 Start/stop/cancel recordings
 ----------------------------
@@ -35,12 +35,12 @@ By sending `HTTP POST <https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods
 requests to the ``/api/recording:*`` endpoints, you can start, stop, and cancel
 recordings.
 
-- `POST /api/recording:start <https://github.com/pupil-labs/realtime-network-api/blob/main/openapi_specification.yaml#L31>`_
+- `POST /api/recording:start <https://pupil-labs.github.io/realtime-network-api/#/recording/post_recording_start>`_
   - Starts a recording if possible
 - `POST /api/recording:stop_and_save
-  <https://github.com/pupil-labs/realtime-network-api/blob/main/openapi_specification.yaml#L47>`_
+  <https://pupil-labs.github.io/realtime-network-api/#/recording/post_recording_stop_and_save>`_
   - Stops and saves the running recording if possible
-- `POST /api/recording:cancel <https://github.com/pupil-labs/realtime-network-api/blob/main/openapi_specification.yaml#L63>`_
+- `POST /api/recording:cancel <https://pupil-labs.github.io/realtime-network-api/#/recording/post_recording_cancel>`_
   - Stops and discards the running recording if possible
 
 .. attention::
@@ -78,7 +78,7 @@ Events will be timestamped on reception. Alternatively, you can provide a Unix-e
 timestamp in nanosecond. This is recommended if you want to control the timing of the
 event.
 
-- `POST /api/event <https://github.com/pupil-labs/realtime-network-api/blob/main/openapi_specification.yaml#L79>`_
+- `POST /api/event <https://pupil-labs.github.io/realtime-network-api/#/events/post_event>`_
   - Sends an event to the device
 
 .. seealso::
@@ -95,7 +95,7 @@ request to the ``/api/status`` endpoint, you can receive information about the d
 current status. This includes information about the battery and storage capacities,
 connected sensors, and running recordings.
 
-- `GET /api/status <https://github.com/pupil-labs/realtime-network-api/blob/main/openapi_specification.yaml#L11>`_
+- `GET /api/status <https://pupil-labs.github.io/realtime-network-api/#/status/get_status>`_
   - Receive status from device
 
 .. seealso::
@@ -138,8 +138,7 @@ The RTSP connection URL follows the following pattern::
     rtsp://<ip>:<port>/?<params>
 
 .. caution::
-    Each stream is available via two `connection types
-    <https://github.com/pupil-labs/realtime-network-api/blob/main/openapi_specification.yaml#L287>`_:
+    Each stream is available via two connection types:
 
     - ``DIRECT`` - direct RTSP connection, as described in this document
     - ``WEBSOCKET`` - tunneling RTSP over a websocket connection to make it
