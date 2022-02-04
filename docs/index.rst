@@ -6,7 +6,7 @@ Pupil Labs Realtime API.
 
 The source code and issue tracker are both hosted on `GitHub`_.
 
-.. _GitHub: https://github.com/pupil-labs/realtime-api
+.. _GitHub: https://github.com/pupil-labs/realtime-python-api
 
 .. toctree::
    :maxdepth: 4
