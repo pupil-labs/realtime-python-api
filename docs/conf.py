@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-from importlib.metadata import version as import_version
+try:
+    from importlib.metadata import version as import_version
+except ImportError:
+    from importlib_metadata import version as import_version
 
 extensions = [
     'jaraco.packaging.sphinx',
