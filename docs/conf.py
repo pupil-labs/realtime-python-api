@@ -56,9 +56,11 @@ intersphinx_mapping = {
 html_theme = 'furo'
 autosummary_generate = True
 
+project = "Pupil Labs' Realtime Python API"
 release = import_version('pupil-labs-realtime-api')
 # for example take major/minor
 version = '.'.join(release.split('.')[:2])
+html_title = f"{project} {release}"
 
 todo_include_todos = True
 todo_emit_warnings = True
