@@ -1,6 +1,6 @@
 import asyncio
 
-from pupil_labs.realtime_api import Device, StatusUpdateNotifier, Network
+from pupil_labs.realtime_api import Device, Network, StatusUpdateNotifier
 from pupil_labs.realtime_api.models import Recording
 
 
