@@ -48,4 +48,3 @@ Raw RTSP Data
     :undoc-members:
     :show-inheritance:
     :private-members:
-
