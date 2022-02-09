@@ -25,7 +25,7 @@ def discover_devices(search_duration_seconds: float) -> T.List[Device]:
 
 
 def discover_one_device(
-    max_search_duration_seconds: T.Optional[float],
+    max_search_duration_seconds: T.Optional[float] = 10.0,
 ) -> T.Optional[Device]:
     """Return the first device that could be found in the given search duration.
 
@@ -36,7 +36,7 @@ def discover_one_device(
 
     async def _discover():
         async with AsyncNetwork() as network:
-            return await network.wait_for_new_device(timeout_seconds)
+            return await network.wait_for_new_device(max_search_duration_seconds)
 
     device = asyncio.run(_discover())
     return None if device is None else Device.from_discovered_device(device)
