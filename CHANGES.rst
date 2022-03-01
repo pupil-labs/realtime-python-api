@@ -1,3 +1,7 @@
+1.0.0
+#####
+-  Fixed wrong variable name and added default value - #11
+
 v1.0.0rc4
 #########
 - Fix examples and documentation
