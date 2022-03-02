@@ -43,9 +43,10 @@ Table of Contents
 
 .. toctree::
    :maxdepth: 3
+
    examples/index
-   api/index
    guides/index
+   api/index
    history
 
 Indices and tables
