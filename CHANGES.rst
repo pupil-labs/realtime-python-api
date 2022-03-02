@@ -1,6 +1,10 @@
+1.0.0.post1
+###########
+- Improve front-page documentation
+
 1.0.0
 #####
--  Fixed wrong variable name and added default value - #11
+- Fixed wrong variable name and added default value - #11
 
 v1.0.0rc4
 #########
