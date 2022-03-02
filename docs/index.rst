@@ -23,7 +23,11 @@ Use `pip <https://pypi.org/project/pip/>`_ to install the package::
 
 To get started see our code examples :ref:`code_examples`.
 
-We also provide guides as part of the Pupil Invsible and Pupil Cloud documentation:  <https://docs.pupil-labs.com/invisible/tutorials/real-time-api/>`_
+We also provide guides as part of the Pupil Invsible and Pupil Cloud documentation: <https://docs.pupil-labs.com/invisible/tutorials/real-time-api/>
+
+## Bugs reports and Contributing
+
+Help us make great tool! Bugs Reports, Suggestions, and Fixes are always welcome.
 
 The source code and issue tracker are both hosted on `GitHub`_.
 
