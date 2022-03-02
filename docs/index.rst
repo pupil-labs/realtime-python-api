@@ -11,25 +11,24 @@ Use `pip <https://pypi.org/project/pip/>`_ to install the package::
 
    pip install pupil-labs-realtime-api
    
-   
-The module comes in two flavours
+Getting started
 ########
+
+The module comes in two flavours, we reommend using the `simple` version.
 
 1. The ``async`` interface is using Python's asyncio in order to implement non-blocking asynchronous communication.
 
 2. The ``simple`` interface wraps around the ``async`` one sacrificing flexiblity of ease of use. The calls made using the simple mode are blocking. If you don't know what any of this means, that's okay! The simple mode suffices for most use-cases and you usually do not need to understand the differences!
 
-Getting started
-########
+To get started with either version, see our code examples :ref:`code_examples`.
 
-To get started see our code examples :ref:`code_examples`.
-
-We also provide guides as part of the Pupil Invsible and Pupil Cloud documentation: `docs.pupil-labs.com`_
+We also provide more involved guides as part of the Pupil Invsible and Pupil Cloud documentation: `docs.pupil-labs.com`_
 
 Bugs reports and Contributing
 ########
 
 Help us make great tool! Bugs Reports, Suggestions, and Fixes are always welcome.
+
 
 The source code and issue tracker are both hosted on `GitHub`_.
 
