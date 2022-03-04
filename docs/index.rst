@@ -16,7 +16,7 @@ Use `pip <https://pypi.org/project/pip/>`_ to install the package::
 Getting Started
 ---------------
 
-The module comes in two flavours, we reommend using the `simple` version.
+The module comes in two flavours, we recommend using the `simple` version.
 
 1. The ``async`` interface is using Python's `asyncio`_ in order to implement
    non-blocking asynchronous communication.
