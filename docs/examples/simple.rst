@@ -44,7 +44,7 @@ Send event
 ----------
 
 An event without an explicit timestamp, will be timestamped on arrival at the Pupil
-Invincible Companion device.
+Invisible Companion device.
 
 .. literalinclude:: ../../examples/simple/send_event.py
    :language: python
