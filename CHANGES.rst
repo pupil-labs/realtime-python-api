@@ -1,3 +1,7 @@
+1.1.0a1
+#######
+- Add :py:mod:`pupil_labs.realtime_api.clock_echo`
+
 1.0.0.post1
 ###########
 - Improve front-page documentation

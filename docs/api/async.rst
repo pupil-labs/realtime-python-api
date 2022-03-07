@@ -48,3 +48,11 @@ Raw RTSP Data
     :undoc-members:
     :show-inheritance:
     :private-members:
+
+Clock Synchronization
+=====================
+
+.. automodule:: pupil_labs.realtime_api.clock_echo
+    :members:
+    :undoc-members:
+    :show-inheritance:

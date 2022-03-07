@@ -42,6 +42,8 @@ nitpick_ignore = [
     ("py:class", "nptyping.types._ndarray.NDArray"),
     ("py:class", "nptyping.types._number.UInt"),
     ("py:class", "aiortsp.rtsp.reader.RTSPReader"),
+    ("py:class", "asyncio.streams.StreamReader"),
+    ("py:class", "asyncio.streams.StreamWriter"),
 ]
 
 
