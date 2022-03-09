@@ -70,22 +70,38 @@ class ClockEcho(NamedTuple):
     "Clock offset between host and client, in milliseconds"
 
 
-class Estimate(NamedTuple):
+class Estimate:
     """Provides easy access to statistics over a collection of measurements"""
 
-    measurements: Iterable[int]
+    def __init__(self, measurements: Iterable[int]) -> None:
+        self.measurements = tuple(measurements)
+        self._mean = statistics.mean(self.measurements)
+        self._std = statistics.stdev(self.measurements)
+        self._median = statistics.median(self.measurements)
 
+    @property
     def mean(self) -> float:
-        return statistics.mean(self.measurements)
+        return self._mean
 
+    @property
     def std(self) -> float:
-        return statistics.stdev(self.measurements)
+        return self._std
 
+    @property
     def median(self) -> float:
-        return statistics.median(self.measurements)
+        return self._median
+
+    def __repr__(self) -> str:
+        return (
+            f"{type(self).__name__}("
+            f"#samples={len(self.measurements)}, "
+            f"mean±std={self.mean:.3f}±{self._std:.3f}ms, "
+            f"median={self.median}ms"
+            ")"
+        )
 
 
-class ClockEchoEstimates:
+class ClockEchoEstimates(NamedTuple):
     """Provides estimates for the roundtrip duration and clock offsets"""
 
     roundtrip_duration_ms: Estimate
@@ -111,17 +127,21 @@ class ClockOffsetEstimator:
         measurements = collections.defaultdict(list)
 
         try:
-            logger.info(f"Connecting to {self.address}:{self.port}...")
+            logger.debug(f"Connecting to {self.address}:{self.port}...")
             reader, writer = await asyncio.open_connection(self.address, self.port)
+        except ConnectionError:
+            logger.exception(f"Could not connect to Clock Echo server")
+            return None
 
-            rt, offset = self.request_clock_echo(clock_ms, reader, writer)
-            logger.info(
+        try:
+            rt, offset = await self.request_clock_echo(clock_ms, reader, writer)
+            logger.debug(
                 f"Dropping first measurement (roundtrip: {rt} ms, offset: {offset} ms)"
             )
             logger.info(f"Measuring {number_of_measurements} times...")
             for _ in range(number_of_measurements):
                 try:
-                    rt, offset = self.request_clock_echo(clock_ms, reader, writer)
+                    rt, offset = await self.request_clock_echo(clock_ms, reader, writer)
                     measurements["roundtrip"].append(rt)
                     measurements["offset"].append(offset)
                     if sleep_between_measurements_seconds is not None:
@@ -131,25 +151,15 @@ class ClockOffsetEstimator:
         finally:
             writer.close()
             await writer.wait_closed()
-
-        estimates = ClockEchoEstimates(
-            roundtrip_duration_ms=Estimate(measurements["roundtrip"]),
-            clock_offset_ms=Estimate(measurements["offset"]),
-        )
+            logger.debug(f"Connection closed {writer.is_closing()}")
 
         try:
-            logger.debug(
-                "Roundtrip (mean ± std): "
-                f"{estimates.roundtrip_duration_ms.mean():8.3f} ± "
-                f"{estimates.roundtrip_duration_ms.std:6.3f} ms"
-            )
-            logger.debug(
-                "   Offset (mean ± std): "
-                f"{estimates.clock_offset_ms.mean():8.3f} ± "
-                f"{estimates.clock_offset_ms.std:6.3f} ms"
+            estimates = ClockEchoEstimates(
+                roundtrip_duration_ms=Estimate(measurements["roundtrip"]),
+                clock_offset_ms=Estimate(measurements["offset"]),
             )
         except statistics.StatisticsError:
-            logger.error("No valid samples were collected")
+            logger.exception("Not enough valid samples were collected")
             return None
 
         return estimates
