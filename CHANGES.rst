@@ -1,3 +1,8 @@
+1.0.1
+#####
+- Require ``nptyping<2.0.0`` to avoid backwards incompatibility
+- Update link to documentation in README
+
 1.0.0.post1
 ###########
 - Improve front-page documentation
