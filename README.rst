@@ -24,4 +24,4 @@
 Pupil Labs' Realtime API Client
 *******************************
 
-- `Documentation <https://pupil-labs-realtime-api.readthedocs.io/en/latest/>`_
+- `Documentation <https://pupil-labs-realtime-api.readthedocs.io/>`_
