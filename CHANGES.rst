@@ -1,3 +1,7 @@
+1.1.0a2
+#######
+- Internal feature
+
 1.1.0a1
 #######
 - Add :py:mod:`pupil_labs.realtime_api.clock_echo`
