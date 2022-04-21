@@ -234,7 +234,7 @@ class Device(DeviceBase):
             MATCHED_ITEM_LABEL,
         ]
         self._most_recent_item = {
-            name: collections.deque(maxlen=1) for name in sensor_names
+            name: collections.deque(maxlen=4) for name in sensor_names
         }
         self._event_new_item = {name: threading.Event() for name in sensor_names}
         # only cache 3-4 seconds worth of gaze data in case no scene camera is connected

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 import typing as T
 import weakref
 from collections.abc import Hashable, Iterable, Mapping
@@ -114,6 +115,9 @@ class _StreamManager:
         async with self._streaming_cls(
             sensor.url, run_loop=True, log_level=logging.WARNING
         ) as streamer:
+            count = 0
+            start = time.perf_counter()
+            replaced = 0
             async for item in streamer.receive():
                 device = self._device()
                 if device is None:
@@ -126,8 +130,26 @@ class _StreamManager:
                     item = SimpleVideoFrame.from_video_frame(item)
 
                 logger_receive_data.debug(f"{self} received {item}")
+                if (
+                    name == Sensor.Name.GAZE.value
+                    and len(device._most_recent_item[name])
+                    == device._most_recent_item[name].maxlen
+                ):
+                    replaced += 1
                 device._most_recent_item[name].append(item)
                 if name == Sensor.Name.GAZE.value:
+                    count += 1
+                    now = time.perf_counter()
+                    time_since_start = now - start
+                    if time_since_start > 10:
+                        print(
+                            f"Worker: {count} counted @ "
+                            f"{count/time_since_start:.2f} Hz. {replaced} replaced. "
+                            f"Front should receive {count - replaced}"
+                        )
+                        start = now
+                        count = 0
+                        replaced = 0
                     device._cached_gaze_for_matching.append(
                         (item.timestamp_unix_seconds, item)
                     )
