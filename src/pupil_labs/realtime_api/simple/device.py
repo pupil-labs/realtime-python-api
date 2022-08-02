@@ -116,7 +116,8 @@ class Device(DeviceBase):
         return asyncio.run(_start_recording())
 
     def recording_stop_and_save(self):
-        """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.recording_stop_and_save`
+        """Wraps
+        :py:meth:`pupil_labs.realtime_api.device.Device.recording_stop_and_save`
 
         :raises pupil_labs.realtime_api.device.DeviceError:
             if the recording could not be started
