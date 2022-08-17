@@ -155,7 +155,7 @@ _model_class_map: T.Dict[str, T.Type[Component]] = {
 
 
 def _init_cls_with_annotated_fields_only(cls, d: T.Dict[str, T.Any]):
-    return cls(**{attr: d[attr] for attr in cls.__annotations__})
+    return cls(**{attr: d.get(attr, None) for attr in cls.__annotations__})
 
 
 class UnknownComponentError(ValueError):
@@ -199,8 +199,9 @@ class Status:
         for dct in status_json_result:
             try:
                 component = parse_component(dct)
-            except UnknownComponentError:
-                logger.warning(f"Dropping unknown component: {component}")
+            except UnknownComponentError as err:
+                logger.warning(f"Dropping unknown component: {dct}")
+                raise
                 continue
             if isinstance(component, Phone):
                 phone = component
