@@ -1,10 +1,16 @@
+1.1.0
+#####
+
+- Rename ``pupil_labs.realtime_api.clock_echo`` to :py:mod:`pupil_labs.realtime_api.time_echo`
+  and all corresponding class and function prefixes.
+
 1.1.0a2
 #######
 - Internal feature
 
 1.1.0a1
 #######
-- Add :py:mod:`pupil_labs.realtime_api.clock_echo`
+- Add ``pupil_labs.realtime_api.clock_echo``
 
 1.0.1
 #####

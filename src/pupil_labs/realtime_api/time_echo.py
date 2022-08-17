@@ -1,22 +1,22 @@
-"""Manual clock offset estimation via the Pupil Labs Clock Echo protocol
+"""Manual time offset estimation via the Pupil Labs Time Echo protocol
 
 The Realtime Network API host device timestamps its data with nanoseconds since the
 `Unix epoch`_ (January 1, 1970, 00:00:00 UTC). This clock is kept in sync by the
 operating system through `NTP`_ (Network Time Protocol). For some use cases, this sync
-is not good enough. For more accurate time syncs, the Clock Echo protocol allows the
+is not good enough. For more accurate time syncs, the Time Echo protocol allows the
 estimation of the direct offset between the host's and the client's clocks.
 
 .. _Unix epoch: https://docs.python.org/3/library/time.html#epoch
 .. _NTP: https://en.wikipedia.org/wiki/Network_Time_Protocol#
    Clock_synchronization_algorithm
 
-The Clock Echo protocol works in the following way:
+The Time Echo protocol works in the following way:
 
 1. The API host (Pupil Invisible Companion app) opens a TCP server at a specific port
 2. The client connects to the host address and port
 3. The client sends its current time (``t1``) in milliseconds as an uint64 in network
    byte order to the host
-4. The host responds with the clock echo, two uint64 values in network byte order
+4. The host responds with the time echo, two uint64 values in network byte order
    1. The first value is equal to the sent client time (``t1``)
    2. The second value corresponds to the host's time in milliseconds (``tH``)
 5. The client calculates the duration of steps 3 and 4 (roundtrip time) by measuring the
@@ -28,7 +28,7 @@ The Clock Echo protocol works in the following way:
 
       offset_ms = ((t1 + t2) / 2) - tH
 
-8. This measurement can be repeated multiple times to make the clock offset estimation
+8. This measurement can be repeated multiple times to make the time offset estimation
    more robust.
 
 To convert client to host time, subtract the offset::
@@ -57,17 +57,17 @@ from typing import Callable, Iterable, NamedTuple, Optional
 
 logger = logging.getLogger(__name__)
 
-ClockFunction = Callable[[], int]
+TimeFunction = Callable[[], int]
 """Returns time in milliseconds"""
 
 
-class ClockEcho(NamedTuple):
-    """Measurement of a single clock echo"""
+class TimeEcho(NamedTuple):
+    """Measurement of a single time echo"""
 
     roundtrip_duration_ms: int
-    "Round trip duration of the clock echo, in milliseconds"
-    clock_offset_ms: int
-    "Clock offset between host and client, in milliseconds"
+    "Round trip duration of the time echo, in milliseconds"
+    time_offset_ms: int
+    "Time offset between host and client, in milliseconds"
 
 
 class Estimate:
@@ -101,11 +101,11 @@ class Estimate:
         )
 
 
-class ClockEchoEstimates(NamedTuple):
-    """Provides estimates for the roundtrip duration and clock offsets"""
+class TimeEchoEstimates(NamedTuple):
+    """Provides estimates for the roundtrip duration and time offsets"""
 
     roundtrip_duration_ms: Estimate
-    clock_offset_ms: Estimate
+    time_offset_ms: Estimate
 
 
 def time_ms():
@@ -113,7 +113,7 @@ def time_ms():
     return time_ns() // 1_000_000
 
 
-class ClockOffsetEstimator:
+class TimeOffsetEstimator:
     def __init__(self, address: str, port: int) -> None:
         self.address = address
         self.port = port
@@ -122,26 +122,28 @@ class ClockOffsetEstimator:
         self,
         number_of_measurements: int = 100,
         sleep_between_measurements_seconds: Optional[float] = None,
-        clock_ms: ClockFunction = time_ms,
-    ) -> Optional[ClockEchoEstimates]:
+        time_fn_ms: TimeFunction = time_ms,
+    ) -> Optional[TimeEchoEstimates]:
         measurements = collections.defaultdict(list)
 
         try:
             logger.debug(f"Connecting to {self.address}:{self.port}...")
             reader, writer = await asyncio.open_connection(self.address, self.port)
         except ConnectionError:
-            logger.exception(f"Could not connect to Clock Echo server")
+            logger.exception(f"Could not connect to Time Echo server")
             return None
 
         try:
-            rt, offset = await self.request_clock_echo(clock_ms, reader, writer)
+            rt, offset = await self.request_time_echo(time_fn_ms, reader, writer)
             logger.debug(
                 f"Dropping first measurement (roundtrip: {rt} ms, offset: {offset} ms)"
             )
             logger.info(f"Measuring {number_of_measurements} times...")
             for _ in range(number_of_measurements):
                 try:
-                    rt, offset = await self.request_clock_echo(clock_ms, reader, writer)
+                    rt, offset = await self.request_time_echo(
+                        time_fn_ms, reader, writer
+                    )
                     measurements["roundtrip"].append(rt)
                     measurements["offset"].append(offset)
                     if sleep_between_measurements_seconds is not None:
@@ -154,9 +156,9 @@ class ClockOffsetEstimator:
             logger.debug(f"Connection closed {writer.is_closing()}")
 
         try:
-            estimates = ClockEchoEstimates(
+            estimates = TimeEchoEstimates(
                 roundtrip_duration_ms=Estimate(measurements["roundtrip"]),
-                clock_offset_ms=Estimate(measurements["offset"]),
+                time_offset_ms=Estimate(measurements["offset"]),
             )
         except statistics.StatisticsError:
             logger.exception("Not enough valid samples were collected")
@@ -165,20 +167,20 @@ class ClockOffsetEstimator:
         return estimates
 
     @staticmethod
-    async def request_clock_echo(
-        clock_ms: ClockFunction,
+    async def request_time_echo(
+        time_fn_ms: TimeFunction,
         reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,
-    ) -> ClockEcho:
-        """Request a clock echo, measure the roundtrip time, and estimate the clock
+    ) -> TimeEcho:
+        """Request a time echo, measure the roundtrip time, and estimate the time
         offset
         """
-        before_ms = clock_ms()
+        before_ms = time_fn_ms()
         before_ms_bytes = struct.pack("!Q", before_ms)
         writer.write(before_ms_bytes)
         await writer.drain()
         validation_server_ms_bytes = await reader.read(16)
-        after_ms = clock_ms()
+        after_ms = time_fn_ms()
         if len(validation_server_ms_bytes) != 16:
             raise ValueError(
                 "Dropping invalid measurement. Expected response of length 16 "
