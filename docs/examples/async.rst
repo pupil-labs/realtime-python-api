@@ -93,3 +93,11 @@ Device Discovery
    :language: python
    :emphasize-lines: 8,10,15,20
    :linenos:
+
+Time Offset Estimation
+======================
+
+.. literalinclude:: ../../examples/async/device_time_offset.py
+   :language: python
+   :emphasize-lines: 18,27-31,34
+   :linenos:
