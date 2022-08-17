@@ -97,6 +97,8 @@ Device Discovery
 Time Offset Estimation
 ======================
 
+See :py:mod:`pupil_labs.realtime_api.time_echo` for details.
+
 .. literalinclude:: ../../examples/async/device_time_offset.py
    :language: python
    :emphasize-lines: 18,27-31,34

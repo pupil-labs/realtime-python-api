@@ -16,6 +16,7 @@ from ..device import Device as _DeviceAsync
 from ..device import StatusUpdateNotifier
 from ..models import Component, Event, Sensor, Status
 from ..streaming import GazeData, RTSPGazeStreamer, RTSPVideoFrameStreamer
+from ..time_echo import TimeEchoEstimates, TimeOffsetEstimator
 from ._utils import _AsyncEventManager, _StreamManager, logger
 from .models import MATCHED_ITEM_LABEL, MatchedItem, SimpleVideoFrame, VideoFrame
 
@@ -207,6 +208,30 @@ class Device(DeviceBase):
     def is_currently_streaming(self) -> bool:
         is_streaming = self._is_streaming_flag.is_set()
         return is_streaming
+
+    def estimate_time_offset(
+        self,
+        number_of_measurements: int = 100,
+        sleep_between_measurements_seconds: T.Optional[float] = None,
+    ) -> T.Optional[TimeEchoEstimates]:
+        """Estimate the time offset between the host device and the client.
+
+        See :py:mod:`pupil_labs.realtime_api.time_echo` for details.
+        """
+        if self._status.phone.time_echo_port is None:
+            logger.warning(
+                "You Pupil Invisible Companion app is out-of-date and does not yet "
+                "support the Time Echo protocol. Upgrade to version 1.4.28 or newer."
+            )
+            return None
+        estimator = TimeOffsetEstimator(
+            self.phone_ip, self._status.phone.time_echo_port
+        )
+        return asyncio.run(
+            estimator.estimate(
+                number_of_measurements, sleep_between_measurements_seconds
+            )
+        )
 
     def close(self) -> None:
         if self._event_manager:
