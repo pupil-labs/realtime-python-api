@@ -199,9 +199,8 @@ class Status:
         for dct in status_json_result:
             try:
                 component = parse_component(dct)
-            except UnknownComponentError as err:
+            except UnknownComponentError:
                 logger.warning(f"Dropping unknown component: {dct}")
-                raise
                 continue
             if isinstance(component, Phone):
                 phone = component
