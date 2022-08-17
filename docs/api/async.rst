@@ -48,3 +48,11 @@ Raw RTSP Data
     :undoc-members:
     :show-inheritance:
     :private-members:
+
+Time Echo Protocol
+==================
+
+.. automodule:: pupil_labs.realtime_api.time_echo
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -88,3 +88,13 @@ Scene camera video with overlayed gaze
    :language: python
    :emphasize-lines: 18,20,21
    :linenos:
+
+Time Offset Estimation
+======================
+
+See :py:mod:`pupil_labs.realtime_api.time_echo` for details.
+
+.. literalinclude:: ../../examples/simple/device_time_offset.py
+   :language: python
+   :emphasize-lines: 9,14,15
+   :linenos:
