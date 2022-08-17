@@ -73,6 +73,7 @@ class Phone(T.NamedTuple):
     ip: str
     memory: int
     memory_state: Literal["OK", "LOW", "CRITICAL"]
+    time_echo_port: T.Optional[int] = None
 
 
 class Hardware(T.NamedTuple):
@@ -183,6 +184,7 @@ def parse_component(raw: ComponentRaw) -> Component:
 
 @dataclasses.dataclass
 class Status:
+    "Represents the Companion's full status"
     phone: Phone
     hardware: Hardware
     sensors: T.List[Sensor]

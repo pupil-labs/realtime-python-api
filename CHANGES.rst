@@ -3,6 +3,7 @@
 
 - Rename ``pupil_labs.realtime_api.clock_echo`` to :py:mod:`pupil_labs.realtime_api.time_echo`
   and all corresponding class and function prefixes.
+- Expose Time Echo port via :py:attr:`pupil_labs.realtime_api.models.Phone.time_echo_port`
 
 1.1.0a2
 #######

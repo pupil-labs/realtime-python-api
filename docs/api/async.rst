@@ -49,10 +49,10 @@ Raw RTSP Data
     :show-inheritance:
     :private-members:
 
-Clock Synchronization
-=====================
+Time Echo Protocol
+==================
 
-.. automodule:: pupil_labs.realtime_api.clock_echo
+.. automodule:: pupil_labs.realtime_api.time_echo
     :members:
     :undoc-members:
     :show-inheritance:
