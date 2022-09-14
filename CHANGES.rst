@@ -1,3 +1,20 @@
+1.1.0
+#####
+
+- Rename ``pupil_labs.realtime_api.clock_echo`` to :py:mod:`pupil_labs.realtime_api.time_echo`
+  and all corresponding class and function prefixes.
+- Expose Time Echo port via :py:attr:`pupil_labs.realtime_api.models.Phone.time_echo_port`
+- Add simple API to estimate time offset :py:func:`pupil_labs.realtime_api.simple.Device.estimate_time_offset`
+- Add simple and async time offset estimation examples
+
+1.1.0a2
+#######
+- Internal feature
+
+1.1.0a1
+#######
+- Add ``pupil_labs.realtime_api.clock_echo``
+
 1.0.1
 #####
 - Require ``nptyping<2.0.0`` to avoid backwards incompatibility

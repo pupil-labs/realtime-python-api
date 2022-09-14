@@ -253,7 +253,7 @@ Gaze data is encoded in network byte order (big-endian) and consists of
 2. ``y`` - vertical component of the gaze location in pixels within the scene cameras
    coordinate system. The value is encoded as a 32-bit float.
 3. ``worn`` - a boolean indicating whether the user is wearing the device. The value is
-   encoded as an unsigned 8-bit integer. Currently always set to ``255``.
+   encoded as an unsigned 8-bit integer as either ``255`` (device is being worn) or ``0`` (device is *not* being worn).
 
 Each RTP packet contains one gaze datum and has therefore a payload length of 9 bytes.
 

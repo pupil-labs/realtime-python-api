@@ -73,6 +73,7 @@ class Phone(T.NamedTuple):
     ip: str
     memory: int
     memory_state: Literal["OK", "LOW", "CRITICAL"]
+    time_echo_port: T.Optional[int] = None
 
 
 class Hardware(T.NamedTuple):
@@ -154,7 +155,7 @@ _model_class_map: T.Dict[str, T.Type[Component]] = {
 
 
 def _init_cls_with_annotated_fields_only(cls, d: T.Dict[str, T.Any]):
-    return cls(**{attr: d[attr] for attr in cls.__annotations__})
+    return cls(**{attr: d.get(attr, None) for attr in cls.__annotations__})
 
 
 class UnknownComponentError(ValueError):
@@ -183,6 +184,7 @@ def parse_component(raw: ComponentRaw) -> Component:
 
 @dataclasses.dataclass
 class Status:
+    "Represents the Companion's full status"
     phone: Phone
     hardware: Hardware
     sensors: T.List[Sensor]
@@ -198,7 +200,7 @@ class Status:
             try:
                 component = parse_component(dct)
             except UnknownComponentError:
-                logger.warning(f"Dropping unknown component: {component}")
+                logger.warning(f"Dropping unknown component: {dct}")
                 continue
             if isinstance(component, Phone):
                 phone = component
