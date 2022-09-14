@@ -324,7 +324,7 @@ class Device(DeviceBase):
                 if changed.sensor in stream_managers:
                     await stream_managers[changed.sensor].handle_sensor_update(changed)
                 else:
-                    logger.debug(f"Unhandled DIRECT sensor {changed.name}")
+                    logger.debug(f"Unhandled DIRECT sensor {changed.sensor}")
 
         async def _auto_update_until_closed():
             async with _DeviceAsync.convert_from(device_weakref()) as device:
