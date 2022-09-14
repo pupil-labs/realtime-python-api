@@ -14,7 +14,16 @@ from .streaming import (
     receive_raw_rtsp_data,
     receive_video_frames,
 )
-from .version import __version__, __version_info__
+
+try:
+    from importlib.metadata import PackageNotFoundError, version
+except ImportError:
+    from importlib_metadata import PackageNotFoundError, version
+
+try:
+    __version__ = version("pupil_labs.realtime_api")
+except PackageNotFoundError:
+    __version__ = "unknown"
 
 __all__ = [
     "__version__",
