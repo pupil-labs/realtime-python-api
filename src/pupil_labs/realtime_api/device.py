@@ -2,8 +2,14 @@ import asyncio
 import inspect
 import json
 import logging
+import sys
 import types
 import typing as T
+
+if sys.version_info[:2] < (3, 8):
+    from typing_extensions import Literal
+else:
+    from typing import Literal
 
 import aiohttp
 import websockets
@@ -167,14 +173,14 @@ class Device(DeviceBase):
 
     async def _camera_control(
         self,
-        ae_mode: T.Literal["auto", "manual"],
+        ae_mode: Literal["auto", "manual"],
         man_exp: T.Optional[int] = None,
         gain: T.Optional[int] = None,
         brightness: T.Optional[int] = None,
         contrast: T.Optional[int] = None,
         gamma: T.Optional[int] = None,
-        camera: T.Literal["world"] = "world",
-    ) -> str:
+        camera: Literal["world"] = "world",
+    ) -> None:
         """
         EXPERIMENTAL
 
@@ -182,6 +188,11 @@ class Device(DeviceBase):
         :raises aiohttp.ServerDisconnectedError:
         """
         params = {"camera": camera, "ae_mode": ae_mode}
+
+        # Set ae_mode first. Then perform a second call to change the other settings.
+        await self.__request_camera_control_change(params)
+        del params["ae_mode"]
+
         if man_exp is not None:
             params["man_exp"] = int(man_exp)
         if gain is not None:
@@ -192,6 +203,10 @@ class Device(DeviceBase):
             params["contrast"] = int(contrast)
         if gamma is not None:
             params["gamma"] = int(gamma)
+
+        await self.__request_camera_control_change(params)
+
+    async def __request_camera_control_change(self, params: T.Dict) -> None:
         async with self.session.post(
             self.api_url(APIPath.CAMERA_CONTROL), params=params
         ) as response:
@@ -199,7 +214,6 @@ class Device(DeviceBase):
             logger.debug(f"[{self}.camera_control] Received response: {confirmation}")
             if response.status != 200:
                 raise DeviceError(response.status, confirmation["message"])
-            return confirmation["result"]
 
 
 class StatusUpdateNotifier:
