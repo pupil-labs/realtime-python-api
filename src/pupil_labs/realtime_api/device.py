@@ -179,6 +179,7 @@ class Device(DeviceBase):
         EXPERIMENTAL
 
         :raises pupil_labs.realtime_api.device.DeviceError:
+        :raises aiohttp.ServerDisconnectedError:
         """
         params = {"camera": camera, "ae_mode": ae_mode}
         if man_exp is not None:
