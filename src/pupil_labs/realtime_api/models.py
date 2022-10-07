@@ -19,6 +19,7 @@ class APIPath(enum.Enum):
     RECORDING_STOP_AND_SAVE = "/recording:stop_and_save"
     RECORDING_CANCEL = "/recording:cancel"
     EVENT = "/event"
+    CAMERA_CONTROL = "/camera_control"
 
     def full_address(
         self, address: str, port: int, protocol: str = "http", prefix: str = "/api"

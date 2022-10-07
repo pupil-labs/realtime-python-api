@@ -165,6 +165,41 @@ class Device(DeviceBase):
     def _create_client_session(self):
         self.session = aiohttp.ClientSession()
 
+    async def _camera_control(
+        self,
+        ae_mode: T.Literal["auto", "manual"],
+        man_exp: T.Optional[int] = None,
+        gain: T.Optional[int] = None,
+        brightness: T.Optional[int] = None,
+        contrast: T.Optional[int] = None,
+        gamma: T.Optional[int] = None,
+        camera: T.Literal["world"] = "world",
+    ) -> str:
+        """
+        EXPERIMENTAL
+
+        :raises pupil_labs.realtime_api.device.DeviceError:
+        """
+        params = {"camera": camera, "ae_mode": ae_mode}
+        if man_exp is not None:
+            params["man_exp"] = int(man_exp)
+        if gain is not None:
+            params["gain"] = int(gain)
+        if brightness is not None:
+            params["brightness"] = int(brightness)
+        if contrast is not None:
+            params["contrast"] = int(contrast)
+        if gamma is not None:
+            params["gamma"] = int(gamma)
+        async with self.session.post(
+            self.api_url(APIPath.CAMERA_CONTROL), params=params
+        ) as response:
+            confirmation = await response.json()
+            logger.debug(f"[{self}.camera_control] Received response: {confirmation}")
+            if response.status != 200:
+                raise DeviceError(response.status, confirmation["message"])
+            return confirmation["result"]
+
 
 class StatusUpdateNotifier:
     def __init__(self, device: Device, callbacks: T.List[UpdateCallback]) -> None:
