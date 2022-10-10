@@ -4,6 +4,7 @@ import time
 import types
 import typing as T
 
+import click
 from zeroconf import ServiceStateChange
 from zeroconf.asyncio import AsyncServiceBrowser, AsyncServiceInfo, AsyncZeroconf
 
@@ -114,3 +115,19 @@ async def discover_devices(
 
 def is_valid_service_name(name: str) -> bool:
     return name.split(":")[0] == "PI monitor"
+
+
+@click.command()
+@click.option("-t", "--search-duration", type=float)
+def cli(search_duration: T.Optional[float] = None):
+    async def print_devices():
+        from rich import print
+
+        async for dev in discover_devices(timeout_seconds=search_duration):
+            print(dev)
+
+    asyncio.run(print_devices())
+
+
+if __name__ == "__main__":
+    cli()
