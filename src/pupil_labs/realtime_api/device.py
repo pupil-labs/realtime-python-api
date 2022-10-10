@@ -5,6 +5,7 @@ import logging
 import sys
 import types
 import typing as T
+from dataclasses import fields
 
 if sys.version_info[:2] < (3, 8):
     from typing_extensions import Literal
@@ -17,6 +18,14 @@ import websockets
 import pupil_labs  # noqa: F401
 
 from .base import DeviceBase
+from .camera_control import (
+    CameraState,
+    ChangeRequestParameters,
+    Control,
+    ControlStateEnum,
+    ControlStateInteger,
+    ControlStateResponseEnvelope,
+)
 from .models import (
     APIPath,
     Component,
@@ -38,6 +47,10 @@ UpdateCallbackAsync = T.Callable[
 
 UpdateCallback = T.Union[UpdateCallbackSync, UpdateCallbackAsync]
 """Type annotation for synchronous and asynchronous callbacks"""
+
+ControlStateClass = T.TypeVar(
+    "ControlStateClass", ControlStateEnum, ControlStateInteger
+)
 
 
 class DeviceError(Exception):
@@ -171,42 +184,62 @@ class Device(DeviceBase):
     def _create_client_session(self):
         self.session = aiohttp.ClientSession()
 
-    async def _camera_control(
+    async def _set_camera_state(
         self,
-        ae_mode: Literal["auto", "manual"],
+        ae_mode: T.Optional[Literal["auto", "manual"]] = None,
         man_exp: T.Optional[int] = None,
         gain: T.Optional[int] = None,
         brightness: T.Optional[int] = None,
         contrast: T.Optional[int] = None,
         gamma: T.Optional[int] = None,
         camera: Literal["world"] = "world",
+        validate_with_state: T.Optional[CameraState] = None,
     ) -> None:
         """
-        EXPERIMENTAL
+        EXPERIMENTAL - Set camera control state, e.g. manual exposure time
 
         :raises pupil_labs.realtime_api.device.DeviceError:
         :raises aiohttp.ServerDisconnectedError:
         """
-        params = {"camera": camera, "ae_mode": ae_mode}
+        params: ChangeRequestParameters = {"camera": camera}
 
-        # Set ae_mode first. Then perform a second call to change the other settings.
-        await self.__request_camera_control_change(params)
-        del params["ae_mode"]
+        self.__prepare_control_param(
+            params,
+            ae_mode,
+            Control.AUTOEXPOSURE_MODE,
+            validate_with_state.ae_mode if validate_with_state else None,
+        )
+        self.__prepare_control_param(
+            params,
+            man_exp,
+            Control.MANUAL_EXPOSURE_TIME,
+            validate_with_state.man_exp if validate_with_state else None,
+        )
+        self.__prepare_control_param(
+            params,
+            gain,
+            Control.GAIN,
+            validate_with_state.gain if validate_with_state else None,
+        )
+        self.__prepare_control_param(
+            params,
+            brightness,
+            Control.BRIGHTNESS,
+            validate_with_state.brightness if validate_with_state else None,
+        )
+        self.__prepare_control_param(
+            params,
+            contrast,
+            Control.CONTRAST,
+            validate_with_state.contrast if validate_with_state else None,
+        )
+        self.__prepare_control_param(
+            params,
+            gamma,
+            Control.GAMMA,
+            validate_with_state.gamma if validate_with_state else None,
+        )
 
-        if man_exp is not None:
-            params["man_exp"] = int(man_exp)
-        if gain is not None:
-            params["gain"] = int(gain)
-        if brightness is not None:
-            params["brightness"] = int(brightness)
-        if contrast is not None:
-            params["contrast"] = int(contrast)
-        if gamma is not None:
-            params["gamma"] = int(gamma)
-
-        await self.__request_camera_control_change(params)
-
-    async def __request_camera_control_change(self, params: T.Dict) -> None:
         async with self.session.post(
             self.api_url(APIPath.CAMERA_CONTROL), params=params
         ) as response:
@@ -214,6 +247,95 @@ class Device(DeviceBase):
             logger.debug(f"[{self}.camera_control] Received response: {confirmation}")
             if response.status != 200:
                 raise DeviceError(response.status, confirmation["message"])
+
+    async def _get_camera_state(
+        self,
+        camera: Literal["world"] = "world",
+    ) -> CameraState:
+        """
+        EXPERIMENTAL - Get camera control state, e.g. manual exposure time
+
+        :raises pupil_labs.realtime_api.device.DeviceError:
+        :raises aiohttp.ServerDisconnectedError:
+        """
+        return CameraState(
+            ae_mode=await self.__get_control_state(
+                Control.AUTOEXPOSURE_MODE, ControlStateEnum, camera
+            ),
+            man_exp=await self.__get_control_state(
+                Control.MANUAL_EXPOSURE_TIME, ControlStateInteger, camera
+            ),
+            contrast=await self.__get_control_state(
+                Control.CONTRAST, ControlStateInteger, camera
+            ),
+            brightness=await self.__get_control_state(
+                Control.BRIGHTNESS, ControlStateInteger, camera
+            ),
+            gain=await self.__get_control_state(
+                Control.GAIN, ControlStateInteger, camera
+            ),
+            gamma=await self.__get_control_state(
+                Control.GAMMA, ControlStateInteger, camera
+            ),
+        )
+
+    async def __get_control_state(
+        self,
+        control: Control,
+        state_cls: T.Type[ControlStateClass],
+        camera: Literal["world"] = "world",
+    ) -> ControlStateClass:
+        params: ChangeRequestParameters = {"camera": camera, control.value: ""}
+        async with self.session.get(
+            self.api_url(APIPath.CAMERA_CONTROL), params=params
+        ) as response:
+            if response.status == 404:
+                raise DeviceError(
+                    response.status, f"Camera {camera} might not be connected"
+                )
+            envelope: ControlStateResponseEnvelope = await response.json()
+            logger.debug(
+                f"[{self}._camera_control_state] Received envelope: {envelope}"
+            )
+            if response.status != 200:
+                raise DeviceError(response.status, envelope["message"])
+
+            field_names = tuple(f.name for f in fields(state_cls))
+            return state_cls(
+                **{k: v for k, v in envelope["result"].items() if k in field_names}
+            )
+
+    @staticmethod
+    @T.overload
+    def __prepare_control_param(
+        params: ChangeRequestParameters,
+        value: T.Optional[int],
+        ctrl: Control,
+        state: T.Optional[ControlStateInteger] = None,
+    ) -> None:
+        ...
+
+    @staticmethod
+    @T.overload
+    def __prepare_control_param(
+        params: ChangeRequestParameters,
+        value: T.Optional[str],
+        ctrl: Control,
+        state: T.Optional[ControlStateEnum] = None,
+    ) -> None:
+        ...
+
+    @staticmethod
+    def __prepare_control_param(
+        params: ChangeRequestParameters,
+        value: T.Any,
+        ctrl: T.Any,
+        state: T.Optional[T.Any] = None,
+    ) -> None:
+        if value is not None:
+            if state is not None:
+                state.validate(value)
+            params[ctrl.value] = value
 
 
 class StatusUpdateNotifier:
