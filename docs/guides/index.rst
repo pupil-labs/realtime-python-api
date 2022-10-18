@@ -8,4 +8,5 @@ For more advanced guides, see below.
 .. toctree::
    :maxdepth: 5
 
+   simple-vs-async-api
    under-the-hood

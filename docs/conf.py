@@ -43,6 +43,9 @@ nitpick_ignore = [
     ("py:class", "asyncio.streams.StreamWriter"),
     ("py:class", "numpy.uint8"),
     ("py:class", "typing_extensions.Literal"),
+    # TODO: find work-around for recursive reference:
+    ("py:class", "pupil_labs.realtime_api.simple.device.Device"),
+    ("py:class", "pupil_labs.realtime_api.streaming.gaze.DualMonocularGazeData"),
 ]
 
 

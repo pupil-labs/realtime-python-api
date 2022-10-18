@@ -34,6 +34,8 @@ class GazeData(T.NamedTuple):
 
 
 class DualMonocularGazeData(T.NamedTuple):
+    """EXPERIMENTAL CLASS"""
+
     left: Point
     right: Point
     worn: bool

@@ -20,6 +20,8 @@ Find one or more devices
 Remote control devices
 ======================
 
+.. _simple_get_status_example:
+
 Get current status
 ------------------
 
