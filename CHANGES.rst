@@ -1,3 +1,7 @@
+1.1.1
+#####
+- Use ``numpy.typing`` instead of ``nptyping``
+
 1.1.0
 #####
 

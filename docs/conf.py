@@ -7,6 +7,7 @@ except ImportError:
 extensions = [
     "jaraco.packaging.sphinx",
     "rst.linker",
+    "sphinx_toolbox.more_autodoc",
     "sphinx.ext.autodoc",
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
@@ -37,13 +38,11 @@ link_files = {
 # Be strict about any broken references:
 nitpicky = True
 nitpick_ignore = [
-    # FIXME: Add link to https://github.com/ramonhagenaars/nptyping as soon as
-    # they have public sphinx documentation
-    ("py:class", "nptyping.types._ndarray.NDArray"),
-    ("py:class", "nptyping.types._number.UInt"),
     ("py:class", "aiortsp.rtsp.reader.RTSPReader"),
     ("py:class", "asyncio.streams.StreamReader"),
     ("py:class", "asyncio.streams.StreamWriter"),
+    ("py:class", "numpy.uint8"),
+    ("py:class", "typing_extensions.Literal"),
 ]
 
 
@@ -53,6 +52,7 @@ extensions += ["sphinx.ext.intersphinx"]
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "av": ("https://pyav.org/docs/stable", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
     "zeroconf": ("https://python-zeroconf.readthedocs.io/en/stable/", None),
 }
 
@@ -67,3 +67,6 @@ html_title = f"{project} {release}"
 
 todo_include_todos = True
 todo_emit_warnings = True
+
+github_username = "pupil-labs"
+github_repository = "realtime-python-api"
