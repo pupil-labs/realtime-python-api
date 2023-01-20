@@ -19,6 +19,8 @@ Remote Control
     :undoc-members:
     :show-inheritance:
 
+.. _streaming_api:
+
 Streaming
 =========
 
@@ -29,6 +31,7 @@ Gaze Data
     :members:
     :undoc-members:
     :show-inheritance:
+    :exclude-members: DualMonocularGazeData
 
 Scene Video
 -----------

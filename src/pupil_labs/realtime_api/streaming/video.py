@@ -4,14 +4,15 @@ import logging
 import typing as T
 
 import av
-import nptyping as npt
+import numpy as np
+import numpy.typing as npt
 
 from .base import RTSPRawStreamer, SDPDataNotAvailableError
 from .nal_unit import extract_payload_from_nal_unit
 
 logger = logging.getLogger(__name__)
 
-BGRBuffer = npt.NDArray[(1080, 1088, 3), npt.UInt8]
+BGRBuffer = npt.NDArray[np.uint8]
 """Type annotation for raw BGR image buffers of the scene camera"""
 
 

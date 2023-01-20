@@ -1,3 +1,8 @@
+1.1.1
+#####
+- Use ``numpy.typing`` instead of ``nptyping``
+- Add :ref:`simple_vs_async_api_guide` guide
+
 1.1.0
 #####
 

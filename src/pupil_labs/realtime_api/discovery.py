@@ -74,7 +74,7 @@ class Network:
                 name,
                 info.server,
                 info.port,
-                ['.'.join([str(symbol) for symbol in addr]) for addr in info.addresses],
+                [".".join([str(symbol) for symbol in addr]) for addr in info.addresses],
             )
             self._devices[name] = device
             await self._new_devices.put(device)

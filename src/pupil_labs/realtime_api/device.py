@@ -37,11 +37,11 @@ from .models import (
 
 logger = logging.getLogger(__name__)
 
-UpdateCallbackSync = T.Callable[['pupil_labs.realtime_api.models.Component'], None]
+UpdateCallbackSync = T.Callable[["pupil_labs.realtime_api.models.Component"], None]
 """Type annotation for synchronous update callbacks"""
 
 UpdateCallbackAsync = T.Callable[
-    ['pupil_labs.realtime_api.models.Component'], T.Awaitable[None]
+    ["pupil_labs.realtime_api.models.Component"], T.Awaitable[None]
 ]
 """Type annotation for asynchronous update callbacks"""
 
