@@ -9,7 +9,14 @@ from types import MappingProxyType
 
 from ..models import Sensor
 from ..streaming import RTSPGazeStreamer, RTSPVideoFrameStreamer
-from .models import MATCHED_ITEM_LABEL, GazeData, MatchedItem, SimpleVideoFrame
+from .models import (
+    MATCHED_GAZE_EYES_LABEL,
+    MATCHED_ITEM_LABEL,
+    GazeData,
+    MatchedGazeEyesSceneItem,
+    MatchedItem,
+    SimpleVideoFrame,
+)
 
 logger_name = "pupil_labs.realtime_api.simple"
 logger = logging.getLogger(logger_name)
@@ -111,6 +118,7 @@ class _StreamManager:
 
     async def append_data_from_sensor_to_queue(self, sensor: Sensor):
         self._device()._cached_gaze_for_matching.clear()
+        self._device()._cached_eyes_for_matching.clear()
         async with self._streaming_cls(
             sensor.url, run_loop=True, log_level=logging.WARNING
         ) as streamer:
@@ -121,7 +129,7 @@ class _StreamManager:
                     break
                 name = sensor.sensor
 
-                if name == Sensor.Name.WORLD.value:
+                if name in (Sensor.Name.WORLD.value, Sensor.Name.EYES.value):
                     # convert to simple video frame
                     item = SimpleVideoFrame.from_video_frame(item)
 
@@ -141,22 +149,43 @@ class _StreamManager:
                             device._cached_gaze_for_matching,
                             item.timestamp_unix_seconds,
                         )
+                        eyes = self._get_closest_item(
+                            device._cached_eyes_for_matching,
+                            item.timestamp_unix_seconds,
+                        )
                     except IndexError:
                         logger_receive_data.info(
-                            "No cached gaze data available for matching"
+                            "No cached gaze or eye data available for matching"
                         )
                     else:
-                        match_time_difference = (
+                        gaze_match_time_difference = (
                             item.timestamp_unix_seconds - gaze.timestamp_unix_seconds
                         )
+                        eyes_match_time_difference = (
+                            item.timestamp_unix_seconds - eyes.timestamp_unix_seconds
+                        )
+                        gaze_eyes_time_difference = (
+                            gaze.timestamp_unix_seconds - eyes.timestamp_unix_seconds
+                        )
                         logger_receive_data.info(
-                            f"Found matching sample (time difference: "
-                            f"{match_time_difference:.3f} seconds)"
+                            f"Found matching samples. Time differences:\n"
+                            f"\tscene - gaze: {gaze_match_time_difference:.3f}s\n"
+                            f"\tscene - eyes: {eyes_match_time_difference:.3f}s)\n"
+                            f"\tgaze - eyes: {gaze_eyes_time_difference:.3f}s)"
                         )
                         device._most_recent_item[MATCHED_ITEM_LABEL].append(
                             MatchedItem(item, gaze)
                         )
                         device._event_new_item[MATCHED_ITEM_LABEL].set()
+
+                        device._most_recent_item[MATCHED_GAZE_EYES_LABEL].append(
+                            MatchedGazeEyesSceneItem(item, eyes, gaze)
+                        )
+                        device._event_new_item[MATCHED_GAZE_EYES_LABEL].set()
+                elif name == Sensor.Name.EYES.value:
+                    device._cached_eyes_for_matching.append(
+                        (item.timestamp_unix_seconds, item)
+                    )
                 else:
                     logger.error(f"Unhandled {item} for sensor {name}")
 

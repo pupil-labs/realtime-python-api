@@ -31,7 +31,7 @@ async def main(preview_frame_rate=30):
         ):
             bgr_buffer = frame.bgr_buffer()
             draw_time(bgr_buffer, frame.datetime)
-            cv2.imshow("Scene Camera - Press ESC to quit", bgr_buffer)
+            cv2.imshow("Eye Cameras - Press ESC to quit", bgr_buffer)
 
             time_since_last_update = time.perf_counter() - _last_update
             if time_since_last_update > 1 / preview_frame_rate:
@@ -42,7 +42,7 @@ async def main(preview_frame_rate=30):
 
 def draw_time(frame, time):
     frame_txt_font_name = cv2.FONT_HERSHEY_SIMPLEX
-    frame_txt_font_scale = 1.0
+    frame_txt_font_scale = 0.5
     frame_txt_thickness = 1
 
     # first line: frame index

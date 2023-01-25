@@ -27,4 +27,11 @@ class MatchedItem(T.NamedTuple):
     gaze: GazeData
 
 
+class MatchedGazeEyesSceneItem(T.NamedTuple):
+    scene: SimpleVideoFrame
+    eyes: SimpleVideoFrame
+    gaze: GazeData
+
+
 MATCHED_ITEM_LABEL = "matched_gaze_and_scene_video"
+MATCHED_GAZE_EYES_LABEL = "matched_gaze_eyes_and_scene_video"
