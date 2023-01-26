@@ -67,6 +67,7 @@ class _AsyncEventManager(T.Generic[EventKey]):
 
 
 class _StreamManager:
+    # TODO: Refactor matching logic to be more flexible
     def __init__(
         self,
         device_weakref: weakref.ReferenceType,
