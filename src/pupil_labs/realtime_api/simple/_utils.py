@@ -141,48 +141,74 @@ class _StreamManager:
                         (item.timestamp_unix_seconds, item)
                     )
                 elif name == Sensor.Name.WORLD.value:
+                    # Matching priority
+                    # 1. Match gaze datum to scene video frame (MATCHED_ITEM_LABEL)
+                    # 2. If match not possible: Abort matching
+                    # 3. Match eyes video frame to scene video frame
+                    #    (MATCHED_GAZE_EYES_LABEL)
+                    # Motivation: As of now, there is only  eyes video if there is gaze,
+                    # too. In the future, it might be possible to receive eyes video
+                    # without receiving gaze.
+
+                    logger_receive_data.debug(
+                        f"Searching closest gaze datum in cache "
+                        f"(len={len(device._cached_gaze_for_matching)})..."
+                    )
+
+                    nan = float("nan")
+                    gaze_match_time_difference = nan
+                    eyes_match_time_difference = nan
+                    gaze_eyes_time_difference = nan
+
                     try:
-                        logger_receive_data.debug(
-                            f"Searching closest gaze datum in cache "
-                            f"(len={len(device._cached_gaze_for_matching)})..."
-                        )
                         gaze = self._get_closest_item(
                             device._cached_gaze_for_matching,
                             item.timestamp_unix_seconds,
                         )
-                        eyes = self._get_closest_item(
-                            device._cached_eyes_for_matching,
-                            item.timestamp_unix_seconds,
-                        )
                     except IndexError:
                         logger_receive_data.info(
-                            "No cached gaze or eye data available for matching"
+                            "No cached gaze data available for matching"
                         )
                     else:
                         gaze_match_time_difference = (
                             item.timestamp_unix_seconds - gaze.timestamp_unix_seconds
-                        )
-                        eyes_match_time_difference = (
-                            item.timestamp_unix_seconds - eyes.timestamp_unix_seconds
-                        )
-                        gaze_eyes_time_difference = (
-                            gaze.timestamp_unix_seconds - eyes.timestamp_unix_seconds
-                        )
-                        logger_receive_data.info(
-                            f"Found matching samples. Time differences:\n"
-                            f"\tscene - gaze: {gaze_match_time_difference:.3f}s\n"
-                            f"\tscene - eyes: {eyes_match_time_difference:.3f}s)\n"
-                            f"\tgaze - eyes: {gaze_eyes_time_difference:.3f}s)"
                         )
                         device._most_recent_item[MATCHED_ITEM_LABEL].append(
                             MatchedItem(item, gaze)
                         )
                         device._event_new_item[MATCHED_ITEM_LABEL].set()
 
-                        device._most_recent_item[MATCHED_GAZE_EYES_LABEL].append(
-                            MatchedGazeEyesSceneItem(item, eyes, gaze)
-                        )
-                        device._event_new_item[MATCHED_GAZE_EYES_LABEL].set()
+                        try:
+                            eyes = self._get_closest_item(
+                                device._cached_eyes_for_matching,
+                                item.timestamp_unix_seconds,
+                            )
+                        except IndexError:
+                            # This case is expected when streaming data from Pupil
+                            # Invisible.
+                            logger_receive_data.info(
+                                "No cached eyes video frames available for matching"
+                            )
+                        else:
+                            eyes_match_time_difference = (
+                                item.timestamp_unix_seconds
+                                - eyes.timestamp_unix_seconds
+                            )
+                            gaze_eyes_time_difference = (
+                                gaze.timestamp_unix_seconds
+                                - eyes.timestamp_unix_seconds
+                            )
+                            device._most_recent_item[MATCHED_GAZE_EYES_LABEL].append(
+                                MatchedGazeEyesSceneItem(item, eyes, gaze)
+                            )
+                            device._event_new_item[MATCHED_GAZE_EYES_LABEL].set()
+
+                    logger_receive_data.info(
+                        f"Found matching samples. Time differences:\n"
+                        f"\tscene - gaze: {gaze_match_time_difference:.3f}s\n"
+                        f"\tscene - eyes: {eyes_match_time_difference:.3f}s)\n"
+                        f"\tgaze - eyes: {gaze_eyes_time_difference:.3f}s)"
+                    )
                 elif name == Sensor.Name.EYES.value:
                     device._cached_eyes_for_matching.append(
                         (item.timestamp_unix_seconds, item)
