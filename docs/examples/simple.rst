@@ -50,7 +50,7 @@ Invisible Companion device.
 
 .. literalinclude:: ../../examples/simple/send_event.py
    :language: python
-   :emphasize-lines: 12,15
+   :emphasize-lines: 12,16-19,24,25,29,30,32-34
    :linenos:
 
 Start, stop and save, and cancel recordings
