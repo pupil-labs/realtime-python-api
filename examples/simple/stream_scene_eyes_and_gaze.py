@@ -17,6 +17,10 @@ def main():
         while True:
             matched = device.receive_matched_scene_and_eyes_video_frames_and_gaze()
             if not matched:
+                print(
+                    "Not able to find a match! Note: Pupil Invisible does not support "
+                    "streaming eyes video"
+                )
                 continue
 
             cv2.circle(
@@ -27,6 +31,7 @@ def main():
                 thickness=15,
             )
 
+            # Render eyes video into the scene video
             height, width, _ = matched.eyes.bgr_pixels.shape
             matched.scene.bgr_pixels[:height, :width, :] = matched.eyes.bgr_pixels
 

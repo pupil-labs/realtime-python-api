@@ -1,13 +1,10 @@
 import asyncio
 import contextlib
-import logging
 import time
 
 import cv2
 
 from pupil_labs.realtime_api import Device, Network, receive_video_frames
-
-logging.basicConfig(level="DEBUG")
 
 
 async def main(preview_frame_rate=30):
