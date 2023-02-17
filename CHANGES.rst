@@ -1,3 +1,19 @@
+1.1.2 (WIP)
+###########
+- Add support for streaming eyes video from Neon Companion app, see
+
+  - Simple API
+
+    - :py:func:`pupil_labs.realtime_api.simple.Device.receive_eyes_video_frame`
+    - :py:func:`pupil_labs.realtime_api.simple.Device.receive_matched_scene_and_eyes_video_frames_and_gaze`
+
+  - Async API
+
+    - :py:func:`pupil_labs.realtime_api.models.Status.direct_eyes_sensor`, providing an
+      url that can be used with :py:func:`pupil_labs.realtime_api.streaming.video.receive_video_frames`
+
+  - and the corresponding examples
+
 1.1.1
 #####
 - Use ``numpy.typing`` instead of ``nptyping``
