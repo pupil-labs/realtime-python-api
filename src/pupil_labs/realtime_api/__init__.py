@@ -13,6 +13,8 @@ from .streaming import (
     receive_gaze_data,
     receive_raw_rtsp_data,
     receive_video_frames,
+    RTSPImuStreamer,
+    receive_imu_data,
 )
 
 try:
@@ -42,4 +44,7 @@ __all__ = [
     "RTSPVideoFrameStreamer",
     "StatusUpdateNotifier",
     "VideoFrame",
+    "receive_imu_data",
+    "RTSPImuStreamer",
+    "imu_pb2"
 ]

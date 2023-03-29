@@ -8,6 +8,8 @@ from .base import (
 )
 from .gaze import GazeData, RTSPGazeStreamer, receive_gaze_data
 from .video import RTSPVideoFrameStreamer, VideoFrame, receive_video_frames
+from .imu import RTSPImuStreamer, receive_imu_data
+from .imu_pb2 import ImuPacket
 
 RTSPStreamerType = T.TypeVar("RTSPStreamerType", bound="RTSPRawStreamer")
 """Type annotation for RTSP Streamer classes"""
@@ -23,4 +25,8 @@ __all__ = [
     "RTSPVideoFrameStreamer",
     "SDPDataNotAvailableError",
     "VideoFrame",
+    "RTSPImuStreamer",
+    "receive_imu_data",
+    "ImuPacket",
+    "imu_pb2",
 ]
