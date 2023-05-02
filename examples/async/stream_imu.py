@@ -24,6 +24,7 @@ async def main():
         ):
             print(imu_pack)
 
+
 if __name__ == "__main__":
     with contextlib.suppress(KeyboardInterrupt):
         asyncio.run(main())

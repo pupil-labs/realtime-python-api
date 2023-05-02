@@ -7,9 +7,9 @@ from .base import (
     receive_raw_rtsp_data,
 )
 from .gaze import GazeData, RTSPGazeStreamer, receive_gaze_data
-from .video import RTSPVideoFrameStreamer, VideoFrame, receive_video_frames
 from .imu import RTSPImuStreamer, receive_imu_data
 from .imu_pb2 import ImuPacket
+from .video import RTSPVideoFrameStreamer, VideoFrame, receive_video_frames
 
 RTSPStreamerType = T.TypeVar("RTSPStreamerType", bound="RTSPRawStreamer")
 """Type annotation for RTSP Streamer classes"""
