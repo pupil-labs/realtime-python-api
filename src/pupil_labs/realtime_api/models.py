@@ -262,7 +262,6 @@ class Status:
             ),
         )
 
-
     def direct_imu_sensor(self) -> T.Optional[Sensor]:
         return next(
             self.matching_sensors(Sensor.Name.IMU, Sensor.Connection.DIRECT),
