@@ -22,9 +22,20 @@ class SimpleVideoFrame(T.NamedTuple):
         return int(self.timestamp_unix_seconds * 1e9)
 
 
+# The following name can be considered technical debt from the time when there were only
+# two streams (scene video and gaze) to match. When I added support for streaming eyes
+# video, I thought about giving it a more descriptive name. But since this is an output
+# class of the public API, I decided against it to avoid breaking possible imports.
 class MatchedItem(T.NamedTuple):
     frame: SimpleVideoFrame
     gaze: GazeData
 
 
+class MatchedGazeEyesSceneItem(T.NamedTuple):
+    scene: SimpleVideoFrame
+    eyes: SimpleVideoFrame
+    gaze: GazeData
+
+
 MATCHED_ITEM_LABEL = "matched_gaze_and_scene_video"
+MATCHED_GAZE_EYES_LABEL = "matched_gaze_eyes_and_scene_video"

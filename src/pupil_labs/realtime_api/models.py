@@ -120,6 +120,7 @@ class Sensor(T.NamedTuple):
         ANY = None
         GAZE = "gaze"
         WORLD = "world"
+        EYES = "eyes"
 
     class Connection(enum.Enum):
         ANY = None
@@ -257,5 +258,13 @@ class Status:
             self.matching_sensors(Sensor.Name.GAZE, Sensor.Connection.DIRECT),
             Sensor(
                 sensor=Sensor.Name.GAZE.value, conn_type=Sensor.Connection.DIRECT.value
+            ),
+        )
+
+    def direct_eyes_sensor(self) -> T.Optional[Sensor]:
+        return next(
+            self.matching_sensors(Sensor.Name.EYES, Sensor.Connection.DIRECT),
+            Sensor(
+                sensor=Sensor.Name.EYES.value, conn_type=Sensor.Connection.DIRECT.value
             ),
         )

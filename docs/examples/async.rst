@@ -72,6 +72,14 @@ Scene Camera Video
    :emphasize-lines: 18,24-26
    :linenos:
 
+Eyes Camera Video
+------------------
+
+.. literalinclude:: ../../examples/async/stream_eyes_camera_video.py
+   :language: python
+   :emphasize-lines: 20,28
+   :linenos:
+
 .. _stream_video_with_overlayed_gaze_example:
 
 Scene Camera Video With Overlayed Gaze
