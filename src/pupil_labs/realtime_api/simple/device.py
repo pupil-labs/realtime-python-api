@@ -18,7 +18,14 @@ from ..models import Component, Event, Sensor, Status
 from ..streaming import GazeData, RTSPGazeStreamer, RTSPVideoFrameStreamer
 from ..time_echo import TimeEchoEstimates, TimeOffsetEstimator
 from ._utils import _AsyncEventManager, _StreamManager, logger
-from .models import MATCHED_ITEM_LABEL, MatchedItem, SimpleVideoFrame, VideoFrame
+from .models import (
+    MATCHED_GAZE_EYES_LABEL,
+    MATCHED_ITEM_LABEL,
+    MatchedGazeEyesSceneItem,
+    MatchedItem,
+    SimpleVideoFrame,
+    VideoFrame,
+)
 
 
 class Device(DeviceBase):
@@ -171,10 +178,20 @@ class Device(DeviceBase):
     ) -> T.Optional[GazeData]:
         return self._receive_item(Sensor.Name.GAZE.value, timeout_seconds)
 
+    def receive_eyes_video_frame(
+        self, timeout_seconds: T.Optional[float] = None
+    ) -> T.Optional[SimpleVideoFrame]:
+        return self._receive_item(Sensor.Name.EYES.value, timeout_seconds)
+
     def receive_matched_scene_video_frame_and_gaze(
         self, timeout_seconds: T.Optional[float] = None
     ) -> T.Optional[MatchedItem]:
         return self._receive_item(MATCHED_ITEM_LABEL, timeout_seconds)
+
+    def receive_matched_scene_and_eyes_video_frames_and_gaze(
+        self, timeout_seconds: T.Optional[float] = None
+    ) -> T.Optional[MatchedGazeEyesSceneItem]:
+        return self._receive_item(MATCHED_GAZE_EYES_LABEL, timeout_seconds)
 
     def _receive_item(
         self, sensor: str, timeout_seconds: T.Optional[float] = None
@@ -257,7 +274,9 @@ class Device(DeviceBase):
         sensor_names = [
             Sensor.Name.GAZE.value,
             Sensor.Name.WORLD.value,
+            Sensor.Name.EYES.value,
             MATCHED_ITEM_LABEL,
+            MATCHED_GAZE_EYES_LABEL,
         ]
         self._most_recent_item = {
             name: collections.deque(maxlen=1) for name in sensor_names
@@ -265,7 +284,9 @@ class Device(DeviceBase):
         self._event_new_item = {name: threading.Event() for name in sensor_names}
         # only cache 3-4 seconds worth of gaze data in case no scene camera is connected
         GazeCacheType = T.Deque[T.Tuple[float, GazeData]]
+        EyesCacheType = T.Deque[T.Tuple[float, SimpleVideoFrame]]
         self._cached_gaze_for_matching: GazeCacheType = collections.deque(maxlen=200)
+        self._cached_eyes_for_matching: EyesCacheType = collections.deque(maxlen=200)
 
         event_auto_update_started = threading.Event()
         self._is_streaming_flag = threading.Event()
@@ -310,6 +331,11 @@ class Device(DeviceBase):
                 should_be_streaming_by_default=start_streaming_by_default,
             ),
             Sensor.Name.WORLD.value: _StreamManager(
+                device_weakref,
+                RTSPVideoFrameStreamer,
+                should_be_streaming_by_default=start_streaming_by_default,
+            ),
+            Sensor.Name.EYES.value: _StreamManager(
                 device_weakref,
                 RTSPVideoFrameStreamer,
                 should_be_streaming_by_default=start_streaming_by_default,

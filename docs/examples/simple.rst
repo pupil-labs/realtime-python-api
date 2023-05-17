@@ -81,6 +81,17 @@ Scene camera video
    :emphasize-lines: 18
    :linenos:
 
+Eyes camera video
+-----------------
+
+.. note:: Only available when connecting to a Neon Companion app
+
+.. literalinclude:: ../../examples/simple/stream_eyes_camera_video.py
+   :language: python
+   :emphasize-lines: 18
+   :linenos:
+
+
 .. _stream_video_with_overlayed_gaze_example_simple:
 
 Scene camera video with overlayed gaze
@@ -89,6 +100,16 @@ Scene camera video with overlayed gaze
 .. literalinclude:: ../../examples/simple/stream_video_with_overlayed_gaze.py
    :language: python
    :emphasize-lines: 18,20,21
+   :linenos:
+
+Scene camera video with overlayed eyes video and gaze circle
+------------------------------------------------------------
+
+.. note:: Only available when connecting to a Neon Companion app
+
+.. literalinclude:: ../../examples/simple/stream_scene_eyes_and_gaze.py
+   :language: python
+   :emphasize-lines: 18,27,35-36
    :linenos:
 
 Time Offset Estimation
