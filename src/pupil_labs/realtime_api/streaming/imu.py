@@ -1,9 +1,7 @@
-import datetime
 import logging
-import struct
 import typing as T
 
-from .base import RTSPData, RTSPRawStreamer
+from .base import RTSPRawStreamer
 from .imu_pb2 import ImuPacket
 
 logger = logging.getLogger(__name__)
