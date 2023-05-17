@@ -1,6 +1,6 @@
-1.1.2 (WIP)
+1.1.2
 ###########
-- Add support for streaming eyes video from Neon Companion app, see
+- Add support for streaming eyes video from Neon Companion app
 
   - Simple API
 
@@ -12,7 +12,11 @@
     - :py:func:`pupil_labs.realtime_api.models.Status.direct_eyes_sensor`, providing an
       url that can be used with :py:func:`pupil_labs.realtime_api.streaming.video.receive_video_frames`
 
-  - and the corresponding examples
+- Add async support for streaming IMU from Neon Companion app
+
+  - Async API
+  
+    - :py:func:`pupil_labs.realtime_api.streaming.video.receive_imu_data`
 
 1.1.1
 #####
