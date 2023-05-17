@@ -7,10 +7,12 @@ from .streaming import (
     GazeData,
     RTSPData,
     RTSPGazeStreamer,
+    RTSPImuStreamer,
     RTSPRawStreamer,
     RTSPVideoFrameStreamer,
     VideoFrame,
     receive_gaze_data,
+    receive_imu_data,
     receive_raw_rtsp_data,
     receive_video_frames,
 )
@@ -42,4 +44,7 @@ __all__ = [
     "RTSPVideoFrameStreamer",
     "StatusUpdateNotifier",
     "VideoFrame",
+    "receive_imu_data",
+    "RTSPImuStreamer",
+    "imu_pb2",
 ]

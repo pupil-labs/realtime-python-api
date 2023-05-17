@@ -14,3 +14,4 @@ exclude =
     .venv
     .pyenv
     __pycache__
+	src/pupil_labs/realtime_api/streaming/imu_pb2.py
