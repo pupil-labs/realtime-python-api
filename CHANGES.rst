@@ -15,7 +15,7 @@
 - Add async support for streaming IMU from Neon Companion app
 
   - Async API
-  
+
     - :py:func:`pupil_labs.realtime_api.streaming.video.receive_imu_data`
 
 1.1.1
