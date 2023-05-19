@@ -15,7 +15,13 @@ from ..base import DeviceBase
 from ..device import Device as _DeviceAsync
 from ..device import StatusUpdateNotifier
 from ..models import Component, Event, Sensor, Status
-from ..streaming import GazeData, RTSPGazeStreamer, RTSPVideoFrameStreamer
+from ..streaming import (
+    GazeData,
+    RTSPGazeStreamer,
+    RTSPVideoFrameStreamer,
+    ImuPacket,
+    RTSPImuStreamer,
+)
 from ..time_echo import TimeEchoEstimates, TimeOffsetEstimator
 from ._utils import _AsyncEventManager, _StreamManager, logger
 from .models import (
@@ -183,6 +189,11 @@ class Device(DeviceBase):
     ) -> T.Optional[SimpleVideoFrame]:
         return self._receive_item(Sensor.Name.EYES.value, timeout_seconds)
 
+    def receive_imu_datum(
+        self, timeout_seconds: T.Optional[float] = None
+    ) -> T.Optional[ImuPacket]:
+        return self._receive_item(Sensor.Name.IMU.value, timeout_seconds)
+
     def receive_matched_scene_video_frame_and_gaze(
         self, timeout_seconds: T.Optional[float] = None
     ) -> T.Optional[MatchedItem]:
@@ -275,6 +286,7 @@ class Device(DeviceBase):
             Sensor.Name.GAZE.value,
             Sensor.Name.WORLD.value,
             Sensor.Name.EYES.value,
+            Sensor.Name.IMU.value,
             MATCHED_ITEM_LABEL,
             MATCHED_GAZE_EYES_LABEL,
         ]
@@ -338,6 +350,11 @@ class Device(DeviceBase):
             Sensor.Name.EYES.value: _StreamManager(
                 device_weakref,
                 RTSPVideoFrameStreamer,
+                should_be_streaming_by_default=start_streaming_by_default,
+            ),
+            Sensor.Name.IMU.value: _StreamManager(
+                device_weakref,
+                RTSPImuStreamer,
                 should_be_streaming_by_default=start_streaming_by_default,
             ),
         }
