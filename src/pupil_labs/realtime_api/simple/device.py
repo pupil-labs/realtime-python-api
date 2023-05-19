@@ -19,8 +19,8 @@ from ..streaming import (
     GazeData,
     ImuPacket,
     RTSPGazeStreamer,
-    RTSPVideoFrameStreamer,
     RTSPImuStreamer,
+    RTSPVideoFrameStreamer,
 )
 from ..time_echo import TimeEchoEstimates, TimeOffsetEstimator
 from ._utils import _AsyncEventManager, _StreamManager, logger
