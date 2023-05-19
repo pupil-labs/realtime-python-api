@@ -213,6 +213,8 @@ class _StreamManager:
                     device._cached_eyes_for_matching.append(
                         (item.timestamp_unix_seconds, item)
                     )
+                elif name == Sensor.Name.IMU.value:
+                    pass
                 else:
                     logger.error(f"Unhandled {item} for sensor {name}")
 
