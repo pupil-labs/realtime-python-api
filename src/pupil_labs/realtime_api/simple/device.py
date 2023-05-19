@@ -17,9 +17,9 @@ from ..device import StatusUpdateNotifier
 from ..models import Component, Event, Sensor, Status
 from ..streaming import (
     GazeData,
+    ImuPacket,
     RTSPGazeStreamer,
     RTSPVideoFrameStreamer,
-    ImuPacket,
     RTSPImuStreamer,
 )
 from ..time_echo import TimeEchoEstimates, TimeOffsetEstimator
