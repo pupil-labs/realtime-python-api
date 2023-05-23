@@ -109,11 +109,15 @@ class Sensor(T.NamedTuple):
     params: T.Optional[str] = None
     port: T.Optional[int] = None
     protocol: str = "rtsp"
+    mode: T.Literal["udp", "tcp"] = "tcp"
 
     @property
     def url(self) -> T.Optional[str]:
         if self.connected:
-            return f"{self.protocol}://{self.ip}:{self.port}/?{self.params}"
+            url = f"{self.protocol}://{self.ip}:{self.port}/?{self.params}"
+            if self.mode == "tcp":
+                url = url.replace("rtsp://", "rtspt://")
+            return url
         return None
 
     class Name(enum.Enum):
