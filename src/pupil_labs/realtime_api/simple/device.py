@@ -94,6 +94,11 @@ class Device(DeviceBase):
         return self._status.hardware.version
 
     @property
+    def module_serial(self) -> T.Union[str, None, Literal["default"]]:
+        """Returns ``None`` or ``"default"`` if no glasses are connected"""
+        return self._status.hardware.module_serial
+
+    @property
     def serial_number_glasses(self) -> T.Union[str, None, Literal["default"]]:
         """Returns ``None`` or ``"default"`` if no glasses are connected"""
         return self._status.hardware.glasses_serial
