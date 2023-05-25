@@ -80,6 +80,7 @@ class Hardware(T.NamedTuple):
     version: str = "unknown"
     glasses_serial: str = "unknown"
     world_camera_serial: str = "unknown"
+    module_serial: str = "unknown"
 
 
 class NetworkDevice(T.NamedTuple):
