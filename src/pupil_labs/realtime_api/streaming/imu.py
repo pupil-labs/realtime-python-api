@@ -24,7 +24,7 @@ class IMUData(T.NamedTuple):
     gyro_data: Data3D
     accel_data: Data3D
     quaternion: Quaternion
-    timestamp_unix_nanoseconds: float
+    timestamp_unix_ns: float
     timestamp_unix_seconds: float
 
 
