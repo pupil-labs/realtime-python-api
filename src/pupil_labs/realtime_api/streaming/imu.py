@@ -27,7 +27,6 @@ class IMUData(T.NamedTuple):
     quaternion: Quaternion
     timestamp_unix_seconds: float
 
-
     @property
     def datetime(self):
         return datetime.datetime.fromtimestamp(self.timestamp_unix_seconds)
@@ -35,7 +34,6 @@ class IMUData(T.NamedTuple):
     @property
     def timestamp_unix_ns(self):
         return int(self.timestamp_unix_seconds * 1e9)
-
 
 
 def IMUPacket_to_IMUData(imu_packet: ImuPacket) -> IMUData:
