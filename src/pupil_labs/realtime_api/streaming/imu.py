@@ -1,3 +1,4 @@
+import datetime
 import logging
 import typing as T
 
@@ -24,8 +25,17 @@ class IMUData(T.NamedTuple):
     gyro_data: Data3D
     accel_data: Data3D
     quaternion: Quaternion
-    timestamp_unix_nanoseconds: float
     timestamp_unix_seconds: float
+
+
+    @property
+    def datetime(self):
+        return datetime.datetime.fromtimestamp(self.timestamp_unix_seconds)
+
+    @property
+    def timestamp_unix_ns(self):
+        return int(self.timestamp_unix_seconds * 1e9)
+
 
 
 def IMUPacket_to_IMUData(imu_packet: ImuPacket) -> IMUData:
@@ -49,7 +59,6 @@ def IMUPacket_to_IMUData(imu_packet: ImuPacket) -> IMUData:
         gyro_data=gyro_data,
         accel_data=accel_data,
         quaternion=quaternion,
-        timestamp_unix_nanoseconds=imu_packet.tsNs,
         timestamp_unix_seconds=imu_packet.tsNs / 1e9,
     )
     return imu_data
