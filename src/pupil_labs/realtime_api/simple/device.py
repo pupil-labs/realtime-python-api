@@ -114,6 +114,13 @@ class Device(DeviceBase):
     def gaze_sensor(self) -> T.Optional[Sensor]:
         return self._status.direct_gaze_sensor()
 
+    def get_calibration(self):
+        async def _get_calibration():
+            async with _DeviceAsync.convert_from(self) as control:
+                return await control.get_calibration()
+
+        return asyncio.run(_get_calibration())
+
     def recording_start(self) -> str:
         """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.recording_start`
 

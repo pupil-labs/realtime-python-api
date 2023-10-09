@@ -7,6 +7,7 @@ import typing as T
 
 import aiohttp
 import websockets
+import numpy as np
 
 import pupil_labs  # noqa: F401
 
@@ -164,6 +165,35 @@ class Device(DeviceBase):
 
     def _create_client_session(self):
         self.session = aiohttp.ClientSession()
+
+    async def get_calibration(self) -> np.ndarray:
+        """
+        :raises pupil_labs.realtime_api.device.DeviceError: if the request fails
+        """
+        async with self.session.get(self.api_url(APIPath.CALIBRATION)) as response:
+            if response.status != 200:
+                raise DeviceError(response.status, "Failed to fetch calibration")
+
+            raw_data = await response.read()
+            return np.frombuffer(
+                raw_data,
+                np.dtype(
+                    [
+                        ("version", "u1"),
+                        ("serial", "6a"),
+                        ("scene_camera_matrix", "(3,3)d"),
+                        ("scene_distortion_coefficients", "8d"),
+                        ("scene_extrinsics_affine_matrix", "(4,4)d"),
+                        ("right_camera_matrix", "(3,3)d"),
+                        ("right_distortion_coefficients", "8d"),
+                        ("right_extrinsics_affine_matrix", "(4,4)d"),
+                        ("left_camera_matrix", "(3,3)d"),
+                        ("left_distortion_coefficients", "8d"),
+                        ("left_extrinsics_affine_matrix", "(4,4)d"),
+                        ("crc", "u4"),
+                    ]
+                ),
+            )
 
 
 class StatusUpdateNotifier:
