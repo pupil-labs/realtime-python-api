@@ -6,8 +6,8 @@ import types
 import typing as T
 
 import aiohttp
-import websockets
 import numpy as np
+import websockets
 
 import pupil_labs  # noqa: F401
 
