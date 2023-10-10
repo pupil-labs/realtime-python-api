@@ -91,6 +91,16 @@ Eyes camera video
    :emphasize-lines: 18
    :linenos:
 
+Camera calibration
+------------------
+
+.. note:: Only available when connecting to a Neon Companion app
+
+.. literalinclude:: ../../examples/simple/camera_calibration.py
+   :language: python
+   :emphasize-lines: 12
+   :linenos:
+
 
 .. _stream_video_with_overlayed_gaze_example_simple:
 
