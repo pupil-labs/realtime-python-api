@@ -445,7 +445,7 @@ AccelData = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _ACCELDATA,
-        "__module__": "imu_pb2"
+        "__module__": "imu_pb2",
         # @@protoc_insertion_point(class_scope:imuproto.AccelData)
     },
 )
@@ -456,7 +456,7 @@ GyroData = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _GYRODATA,
-        "__module__": "imu_pb2"
+        "__module__": "imu_pb2",
         # @@protoc_insertion_point(class_scope:imuproto.GyroData)
     },
 )
@@ -467,7 +467,7 @@ RotVecData = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _ROTVECDATA,
-        "__module__": "imu_pb2"
+        "__module__": "imu_pb2",
         # @@protoc_insertion_point(class_scope:imuproto.RotVecData)
     },
 )
@@ -478,7 +478,7 @@ ImuPacket = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _IMUPACKET,
-        "__module__": "imu_pb2"
+        "__module__": "imu_pb2",
         # @@protoc_insertion_point(class_scope:imuproto.ImuPacket)
     },
 )
