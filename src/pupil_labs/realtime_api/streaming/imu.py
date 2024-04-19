@@ -35,6 +35,11 @@ class IMUData(T.NamedTuple):
     def timestamp_unix_ns(self):
         return int(self.timestamp_unix_seconds * 1e9)
 
+    # For backward compatibility
+    @property
+    def timestamp_unix_nanoseconds(self):
+        return self.timestamp_unix_ns
+
 
 def IMUPacket_to_IMUData(imu_packet: ImuPacket) -> IMUData:
     gyro_data = Data3D(
