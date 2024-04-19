@@ -1,7 +1,7 @@
 import datetime
 import typing as T
 
-from ..streaming.gaze import GazeData
+from ..streaming.gaze import DualMonocularGazeData, EyestateGazeData, GazeData
 from ..streaming.video import BGRBuffer, VideoFrame
 
 
@@ -34,7 +34,7 @@ class MatchedItem(T.NamedTuple):
 class MatchedGazeEyesSceneItem(T.NamedTuple):
     scene: SimpleVideoFrame
     eyes: SimpleVideoFrame
-    gaze: GazeData
+    gaze: GazeData | DualMonocularGazeData | EyestateGazeData
 
 
 MATCHED_ITEM_LABEL = "matched_gaze_and_scene_video"
