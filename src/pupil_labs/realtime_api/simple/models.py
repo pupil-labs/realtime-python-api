@@ -34,7 +34,7 @@ class MatchedItem(T.NamedTuple):
 class MatchedGazeEyesSceneItem(T.NamedTuple):
     scene: SimpleVideoFrame
     eyes: SimpleVideoFrame
-    gaze: GazeData | DualMonocularGazeData | EyestateGazeData
+    gaze: T.Union[GazeData, DualMonocularGazeData, EyestateGazeData]
 
 
 MATCHED_ITEM_LABEL = "matched_gaze_and_scene_video"
