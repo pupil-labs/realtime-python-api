@@ -1,3 +1,9 @@
+1.2.0
+###########
+- Add support for streaming eye state data from Neon Companion app (2.8.8+)
+
+    - :py:class:`pupil_labs.realtime_api.streaming.gaze.EyestateGazeData`
+
 1.1.2
 ###########
 - Add support for streaming eyes video from Neon Companion app
