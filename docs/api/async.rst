@@ -33,6 +33,14 @@ Gaze Data
     :show-inheritance:
     :exclude-members: DualMonocularGazeData
 
+IMU Data
+---------
+
+.. automodule:: pupil_labs.realtime_api.streaming.imu
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Scene Video
 -----------
 
