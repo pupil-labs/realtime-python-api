@@ -56,6 +56,7 @@ class DualMonocularGazeData(T.NamedTuple):
     def timestamp_unix_ns(self):
         return int(self.timestamp_unix_seconds * 1e9)
 
+
 class EyestateGazeData(T.NamedTuple):
     x: float
     y: float
@@ -78,8 +79,45 @@ class EyestateGazeData(T.NamedTuple):
 
     @classmethod
     def from_raw(cls, data: RTSPData) -> "EyestateGazeData":
-        x, y, worn, es0, es1, es2, es3, es4, es5, es6, es7, es8, es9, es10, es11, es12, es13 = struct.unpack("!ffBffffffffffffff", data.raw)
-        return cls(x, y, worn == 255, es0, es1, es2, es3, es4, es5, es6, es7, es8, es9, es10, es11, es12, es13, data.timestamp_unix_seconds)
+        (
+            x,
+            y,
+            worn,
+            es0,
+            es1,
+            es2,
+            es3,
+            es4,
+            es5,
+            es6,
+            es7,
+            es8,
+            es9,
+            es10,
+            es11,
+            es12,
+            es13,
+        ) = struct.unpack("!ffBffffffffffffff", data.raw)
+        return cls(
+            x,
+            y,
+            worn == 255,
+            es0,
+            es1,
+            es2,
+            es3,
+            es4,
+            es5,
+            es6,
+            es7,
+            es8,
+            es9,
+            es10,
+            es11,
+            es12,
+            es13,
+            data.timestamp_unix_seconds,
+        )
 
     @property
     def datetime(self):
@@ -88,6 +126,7 @@ class EyestateGazeData(T.NamedTuple):
     @property
     def timestamp_unix_ns(self):
         return int(self.timestamp_unix_seconds * 1e9)
+
 
 async def receive_gaze_data(
     url, *args, **kwargs
@@ -101,7 +140,11 @@ class RTSPGazeStreamer(RTSPRawStreamer):
     async def receive(
         self,
     ) -> T.AsyncIterator[T.Union[GazeData, DualMonocularGazeData]]:
-        data_class_by_raw_len = {9: GazeData, 17: DualMonocularGazeData, 65: EyestateGazeData}
+        data_class_by_raw_len = {
+            9: GazeData,
+            17: DualMonocularGazeData,
+            65: EyestateGazeData,
+        }
         async for data in super().receive():
             try:
                 cls = data_class_by_raw_len[len(data.raw)]
