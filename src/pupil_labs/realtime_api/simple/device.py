@@ -16,7 +16,6 @@ from ..device import Device as _DeviceAsync
 from ..device import StatusUpdateNotifier
 from ..models import Component, Event, Sensor, Status
 from ..streaming import (
-    GazeData,
     ImuPacket,
     RTSPGazeStreamer,
     RTSPImuStreamer,
@@ -27,6 +26,7 @@ from ._utils import _AsyncEventManager, _StreamManager, logger
 from .models import (
     MATCHED_GAZE_EYES_LABEL,
     MATCHED_ITEM_LABEL,
+    GazeDataType,
     MatchedGazeEyesSceneItem,
     MatchedItem,
     SimpleVideoFrame,
@@ -193,7 +193,7 @@ class Device(DeviceBase):
 
     def receive_gaze_datum(
         self, timeout_seconds: T.Optional[float] = None
-    ) -> T.Optional[GazeData]:
+    ) -> T.Optional[GazeDataType]:
         return self._receive_item(Sensor.Name.GAZE.value, timeout_seconds)
 
     def receive_eyes_video_frame(
@@ -218,7 +218,7 @@ class Device(DeviceBase):
 
     def _receive_item(
         self, sensor: str, timeout_seconds: T.Optional[float] = None
-    ) -> T.Optional[T.Union[VideoFrame, GazeData]]:
+    ) -> T.Optional[T.Union[VideoFrame, GazeDataType]]:
         if not self.is_currently_streaming:
             logger.debug("receive_* called without being streaming")
             self.streaming_start()
@@ -307,7 +307,7 @@ class Device(DeviceBase):
         }
         self._event_new_item = {name: threading.Event() for name in sensor_names}
         # only cache 3-4 seconds worth of gaze data in case no scene camera is connected
-        GazeCacheType = T.Deque[T.Tuple[float, GazeData]]
+        GazeCacheType = T.Deque[T.Tuple[float, GazeDataType]]
         EyesCacheType = T.Deque[T.Tuple[float, SimpleVideoFrame]]
         self._cached_gaze_for_matching: GazeCacheType = collections.deque(maxlen=200)
         self._cached_eyes_for_matching: EyesCacheType = collections.deque(maxlen=200)

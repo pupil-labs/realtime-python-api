@@ -4,6 +4,8 @@ import typing as T
 from ..streaming.gaze import DualMonocularGazeData, EyestateGazeData, GazeData
 from ..streaming.video import BGRBuffer, VideoFrame
 
+GazeDataType = T.Union[GazeData, DualMonocularGazeData, EyestateGazeData]
+
 
 class SimpleVideoFrame(T.NamedTuple):
     bgr_pixels: BGRBuffer
@@ -28,13 +30,13 @@ class SimpleVideoFrame(T.NamedTuple):
 # class of the public API, I decided against it to avoid breaking possible imports.
 class MatchedItem(T.NamedTuple):
     frame: SimpleVideoFrame
-    gaze: GazeData
+    gaze: GazeDataType
 
 
 class MatchedGazeEyesSceneItem(T.NamedTuple):
     scene: SimpleVideoFrame
     eyes: SimpleVideoFrame
-    gaze: T.Union[GazeData, DualMonocularGazeData, EyestateGazeData]
+    gaze: GazeDataType
 
 
 MATCHED_ITEM_LABEL = "matched_gaze_and_scene_video"
