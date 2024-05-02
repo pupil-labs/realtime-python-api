@@ -4,6 +4,8 @@
 from .device import APIPath, Device, DeviceError, StatusUpdateNotifier
 from .discovery import Network, discover_devices
 from .streaming import (
+    DualMonocularGazeData,
+    EyestateGazeData,
     GazeData,
     RTSPData,
     RTSPGazeStreamer,
@@ -34,6 +36,8 @@ __all__ = [
     "DeviceError",
     "discover_devices",
     "GazeData",
+    "DualMonocularGazeData",
+    "EyestateGazeData",
     "Network",
     "receive_gaze_data",
     "receive_raw_rtsp_data",

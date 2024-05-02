@@ -12,7 +12,7 @@ from ..streaming import RTSPGazeStreamer, RTSPVideoFrameStreamer
 from .models import (
     MATCHED_GAZE_EYES_LABEL,
     MATCHED_ITEM_LABEL,
-    GazeData,
+    GazeDataType,
     MatchedGazeEyesSceneItem,
     MatchedItem,
     SimpleVideoFrame,
@@ -222,7 +222,7 @@ class _StreamManager:
                 del device  # remove Device reference
 
     @staticmethod
-    def _get_closest_item(cache: T.Deque[GazeData], timestamp) -> GazeData:
+    def _get_closest_item(cache: T.Deque[GazeDataType], timestamp) -> GazeDataType:
         item_ts, item = cache.popleft()
         # assumes monotonically increasing timestamps
         if item_ts > timestamp:
