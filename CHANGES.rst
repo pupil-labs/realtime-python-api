@@ -1,3 +1,7 @@
+1.2.1
+###########
+- Add typing annotations for various gaze data types
+
 1.2.0
 ###########
 - Add support for streaming eye state data from Neon Companion app (2.8.8+)
