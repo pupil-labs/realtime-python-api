@@ -7,9 +7,8 @@ import typing as T
 
 import aiohttp
 import numpy as np
-import websockets
-
 import pupil_labs  # noqa: F401
+import websockets
 
 from .base import DeviceBase
 from .models import (
@@ -17,6 +16,7 @@ from .models import (
     Component,
     Event,
     Status,
+    Template,
     UnknownComponentError,
     parse_component,
 )
@@ -145,6 +145,44 @@ class Device(DeviceBase):
             if response.status != 200:
                 raise DeviceError(response.status, confirmation["message"])
             return Event.from_dict(confirmation["result"])
+
+    async def get_template(self) -> Template:
+        """
+        :raises
+
+        """
+        async with self.session.get(
+            self.api_url(APIPath.TEMPLATE_DEFINITION)
+        ) as response:
+            confirmation = await response.json()
+            if response.status != 200:
+                raise DeviceError(response.status, confirmation["message"])
+            result = confirmation["result"]
+            logger.debug(f"[{self}.get_template_def] Received template def: {result}")
+            return Template.fromdict(result)
+
+    async def get_template_data(self):
+        """ """
+        async with self.session.get(self.api_url(APIPath.TEMPLATE_DATA)) as response:
+            confirmation = await response.json()
+            if response.status != 200:
+                raise DeviceError(response.status, confirmation["message"])
+            result = confirmation["result"]
+            logger.debug(
+                f"[{self}.get_template_data] Received data's template: {result}"
+            )
+            return result
+
+    async def post_template(self, template_data) -> None:
+        async with self.session.post(
+            self.api_url(APIPath.TEMPLATE_DATA), json=template_data
+        ) as response:
+            confirmation = await response.json()
+            if response.status != 200:
+                raise DeviceError(response.status, confirmation["message"])
+            result = confirmation["result"]
+            logger.debug(f"[{self}.get_template_data] Send data's template: {result}")
+            return result
 
     async def close(self):
         await self.session.close()
