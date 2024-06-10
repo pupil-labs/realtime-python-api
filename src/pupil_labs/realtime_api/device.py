@@ -7,8 +7,9 @@ import typing as T
 
 import aiohttp
 import numpy as np
-import pupil_labs  # noqa: F401
 import websockets
+
+import pupil_labs  # noqa: F401
 
 from .base import DeviceBase
 from .models import (
