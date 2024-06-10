@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 
 from pupil_labs.realtime_api import Device, Network
 
@@ -18,6 +19,9 @@ async def main():
 
         async def printOpts(data, template):
             """Iterate to see pre-filled data"""
+            if not data:
+                print("Template is empty.")
+                return
             for key, value in data.items():
                 for item in template.items:
                     if str(item.id) == key:
@@ -31,9 +35,15 @@ async def main():
         if template:
             for item in template.items:
                 if item.widget_type != "SECTION_HEADER":
-                    # Modifying based on title
+                    # Modifying based on field's title
                     if item.title == "Text Input":
                         questionnaire[str(item.id)] = ["Some more test"]
+                    # Assuming we have created a field with this name and defined the recording name to use that field,
+                    # within the template creation in Cloud
+                    elif item.title == "Name of the recording":
+                        questionnaire[str(item.id)] = [
+                            f"{str(datetime.datetime.today())}_My_rec_name"
+                        ]
                     elif item.title == "Whole Number":
                         questionnaire[str(item.id)] = ["11145"]
                     elif item.title == "Paragraph":
