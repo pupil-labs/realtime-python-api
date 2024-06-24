@@ -16,7 +16,7 @@ template = device.get_template()
 data = device.get_template_data()
 
 
-def printOpts(data, template):
+def print_opts(data, template):
     """Iterate to see pre-filled data"""
     if not data:
         print("Template is empty.")
@@ -30,7 +30,7 @@ def printOpts(data, template):
 
 
 print(f"[{template.name}] Data pre-filled:")
-printOpts(data, template)
+print_opts(data, template)
 
 # Filling a template
 questionnaire = {}
@@ -75,6 +75,6 @@ data = device.get_template_data()
 
 # Iterate to check filled data
 print(f"[{template.name}] Data post:")
-printOpts(data, template)
+print_opts(data, template)
 
 device.close()

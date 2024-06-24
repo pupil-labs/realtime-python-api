@@ -17,7 +17,7 @@ async def main():
         # Fetch data filled on the template
         data = await device.get_template_data()
 
-        async def printOpts(data, template):
+        async def print_opts(data, template):
             """Iterate to see pre-filled data"""
             if not data:
                 print("Template is empty.")
@@ -30,7 +30,7 @@ async def main():
             print("\u2500" * 40)
 
         print(f"[{template.name}] Data pre-filled:")
-        await printOpts(data, template)
+        await print_opts(data, template)
 
         # Filling a template
         questionnaire = {}
@@ -75,7 +75,7 @@ async def main():
 
         # Iterate to check filled data
         print(f"[{template.name}] Data pre-filled:")
-        await printOpts(data, template)
+        await print_opts(data, template)
 
 
 if __name__ == "__main__":
