@@ -44,7 +44,7 @@ class Device(DeviceBase):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._create_client_session()
-        self.template_definition = None
+        self.template_definition: T.Optional[Template] = None
 
     async def get_status(self) -> Status:
         """
@@ -161,7 +161,7 @@ class Device(DeviceBase):
                 raise DeviceError(response.status, confirmation["message"])
             result = confirmation["result"]
             logger.debug(f"[{self}.get_template_def] Received template def: {result}")
-            self.template_definition = Template.fromdict(result)
+            self.template_definition = Template(**result)
             return self.template_definition
 
     async def get_template_data(self):
@@ -189,22 +189,7 @@ class Device(DeviceBase):
             await self.get_template()
 
         for key, value in template_data.items():
-            for item in self.template_definition.items:
-                if str(item.id) == key:
-                    if item.input_type is not object:
-                        try:
-                            item.input_type(value[0])
-                        except ValueError:
-                            raise ValueError(
-                                f"{item.title}[{key}]: Invalid input type,"
-                                + "it should be {item.input_type}, ValueError: {e}"
-                            )
-                    elif item.widget_type in ["RADIO_LIST", "CHECKBOX_LIST"]:
-                        if value not in item.choices:
-                            raise ValueError(
-                                f"{item.title}[{key}]: Invalid choice."
-                                + f"Must be one of {', '.join(item.choices)}."
-                            )
+            self.template_definition.validate_item(key, value[0])
 
         async with self.session.post(
             self.api_url(APIPath.TEMPLATE_DATA), json=template_data

@@ -1,9 +1,12 @@
 import enum
 import logging
 import typing as T
-from dataclasses import dataclass, field
+from dataclasses import field
 from datetime import datetime
 from uuid import UUID
+
+from pydantic import confloat, conint
+from pydantic.dataclasses import dataclass
 
 try:
     from typing import Literal
@@ -285,103 +288,61 @@ class Status:
         )
 
 
-WidgetType = Literal[
+TemplateItemWidgetType = Literal[
     "TEXT", "PARAGRAPH", "RADIO_LIST", "CHECKBOX_LIST", "SECTION_HEADER", "PAGE_BREAK"
 ]
-
-input_type_mapping = {"any": object, "integer": int, "float": float}
+TemplateItemInputType = T.Literal["any", "integer", "float"]
 
 
 @dataclass
 class TemplateItem:
-    # TODO: Test which can be optional and remove those who can't.
-    widget_type: WidgetType
-    choices: T.Optional[T.List[str]] = None
-    help_text: T.Optional[str] = None
-    id: T.Optional[UUID] = None
-    input_type: str = field(default="any")
-    required: bool = field(default=False)
-    title: T.Optional[str] = None
+    choices: T.Optional[T.List[str]]
+    help_text: T.Optional[str]
+    id: UUID
+    required: bool
+    title: str
+    widget_type: TemplateItemWidgetType
+    input_type: TemplateItemInputType
 
-    def __post_init__(self):
-        if self.widget_type not in WidgetType.__args__:
-            raise ValueError(
-                f"""Invalid value for widget_type: {self.widget_type}.
-                Must be one of {', '.join(WidgetType.__args__)}."""
-            )
-
-        if self.input_type not in input_type_mapping.values():
-            raise ValueError(
-                f"""Invalid value for input_type: {self.input_type}.
-                Must be one of {', '.join(input_type_mapping.keys())}."""
-            )
-
-        if self.choices is not None:
-            if not all(isinstance(choice, str) for choice in self.choices):
-                raise ValueError("All choices must be strings.")
-
-    @classmethod
-    def fromdict(cls, data: T.Dict) -> "TemplateItem":
-        return cls(
-            widget_type=data["widget_type"],
-            choices=data.get("choices"),
-            help_text=data.get("help_text"),
-            id=UUID(data["id"]) if data.get("id") else None,
-            input_type=input_type_mapping.get(data.get("input_type", "any"), object),
-            required=data.get("required", False),
-            title=data.get("title"),
-        )
+    def validate_value(self, key: UUID, value: T.Any):
+        if self.input_type != "any":
+            try:
+                if self.input_type == "integer":
+                    value = conint(strict=True)(value)
+                elif self.input_type == "float":
+                    value = confloat(strict=True)(value)
+            except ValueError as e:
+                raise ValueError(
+                    f"{self.title}[{key}]: Invalid input type"
+                    + f", it should be {self.input_type}, ValueError: {e}"
+                )
+        else:
+            if self.widget_type in ["RADIO_LIST", "CHECKBOX_LIST"]:
+                if str(value) not in self.choices:
+                    raise ValueError(
+                        f"{self.title}[{key}]: Invalid choice {value}."
+                        + f" Must be one of {', '.join(self.choices)}."
+                    )
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Template:
-    archived_at: T.Optional[datetime] = None
-    archived_by_user_id: T.Optional[UUID] = None
-    created_at: T.Optional[datetime] = None
-    created_by_user_id: T.Optional[UUID] = None
-    description: T.Optional[str] = None
-    id: T.Optional[UUID] = None
-    is_default_template: bool = field(default=False, metadata={"readonly": True})
-    items: T.List[TemplateItem] = field(default_factory=list)
-    label_ids: T.List[UUID] = field(default_factory=list, metadata={"readonly": True})
-    name: str = ""
+    created_at: datetime
     published_at: T.Optional[datetime] = None
-    recording_ids: T.List[UUID] = field(
-        default_factory=list, metadata={"readonly": True}
-    )
-    recording_name_format: T.Optional[str] = None
-    updated_at: T.Optional[datetime] = None
+    archived_at: T.Optional[datetime] = None
+    id: UUID
+    name: str
+    recording_ids: T.Optional[T.List[UUID]] = None
+    recording_name_format: list[str]
+    is_default_template: bool = True
+    description: T.Optional[str] = None
+    items: T.List[TemplateItem] = field(default_factory=list)
+    updated_at: datetime
+    label_ids: T.List[UUID] = field(default_factory=list, metadata={"readonly": True})
 
-    @classmethod
-    def fromdict(cls, data: T.Dict) -> "Template":
-        items = [TemplateItem.fromdict(item) for item in data.get("items", [])]
-        return cls(
-            archived_at=datetime.fromisoformat(data["archived_at"])
-            if data.get("archived_at")
-            else None,
-            archived_by_user_id=UUID(data["archived_by_user_id"])
-            if data.get("archived_by_user_id")
-            else None,
-            created_at=datetime.fromisoformat(data["created_at"])
-            if data.get("created_at")
-            else None,
-            created_by_user_id=UUID(data["created_by_user_id"])
-            if data.get("created_by_user_id")
-            else None,
-            description=data.get("description"),
-            id=UUID(data["id"]) if data.get("id") else None,
-            is_default_template=data.get("is_default_template", False),
-            items=items,
-            label_ids=[UUID(id) for id in data.get("label_ids", [])],
-            name=data.get("name", ""),
-            published_at=datetime.fromisoformat(data["published_at"])
-            if data.get("published_at")
-            else None,
-            recording_ids=[UUID(id) for id in data.get("recording_ids", [])]
-            if data.get("recording_ids")
-            else [],
-            recording_name_format=data.get("recording_name_format"),
-            updated_at=datetime.fromisoformat(data["updated_at"])
-            if data.get("updated_at")
-            else None,
-        )
+    def validate_item(self, key: UUID, value: str):
+        item = next((item for item in self.items if str(item.id) == key), None)
+        if not item:
+            raise ValueError(f"No item found with ID {key}, to define {value}.")
+        else:
+            item.validate_value(key, value)

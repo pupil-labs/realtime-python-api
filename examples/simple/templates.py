@@ -38,8 +38,8 @@ if template:
     for item in template.items:
         if item.widget_type != "SECTION_HEADER":
             # Modifying based on the field's title
-            if item.title == "Short answer test":
-                questionnaire[str(item.id)] = ["Some more test"]
+            if item.title == "Short answer text":
+                questionnaire[str(item.id)] = ["Some more text"]
             # Assuming we have created a component with this title and defined
             # Recording Name in Cloud to use this component, we can programmatically
             # seet the recording name
@@ -48,9 +48,9 @@ if template:
                     f"{str(datetime.datetime.today())}_My_rec_name"
                 ]
             # Modifying based on the input's type
-            elif item.input_type == int:
+            elif item.input_type == "integer":
                 questionnaire[str(item.id)] = ["12345"]
-            elif item.input_type == float:
+            elif item.input_type == "float":
                 questionnaire[str(item.id)] = ["123.45"]
             # Modifying based on the widget's type
             elif item.widget_type == "PARAGRAPH":
