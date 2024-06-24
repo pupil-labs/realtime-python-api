@@ -330,9 +330,9 @@ class Template:
     created_at: datetime
     id: UUID
     name: str
+    updated_at: datetime
     recording_name_format: T.List[str]
     items: T.List[TemplateItem] = field(default_factory=list)
-    updated_at: datetime
     label_ids: T.List[UUID] = field(default_factory=list, metadata={"readonly": True})
     is_default_template: bool = True
     description: T.Optional[str] = None
