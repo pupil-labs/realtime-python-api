@@ -328,17 +328,17 @@ class TemplateItem:
 @dataclass(kw_only=True)
 class Template:
     created_at: datetime
-    published_at: T.Optional[datetime] = None
-    archived_at: T.Optional[datetime] = None
     id: UUID
     name: str
-    recording_ids: T.Optional[T.List[UUID]] = None
     recording_name_format: T.List[str]
-    is_default_template: bool = True
-    description: T.Optional[str] = None
     items: T.List[TemplateItem] = field(default_factory=list)
     updated_at: datetime
     label_ids: T.List[UUID] = field(default_factory=list, metadata={"readonly": True})
+    is_default_template: bool = True
+    description: T.Optional[str] = None
+    recording_ids: T.Optional[T.List[UUID]] = None
+    published_at: T.Optional[datetime] = None
+    archived_at: T.Optional[datetime] = None
 
     def validate_item(self, key: UUID, value: str):
         item = next((item for item in self.items if str(item.id) == key), None)
