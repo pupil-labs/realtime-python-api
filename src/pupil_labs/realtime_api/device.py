@@ -7,9 +7,8 @@ import typing as T
 
 import aiohttp
 import numpy as np
-import websockets
-
 import pupil_labs  # noqa: F401
+import websockets
 
 from .base import DeviceBase
 from .models import (
@@ -182,21 +181,29 @@ class Device(DeviceBase):
     async def post_template(self, template_data) -> None:
         """
         :raises pupil_labs.realtime_api.device.DeviceError:
-                if the data is not valid or if it could not post it.
+                if the data can not be sent.
+                ValueError: if invalid data type.
         """
         if not self.template_definition:
             await self.get_template()
 
         for key, value in template_data.items():
             for item in self.template_definition.items:
-                if str(item.id) == key and item.input_type is not object:
-                    try:
-                        item.input_type(value[0])
-                    except ValueError as e:
-                        raise DeviceError(
-                            f"""{item.title}[{key}]: Invalid input type,
-                            it should be {item.input_type}, ValueError: {e}"""
-                        )
+                if str(item.id) == key:
+                    if item.input_type is not object:
+                        try:
+                            item.input_type(value[0])
+                        except ValueError:
+                            raise ValueError(
+                                f"{item.title}[{key}]: Invalid input type,"
+                                + "it should be {item.input_type}, ValueError: {e}"
+                            )
+                    elif item.widget_type in ["RADIO_LIST", "CHECKBOX_LIST"]:
+                        if value not in item.choices:
+                            raise ValueError(
+                                f"{item.title}[{key}]: Invalid choice."
+                                + f"Must be one of {', '.join(item.choices)}."
+                            )
 
         async with self.session.post(
             self.api_url(APIPath.TEMPLATE_DATA), json=template_data
