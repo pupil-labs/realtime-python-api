@@ -55,10 +55,10 @@ async def main():
                     # Modifying based on the widget's type
                     elif item.widget_type == "PARAGRAPH":
                         questionnaire[str(item.id)] = [
-                            """Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-                            sed do eiusmod tempor incididunt ut labore et dolore magna
-                            aliqua. Ut enim ad minim veniam, quis nostrud exercitation
-                            ullamco laboris nisi ut aliquip ex ea commodo consequat."""
+                            "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+                            + "sed do eiusmod tempor incididunt ut labore et dolore "
+                            + "magna aliqua. Ut enim ad minim veniam, quis nostrud"
+                            + "exercitation ullamco laboris nisi ut aliquip ex"
                         ]
                     elif item.widget_type == "CHECKBOX_LIST":
                         questionnaire[str(item.id)] = ["Option 1", "Option 2"]
