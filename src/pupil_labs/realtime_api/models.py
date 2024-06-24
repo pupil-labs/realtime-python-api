@@ -333,7 +333,7 @@ class Template:
     id: UUID
     name: str
     recording_ids: T.Optional[T.List[UUID]] = None
-    recording_name_format: list[str]
+    recording_name_format: T.List[str]
     is_default_template: bool = True
     description: T.Optional[str] = None
     items: T.List[TemplateItem] = field(default_factory=list)

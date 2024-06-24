@@ -76,3 +76,5 @@ data = device.get_template_data()
 # Iterate to check filled data
 print(f"[{template.name}] Data post:")
 printOpts(data, template)
+
+device.close()
