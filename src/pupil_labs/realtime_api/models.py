@@ -1,9 +1,9 @@
-import dataclasses
-import datetime
 import enum
 import logging
 import typing as T
-import uuid
+from dataclasses import dataclass, field
+from datetime import datetime
+from uuid import UUID
 
 try:
     from typing import Literal
@@ -57,8 +57,8 @@ class Event(T.NamedTuple):
         )
 
     @property
-    def datetime(self) -> datetime.datetime:
-        return datetime.datetime.fromtimestamp(self.timestamp / 1e9)
+    def datetime(self) -> datetime:
+        return datetime.fromtimestamp(self.timestamp / 1e9)
 
     def __repr__(self) -> str:
         return (
@@ -189,7 +189,7 @@ def parse_component(raw: ComponentRaw) -> Component:
         ) from err
 
 
-@dataclasses.dataclass
+@dataclass
 class Status:
     "Represents the Companion's full status"
 
@@ -285,36 +285,40 @@ class Status:
         )
 
 
-@dataclasses.dataclass
+WidgetType = Literal[
+    "TEXT", "PARAGRAPH", "RADIO_LIST", "CHECKBOX_LIST", "SECTION_HEADER", "PAGE_BREAK"
+]
+
+input_type_mapping = {"any": object, "integer": int, "float": float}
+
+
+@dataclass
 class TemplateItem:
-    widget_type: str
+    # TODO: Test which can be optional and remove those who can't.
+    widget_type: WidgetType
     choices: T.Optional[T.List[str]] = None
     help_text: T.Optional[str] = None
-    id: T.Optional[uuid.UUID] = None
-    input_type: str = dataclasses.field(default="any")
-    required: bool = dataclasses.field(default=False)
+    id: T.Optional[UUID] = None
+    input_type: str = field(default="any")
+    required: bool = field(default=False)
     title: T.Optional[str] = None
 
     def __post_init__(self):
-        widget_type_enum = {
-            "TEXT",
-            "PARAGRAPH",
-            "RADIO_LIST",
-            "CHECKBOX_LIST",
-            "SECTION_HEADER",
-            "PAGE_BREAK",
-        }
-        input_type_enum = {"any", "integer", "float"}
-
-        if self.widget_type not in widget_type_enum:
+        if self.widget_type not in WidgetType.__args__:
             raise ValueError(
-                f"Invalid value for widget_type: {self.widget_type}. Must be one of {widget_type_enum}."
+                f"""Invalid value for widget_type: {self.widget_type}.
+                Must be one of {', '.join(WidgetType.__args__)}."""
             )
 
-        if self.input_type not in input_type_enum:
+        if self.input_type not in input_type_mapping.values():
             raise ValueError(
-                f"Invalid value for input_type: {self.input_type}. Must be one of {input_type_enum}."
+                f"""Invalid value for input_type: {self.input_type}.
+                Must be one of {', '.join(input_type_mapping.keys())}."""
             )
+
+        if self.choices is not None:
+            if not all(isinstance(choice, str) for choice in self.choices):
+                raise ValueError("All choices must be strings.")
 
     @classmethod
     def fromdict(cls, data: T.Dict) -> "TemplateItem":
@@ -322,35 +326,31 @@ class TemplateItem:
             widget_type=data["widget_type"],
             choices=data.get("choices"),
             help_text=data.get("help_text"),
-            id=uuid.UUID(data["id"]) if data.get("id") else None,
-            input_type=data.get("input_type", "any"),
+            id=UUID(data["id"]) if data.get("id") else None,
+            input_type=input_type_mapping.get(data.get("input_type", "any"), object),
             required=data.get("required", False),
             title=data.get("title"),
         )
 
 
-@dataclasses.dataclass
+@dataclass
 class Template:
-    archived_at: T.Optional[datetime.datetime] = None
-    archived_by_user_id: T.Optional[uuid.UUID] = None
-    created_at: T.Optional[datetime.datetime] = None
-    created_by_user_id: T.Optional[uuid.UUID] = None
+    archived_at: T.Optional[datetime] = None
+    archived_by_user_id: T.Optional[UUID] = None
+    created_at: T.Optional[datetime] = None
+    created_by_user_id: T.Optional[UUID] = None
     description: T.Optional[str] = None
-    id: T.Optional[uuid.UUID] = None
-    is_default_template: bool = dataclasses.field(
-        default=False, metadata={"readonly": True}
-    )
-    items: T.List[TemplateItem] = dataclasses.field(default_factory=list)
-    label_ids: T.List[uuid.UUID] = dataclasses.field(
-        default_factory=list, metadata={"readonly": True}
-    )
+    id: T.Optional[UUID] = None
+    is_default_template: bool = field(default=False, metadata={"readonly": True})
+    items: T.List[TemplateItem] = field(default_factory=list)
+    label_ids: T.List[UUID] = field(default_factory=list, metadata={"readonly": True})
     name: str = ""
-    published_at: T.Optional[datetime.datetime] = None
-    recording_ids: T.List[uuid.UUID] = dataclasses.field(
+    published_at: T.Optional[datetime] = None
+    recording_ids: T.List[UUID] = field(
         default_factory=list, metadata={"readonly": True}
     )
     recording_name_format: T.Optional[str] = None
-    updated_at: T.Optional[datetime.datetime] = None
+    updated_at: T.Optional[datetime] = None
 
     @classmethod
     def fromdict(cls, data: T.Dict) -> "Template":
@@ -359,29 +359,29 @@ class Template:
             archived_at=datetime.fromisoformat(data["archived_at"])
             if data.get("archived_at")
             else None,
-            archived_by_user_id=uuid.UUID(data["archived_by_user_id"])
+            archived_by_user_id=UUID(data["archived_by_user_id"])
             if data.get("archived_by_user_id")
             else None,
-            created_at=datetime.datetime.fromisoformat(data["created_at"])
+            created_at=datetime.fromisoformat(data["created_at"])
             if data.get("created_at")
             else None,
-            created_by_user_id=uuid.UUID(data["created_by_user_id"])
+            created_by_user_id=UUID(data["created_by_user_id"])
             if data.get("created_by_user_id")
             else None,
             description=data.get("description"),
-            id=uuid.UUID(data["id"]) if data.get("id") else None,
+            id=UUID(data["id"]) if data.get("id") else None,
             is_default_template=data.get("is_default_template", False),
             items=items,
-            label_ids=[uuid.UUID(id) for id in data.get("label_ids", [])],
+            label_ids=[UUID(id) for id in data.get("label_ids", [])],
             name=data.get("name", ""),
-            published_at=datetime.datetime.fromisoformat(data["published_at"])
+            published_at=datetime.fromisoformat(data["published_at"])
             if data.get("published_at")
             else None,
-            recording_ids=[uuid.UUID(id) for id in data.get("recording_ids", [])]
+            recording_ids=[UUID(id) for id in data.get("recording_ids", [])]
             if data.get("recording_ids")
             else [],
             recording_name_format=data.get("recording_name_format"),
-            updated_at=datetime.datetime.fromisoformat(data["updated_at"])
+            updated_at=datetime.fromisoformat(data["updated_at"])
             if data.get("updated_at")
             else None,
         )

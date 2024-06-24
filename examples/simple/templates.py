@@ -21,13 +21,15 @@ def printOpts(data, template):
     if not data:
         print("Template is empty.")
         return
+    print("\u2500" * 40)
     for key, value in data.items():
         for item in template.items:
             if str(item.id) == key:
-                print(f"{item.title}: {value}")
+                print(f"{item.title}: {value} - {item.help_text}")
+    print("\u2500" * 40)
 
 
-print("Data pre-filled:")
+print(f"[{template.name}] Data pre-filled:")
 printOpts(data, template)
 
 # Filling a template
@@ -36,24 +38,34 @@ if template:
     for item in template.items:
         if item.widget_type != "SECTION_HEADER":
             # Modifying based on the field's title
-            if item.title == "Text Input":
+            if item.title == "Short answer test":
                 questionnaire[str(item.id)] = ["Some more test"]
-            # Assuming we have created a field with this name and defined the recording name to use that field,
-            # within the template creation in Cloud
-            elif item.title == "Name of the recording":
+            # Assuming we have created a component with this title and defined
+            # Recording Name in Cloud to use this component, we can programmatically
+            # seet the recording name
+            elif item.title == "Recording name test":
                 questionnaire[str(item.id)] = [
                     f"{str(datetime.datetime.today())}_My_rec_name"
                 ]
-            elif item.title == "Whole Number":
-                questionnaire[str(item.id)] = ["11145"]
-            elif item.title == "Paragraph":
+            # Modifying based on the input's type
+            elif item.input_type == int:
+                questionnaire[str(item.id)] = ["12345"]
+            elif item.input_type == float:
+                questionnaire[str(item.id)] = ["123.45"]
+            # Modifying based on the widget's type
+            elif item.widget_type == "PARAGRAPH":
                 questionnaire[str(item.id)] = [
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+                    """Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+                    sed do eiusmod tempor incididunt ut labore et dolore magna
+                    aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+                    ullamco laboris nisi ut aliquip ex ea commodo consequat."""
                 ]
-            elif item.title == "TEST 1":
-                questionnaire[str(item.id)] = ["true"]
-            elif item.title == "Did you enjoyed? ":
-                questionnaire[str(item.id)] = ["No"]
+            elif item.widget_type == "CHECKBOX_LIST":
+                questionnaire[str(item.id)] = ["Option 1", "Option 2"]
+            elif item.widget_type == "RADIO_LIST" and not item.required:
+                questionnaire[str(item.id)] = ["Option 1"]
+            elif item.widget_type == "RADIO_LIST":
+                questionnaire[str(item.id)] = ["Yes"]
 
 # Sending the template
 device.post_template(questionnaire)
@@ -62,5 +74,5 @@ device.post_template(questionnaire)
 data = device.get_template_data()
 
 # Iterate to check filled data
-print("Data post:")
+print(f"[{template.name}] Data post:")
 printOpts(data, template)
