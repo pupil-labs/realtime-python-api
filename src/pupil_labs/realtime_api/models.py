@@ -1,12 +1,30 @@
 import enum
+import json
 import logging
 import typing as T
-from dataclasses import field
+from dataclasses import asdict, field
 from datetime import datetime
+from functools import partial
+from pprint import pformat
+from textwrap import dedent, indent
 from uuid import UUID
 
-from pydantic import confloat, conint
+from annotated_types import Len
+from pydantic import (
+    AfterValidator,
+    BeforeValidator,
+    ConfigDict,
+    Field,
+    PlainValidator,
+    StringConstraints,
+    ValidationError,
+    confloat,
+    conint,
+    conlist,
+    create_model,
+)
 from pydantic.dataclasses import dataclass
+from pydantic_core import ErrorDetails
 
 try:
     from typing import Literal
@@ -294,35 +312,15 @@ TemplateItemWidgetType = Literal[
 TemplateItemInputType = T.Literal["any", "integer", "float"]
 
 
-@dataclass
+@dataclass(kw_only=True)
 class TemplateItem:
-    choices: T.Optional[T.List[str]]
-    help_text: T.Optional[str]
     id: UUID
-    required: bool
     title: str
     widget_type: TemplateItemWidgetType
     input_type: TemplateItemInputType
-
-    def validate_value(self, key: UUID, value: T.Any):
-        if self.input_type != "any":
-            try:
-                if self.input_type == "integer":
-                    value = conint(strict=True)(value)
-                elif self.input_type == "float":
-                    value = confloat(strict=True)(value)
-            except ValueError as e:
-                raise ValueError(
-                    f"{self.title}[{key}]: Invalid input type"
-                    + f", it should be {self.input_type}, ValueError: {e}"
-                )
-        else:
-            if self.widget_type in ["RADIO_LIST", "CHECKBOX_LIST"]:
-                if str(value) not in self.choices:
-                    raise ValueError(
-                        f"{self.title}[{key}]: Invalid choice {value}."
-                        + f" Must be one of {', '.join(self.choices)}."
-                    )
+    choices: T.Optional[T.List[str]]
+    help_text: T.Optional[str]
+    required: bool
 
 
 @dataclass(kw_only=True)
@@ -340,9 +338,133 @@ class Template:
     published_at: T.Optional[datetime] = None
     archived_at: T.Optional[datetime] = None
 
-    def validate_item(self, key: UUID, value: str):
-        item = next((item for item in self.items if str(item.id) == key), None)
-        if not item:
-            raise ValueError(f"No item found with ID {key}, to define {value}.")
-        else:
-            item.validate_value(key, value)
+    def get_question_by_id(self, question_id: str):
+        for item in self.items:
+            if str(item.id) == str(question_id):
+                return item
+        return None
+
+    def validate_answers(self, answers: dict[str, list[str]], raise_exception=True):
+        AnswerValidator = self._answer_validator()
+        errors = []
+        try:
+            AnswerValidator(**answers)
+        except ValidationError as e:
+            errors = e.errors()
+
+        for error in errors:
+            question_id = error["loc"][0]
+            question = self.get_question_by_id(question_id)
+            if question:
+                error["question"] = asdict(question)
+        if errors and raise_exception:
+            raise InvalidTemplateAnswersError(self, answers, errors)
+        return errors
+
+    def _answer_validator(self):
+        answer_types = {}
+        for question in self.items:
+            if question.widget_type in ("SECTION_HEADER", "PAGE_BREAK"):
+                continue
+            elif question.widget_type in (
+                "RADIO_LIST",
+                "TEXT",
+                "PARAGRAPH",
+                "CHECKBOX_LIST",
+            ):
+                field = Field(title=question.title, description=question.help_text)
+                answer_input_entry_type = {
+                    "integer": int,
+                    "float": float,
+                }.get(question.input_type, str)
+
+                if question.required:
+                    answer_input_entry_type = T.Annotated[
+                        answer_input_entry_type, BeforeValidator(not_empty)
+                    ]
+                else:
+                    if answer_input_entry_type in (int, float):
+                        answer_input_entry_type = T.Annotated[
+                            T.Optional[answer_input_entry_type],
+                            BeforeValidator(allow_empty),
+                        ]
+                if question.widget_type in {"RADIO_LIST", "CHECKBOX_LIST"}:
+                    answer_input_entry_type = T.Annotated[
+                        answer_input_entry_type,
+                        AfterValidator(
+                            partial(option_in_allowed_values, allowed=question.choices)
+                        ),
+                    ]
+
+                if not question.required:
+                    field.default_factory = lambda: [""]
+
+                answer_input_type = conlist(
+                    answer_input_entry_type,
+                    min_length=1 if question.required else 0,
+                    max_length=None if question.widget_type in {"CHECKBOX_LIST"} else 1,
+                )
+                answer_type = (answer_input_type, field)
+                answer_types[f"{question.id}"] = answer_type
+            else:
+                raise ValueError(f"unknown widget type: {question.widget_type}")
+
+        model = create_model(
+            f"Template_{self.id}_Answers",
+            **(answer_types),
+            __config__=ConfigDict(extra="forbid"),
+        )
+        return model
+
+
+def not_empty(v: str):
+    if not len(v) > 0:
+        raise ValueError("value is required")
+    return v
+
+
+def allow_empty(v: str):
+    if v == "":
+        return None
+    return v
+
+
+def option_in_allowed_values(value, allowed):
+    if value not in allowed:
+        raise ValueError(f"{value!r} is not a valid choice from: {allowed}")
+    return value
+
+
+class InvalidTemplateAnswersError(Exception):
+    def __init__(
+        self,
+        template: Template,
+        answers: dict[str, list[str]],
+        errors: list[dict],
+    ):
+        self.template = template
+        self.errors = errors
+        self.answers = answers
+
+    def __str__(self):
+        error_lines = []
+        for error in self.errors:
+            error_msg = ""
+            error_msg += f'location: {error["loc"]}\n'
+            error_msg += f'  input: {error["input"]}\n'
+            error_msg += f'  message: {error["msg"]}\n'
+            question = error.get("question")
+            if question:
+                error_msg += (
+                    indent(
+                        f"question: {json.dumps(question, indent=4, default=str)}", "  "
+                    )
+                    + "\n"
+                )
+            error_lines.append(indent(error_msg, "   "))
+        error_lines = "\n".join(error_lines)
+
+        return (
+            f"{self.template.name} ({self.template.id}) validation errors:\n"
+            f"{error_lines}"
+        )

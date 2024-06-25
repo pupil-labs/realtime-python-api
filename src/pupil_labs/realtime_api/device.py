@@ -7,9 +7,9 @@ import typing as T
 
 import aiohttp
 import numpy as np
-import websockets
-
 import pupil_labs  # noqa: F401
+import websockets
+from pydantic import ValidationError
 
 from .base import DeviceBase
 from .models import (
@@ -179,7 +179,7 @@ class Device(DeviceBase):
             )
             return result
 
-    async def post_template(self, template_data) -> None:
+    async def post_template(self, template_answers: dict[str, list[str]]) -> None:
         """
         :raises pupil_labs.realtime_api.device.DeviceError:
                 if the data can not be sent.
@@ -188,11 +188,12 @@ class Device(DeviceBase):
         if not self.template_definition:
             await self.get_template()
 
-        for key, value in template_data.items():
-            self.template_definition.validate_item(key, value[0])
+        errors = self.template_definition.validate_answers(template_answers)
+        if errors:
+            raise ValueError(errors=errors)
 
         async with self.session.post(
-            self.api_url(APIPath.TEMPLATE_DATA), json=template_data
+            self.api_url(APIPath.TEMPLATE_DATA), json=template_answers
         ) as response:
             confirmation = await response.json()
             if response.status != 200:
