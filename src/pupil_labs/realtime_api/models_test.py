@@ -1,4 +1,6 @@
+# flake8: noqa: E501
 import pytest
+
 from pupil_labs.realtime_api.models import InvalidTemplateAnswersError, Template
 
 
