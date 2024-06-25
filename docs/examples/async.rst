@@ -53,6 +53,17 @@ Start, stop and save, and cancel recordings
    :emphasize-lines: 23,27
    :linenos:
 
+Templates
+-------------------------------------------
+
+You can programmatically fill the template. This allows you to also define the
+recording name if the template is created correctly.
+
+.. literalinclude:: ../../examples/async/templates.py
+   :language: python
+   :emphasize-lines: 16,18,35-71
+   :linenos:
+
 Streaming
 =========
 
