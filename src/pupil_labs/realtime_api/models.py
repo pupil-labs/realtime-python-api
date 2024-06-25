@@ -337,7 +337,7 @@ class Template:
                 return item
         return None
 
-    def validate_answers(self, answers: dict[str, list[str]], raise_exception=True):
+    def validate_answers(self, answers: T.Dict[str, T.List[str]], raise_exception=True):
         AnswerValidator = self._answer_validator()
         errors = []
         try:
@@ -432,8 +432,8 @@ class InvalidTemplateAnswersError(Exception):
     def __init__(
         self,
         template: Template,
-        answers: dict[str, list[str]],
-        errors: list[dict],
+        answers: T.Dict[str, T.List[str]],
+        errors: T.List[T.Dict],
     ):
         self.template = template
         self.errors = errors

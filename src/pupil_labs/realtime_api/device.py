@@ -179,7 +179,7 @@ class Device(DeviceBase):
             )
             return result
 
-    async def post_template(self, template_answers: dict[str, list[str]]) -> None:
+    async def post_template(self, template_answers: T.Dict[str, T.List[str]]) -> None:
         """
         :raises pupil_labs.realtime_api.device.DeviceError:
                 if the data can not be sent.
