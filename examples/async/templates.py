@@ -42,7 +42,7 @@ async def main():
                         questionnaire[str(item.id)] = ["Some more text"]
                     # Assuming we have created a component with this title and defined
                     # Recording Name in Cloud to use this component,
-                    # we can programmatically set the recording name
+                    # we can programmatically set the recording's name
                     elif item.title == "Recording name test":
                         questionnaire[str(item.id)] = [
                             f"{str(datetime.datetime.today())}_My_rec_name"

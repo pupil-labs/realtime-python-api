@@ -35,7 +35,7 @@ Automatic status updates
 ------------------------
 
 The :py:class:`Device <pupil_labs.realtime_api.simple.Device>` class monitors a
-Pupil Invisible Companion device in the background and mirrors its state accordingly.
+Pupil Invisible/Neon Companion device in the background and mirrors its state accordingly.
 
 .. literalinclude:: ../../examples/simple/status_auto_update.py
    :language: python
@@ -61,6 +61,16 @@ Start, stop and save, and cancel recordings
    :emphasize-lines: 13,18,21
    :linenos:
 
+Templates
+-------------------------------------------
+
+You can programmatically fill the template. This allows you to also define the
+recording name if the template is created correctly.
+
+.. literalinclude:: ../../examples/simple/templates.py
+   :language: python
+   :emphasize-lines: 13,16,35-71
+   :linenos:
 
 Streaming
 =========
