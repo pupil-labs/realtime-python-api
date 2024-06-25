@@ -14,7 +14,7 @@ except ImportError:
 from ..base import DeviceBase
 from ..device import Device as _DeviceAsync
 from ..device import StatusUpdateNotifier
-from ..models import Component, Event, Sensor, Status
+from ..models import Component, Event, Sensor, Status, Template
 from ..streaming import (
     ImuPacket,
     RTSPGazeStreamer,
@@ -185,6 +185,32 @@ class Device(DeviceBase):
                 return await control.send_event(event_name, event_timestamp_unix_ns)
 
         return asyncio.run(_send_event())
+
+    def get_template(self) -> Template:
+        """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.get_template_def`
+
+        :raises
+        """
+
+        async def _get_template():
+            async with _DeviceAsync.convert_from(self) as control:
+                return await control.get_template()
+
+        return asyncio.run(_get_template())
+
+    def get_template_data(self):
+        async def _get_template_data():
+            async with _DeviceAsync.convert_from(self) as control:
+                return await control.get_template_data()
+
+        return asyncio.run(_get_template_data())
+
+    def post_template(self, template_data):
+        async def _post_template():
+            async with _DeviceAsync.convert_from(self) as control:
+                return await control.post_template(template_data)
+
+        return asyncio.run(_post_template())
 
     def receive_scene_video_frame(
         self, timeout_seconds: T.Optional[float] = None
@@ -401,7 +427,7 @@ class Device(DeviceBase):
                     is_streaming_flag.set()
 
                 while True:
-                    logger.debug(f"Background worker waiting for event...")
+                    logger.debug("Background worker waiting for event...")
                     event = await event_manager.wait_for_first_event()
                     logger.debug(f"Background worker received {event}")
                     if event is Device._EVENT.SHOULD_WORKER_CLOSE:

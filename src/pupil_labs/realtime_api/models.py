@@ -1,8 +1,12 @@
-import dataclasses
-import datetime
 import enum
 import logging
 import typing as T
+from dataclasses import field
+from datetime import datetime
+from uuid import UUID
+
+from pydantic import confloat, conint
+from pydantic.dataclasses import dataclass
 
 try:
     from typing import Literal
@@ -20,6 +24,8 @@ class APIPath(enum.Enum):
     RECORDING_CANCEL = "/recording:cancel"
     EVENT = "/event"
     CALIBRATION = "/../calibration.bin"
+    TEMPLATE_DEFINITION = "/template_def"
+    TEMPLATE_DATA = "/template_data"
 
     def full_address(
         self, address: str, port: int, protocol: str = "http", prefix: str = "/api"
@@ -54,8 +60,8 @@ class Event(T.NamedTuple):
         )
 
     @property
-    def datetime(self) -> datetime.datetime:
-        return datetime.datetime.fromtimestamp(self.timestamp / 1e9)
+    def datetime(self) -> datetime:
+        return datetime.fromtimestamp(self.timestamp / 1e9)
 
     def __repr__(self) -> str:
         return (
@@ -186,9 +192,10 @@ def parse_component(raw: ComponentRaw) -> Component:
         ) from err
 
 
-@dataclasses.dataclass
+@dataclass
 class Status:
     "Represents the Companion's full status"
+
     phone: Phone
     hardware: Hardware
     sensors: T.List[Sensor]
@@ -279,3 +286,63 @@ class Status:
                 sensor=Sensor.Name.EYES.value, conn_type=Sensor.Connection.DIRECT.value
             ),
         )
+
+
+TemplateItemWidgetType = Literal[
+    "TEXT", "PARAGRAPH", "RADIO_LIST", "CHECKBOX_LIST", "SECTION_HEADER", "PAGE_BREAK"
+]
+TemplateItemInputType = T.Literal["any", "integer", "float"]
+
+
+@dataclass
+class TemplateItem:
+    choices: T.Optional[T.List[str]]
+    help_text: T.Optional[str]
+    id: UUID
+    required: bool
+    title: str
+    widget_type: TemplateItemWidgetType
+    input_type: TemplateItemInputType
+
+    def validate_value(self, key: UUID, value: T.Any):
+        if self.input_type != "any":
+            try:
+                if self.input_type == "integer":
+                    value = conint(strict=True)(value)
+                elif self.input_type == "float":
+                    value = confloat(strict=True)(value)
+            except ValueError as e:
+                raise ValueError(
+                    f"{self.title}[{key}]: Invalid input type"
+                    + f", it should be {self.input_type}, ValueError: {e}"
+                )
+        else:
+            if self.widget_type in ["RADIO_LIST", "CHECKBOX_LIST"]:
+                if str(value) not in self.choices:
+                    raise ValueError(
+                        f"{self.title}[{key}]: Invalid choice {value}."
+                        + f" Must be one of {', '.join(self.choices)}."
+                    )
+
+
+@dataclass(kw_only=True)
+class Template:
+    created_at: datetime
+    id: UUID
+    name: str
+    updated_at: datetime
+    recording_name_format: T.List[str]
+    items: T.List[TemplateItem] = field(default_factory=list)
+    label_ids: T.List[UUID] = field(default_factory=list, metadata={"readonly": True})
+    is_default_template: bool = True
+    description: T.Optional[str] = None
+    recording_ids: T.Optional[T.List[UUID]] = None
+    published_at: T.Optional[datetime] = None
+    archived_at: T.Optional[datetime] = None
+
+    def validate_item(self, key: UUID, value: str):
+        item = next((item for item in self.items if str(item.id) == key), None)
+        if not item:
+            raise ValueError(f"No item found with ID {key}, to define {value}.")
+        else:
+            item.validate_value(key, value)

@@ -17,6 +17,7 @@ from .models import (
     Component,
     Event,
     Status,
+    Template,
     UnknownComponentError,
     parse_component,
 )
@@ -43,6 +44,7 @@ class Device(DeviceBase):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._create_client_session()
+        self.template_definition: T.Optional[Template] = None
 
     async def get_status(self) -> Status:
         """
@@ -145,6 +147,59 @@ class Device(DeviceBase):
             if response.status != 200:
                 raise DeviceError(response.status, confirmation["message"])
             return Event.from_dict(confirmation["result"])
+
+    async def get_template(self) -> Template:
+        """
+        :raises pupil_labs.realtime_api.device.DeviceError:
+            if the template can't be fetched.
+        """
+        async with self.session.get(
+            self.api_url(APIPath.TEMPLATE_DEFINITION)
+        ) as response:
+            confirmation = await response.json()
+            if response.status != 200:
+                raise DeviceError(response.status, confirmation["message"])
+            result = confirmation["result"]
+            logger.debug(f"[{self}.get_template_def] Received template def: {result}")
+            self.template_definition = Template(**result)
+            return self.template_definition
+
+    async def get_template_data(self):
+        """
+        :raises pupil_labs.realtime_api.device.DeviceError:
+                if the template's data could not be fetched
+        """
+        async with self.session.get(self.api_url(APIPath.TEMPLATE_DATA)) as response:
+            confirmation = await response.json()
+            if response.status != 200:
+                raise DeviceError(response.status, confirmation["message"])
+            result = confirmation["result"]
+            logger.debug(
+                f"[{self}.get_template_data] Received data's template: {result}"
+            )
+            return result
+
+    async def post_template(self, template_data) -> None:
+        """
+        :raises pupil_labs.realtime_api.device.DeviceError:
+                if the data can not be sent.
+                ValueError: if invalid data type.
+        """
+        if not self.template_definition:
+            await self.get_template()
+
+        for key, value in template_data.items():
+            self.template_definition.validate_item(key, value[0])
+
+        async with self.session.post(
+            self.api_url(APIPath.TEMPLATE_DATA), json=template_data
+        ) as response:
+            confirmation = await response.json()
+            if response.status != 200:
+                raise DeviceError(response.status, confirmation["message"])
+            result = confirmation["result"]
+            logger.debug(f"[{self}.get_template_data] Send data's template: {result}")
+            return result
 
     async def close(self):
         await self.session.close()
