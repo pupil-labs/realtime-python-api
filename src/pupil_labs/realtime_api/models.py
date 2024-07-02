@@ -2,7 +2,9 @@ import enum
 import json
 import logging
 import typing as T
-from dataclasses import asdict, field
+from dataclasses import asdict
+from dataclasses import dataclass as dataclass_python
+from dataclasses import field
 from datetime import datetime
 from functools import partial
 from textwrap import indent
@@ -17,7 +19,7 @@ from pydantic import (
     conlist,
     create_model,
 )
-from pydantic.dataclasses import dataclass
+from pydantic.dataclasses import dataclass as dataclass_pydantic
 
 try:
     from typing import Literal
@@ -203,7 +205,7 @@ def parse_component(raw: ComponentRaw) -> Component:
         ) from err
 
 
-@dataclass
+@dataclass_python
 class Status:
     "Represents the Companion's full status"
 
@@ -305,7 +307,7 @@ TemplateItemWidgetType = Literal[
 TemplateItemInputType = T.Literal["any", "integer", "float"]
 
 
-@dataclass(kw_only=True)
+@dataclass_pydantic(kw_only=True)
 class TemplateItem:
     id: UUID
     title: str
@@ -316,7 +318,7 @@ class TemplateItem:
     required: bool
 
 
-@dataclass(kw_only=True)
+@dataclass_pydantic(kw_only=True)
 class Template:
     created_at: datetime
     id: UUID
