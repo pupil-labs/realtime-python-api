@@ -1,5 +1,4 @@
-import datetime
-
+from pupil_labs.realtime_api.models import InvalidTemplateAnswersError
 from pupil_labs.realtime_api.simple import discover_one_device
 
 # Look for devices. Returns as soon as it has found the first device.
@@ -35,40 +34,56 @@ print_opts(data, template)
 # Filling a template
 questionnaire = {}
 if template:
-    for item in template.items:
-        if item.widget_type != "SECTION_HEADER":
-            # Modifying based on the field's title
-            if item.title == "Short answer text":
-                questionnaire[str(item.id)] = ["Some more text"]
-            # Assuming we have created a component with this title and defined
-            # Recording Name in Cloud to use this component, we can programmatically
-            # set the recording's name
-            elif item.title == "Recording name test":
-                questionnaire[str(item.id)] = [
-                    f"{str(datetime.datetime.today())}_My_rec_name"
-                ]
-            # Modifying based on the input's type
-            elif item.input_type == "integer":
-                questionnaire[str(item.id)] = ["12345"]
-            elif item.input_type == "float":
-                questionnaire[str(item.id)] = ["123.45"]
-            # Modifying based on the widget's type
-            elif item.widget_type == "PARAGRAPH":
-                questionnaire[str(item.id)] = [
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-                    + "sed do eiusmod tempor incididunt ut labore et dolore "
-                    + "magna aliqua. Ut enim ad minim veniam, quis nostrud"
-                    + "exercitation ullamco laboris nisi ut aliquip ex"
-                ]
-            elif item.widget_type == "CHECKBOX_LIST":
-                questionnaire[str(item.id)] = ["Option 1", "Option 2"]
-            elif item.widget_type == "RADIO_LIST" and not item.required:
-                questionnaire[str(item.id)] = ["Option 1"]
-            elif item.widget_type == "RADIO_LIST":
-                questionnaire[str(item.id)] = ["Yes"]
+    try:
+        for item in template.items:
+            if item.widget_type not in ("SECTION_HEADER", "PAGE_BREAK"):
+                print("\u2500" * 40)
+                print(
+                    f"ID: {item.id} - Title: {item.title} "
+                    + f"- Input Type: {item.input_type}"
+                )
+                if item.widget_type in ["CHECKBOX_LIST", "RADIO_LIST"]:
+                    print(f"Choices: {item.choices}")
+                for key, value in data.items():
+                    if str(item.id) == key:
+                        print(
+                            "Current value: "
+                            + f"{value if value and value != [''] else item.help_text}"
+                        )
+                while True:
+                    user_input = input(f"Enter value for '{item.title}': ")
 
+                    if user_input:
+                        input_list = [item.strip() for item in user_input.split(",")]
+                        try:
+                            errors = template.validate_answers(
+                                {str(item.id): input_list}, only_passed=True
+                            )
+                            if not errors:
+                                questionnaire[str(item.id)] = input_list
+                                break
+                            else:
+                                print(f"Errors: {errors}")
+                        except InvalidTemplateAnswersError as e:
+                            print(f"Validation failed: {e.errors}")
+                            print("\u2500" * 40)
+                    else:
+                        if item.required:
+                            if value != [""]:
+                                break
+                            else:
+                                print("This field is required. Please enter a value.")
+                                continue
+                        if not item.required:
+                            break
+                        print("This field is required. Please enter a value.")
+    except KeyboardInterrupt:
+        print("\nKeyboardInterrupt detected. Skipping the rest of the template")
+
+print("\u2500" * 40)
 # Sending the template
-device.post_template(questionnaire)
+if questionnaire:
+    device.post_template(questionnaire)
 
 # Fetch new data filled on the template
 data = device.get_template_data()
