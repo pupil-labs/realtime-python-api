@@ -188,7 +188,9 @@ class Device(DeviceBase):
         if not self.template_definition:
             await self.get_template()
 
-        errors = self.template_definition.validate_answers(template_answers)
+        errors = self.template_definition.validate_simple_model_answers(
+            template_answers
+        )
         if errors:
             raise ValueError(errors=errors)
 
