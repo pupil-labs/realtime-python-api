@@ -339,8 +339,13 @@ class Template:
                 return item
         return None
 
-    def validate_answers(self, answers: T.Dict[str, T.List[str]], raise_exception=True):
-        AnswerValidator = self._answer_validator()
+    def validate_answers(
+        self,
+        answers: T.Dict[str, T.List[str]],
+        raise_exception=True,
+        only_passed=False,
+    ):
+        AnswerValidator = self._answer_validator(only_passed, answers)
         errors = []
         try:
             AnswerValidator(**answers)
@@ -356,9 +361,16 @@ class Template:
             raise InvalidTemplateAnswersError(self, answers, errors)
         return errors
 
-    def _answer_validator(self):
+    def _answer_validator(
+        self, only_passed: bool, answers: T.Optional[T.Dict[str, T.List[str]]] = None
+    ):
         answer_types = {}
-        for question in self.items:
+        items_to_validate = (
+            [item for item in self.items if str(item.id) in answers]
+            if only_passed and answers
+            else self.items
+        )
+        for question in items_to_validate:
             if question.widget_type in ("SECTION_HEADER", "PAGE_BREAK"):
                 continue
             elif question.widget_type in (
