@@ -1,7 +1,9 @@
+import os
+
 import beaupy
 
 from pupil_labs.realtime_api.models import InvalidTemplateAnswersError, TemplateItem
-from pupil_labs.realtime_api.simple import Device, discover_one_device
+from pupil_labs.realtime_api.simple import discover_one_device
 
 # handle KeyboardInterrupts ourselves
 beaupy.Config.raise_on_interrupt = True
@@ -9,7 +11,6 @@ beaupy.Config.raise_on_interrupt = True
 # Look for devices. Returns as soon as it has found the first device.
 print("Looking for the next best device...")
 device = discover_one_device(max_search_duration_seconds=10)
-device = Device("10.55.0.156", 8080)
 if device is None:
     print("No device found.")
     raise SystemExit(-1)
@@ -20,12 +21,13 @@ template = device.get_template()
 # Fetch data filled on the template
 data = device.get_template_data()
 
-LINE = "\u2500" * 40
+LINE = "\u2500" * os.get_terminal_size().columns
 RED = "\033[31m"
 RESET = "\033[0m"
 
 print(f"[{template.name}] Data pre-filled:")
-print(data)
+print(LINE)
+print("\n".join(f"{k}\t{v}" for k, v in data.items()))
 
 
 def prompt_checkbox_answer(item: TemplateItem, current_value):
@@ -55,6 +57,10 @@ def prompt_radio_answer(item: TemplateItem, current_value):
 
 
 def prompt_string_answer(item: TemplateItem, current_value):
+    placeholder = item.help_text if item.help_text and item.help_text != [""] else None
+    current_value = (
+        placeholder if not current_value or current_value == [""] else current_value
+    )
     return beaupy.prompt(
         f"Enter value for '{item.title}': ",
         initial_value="" if current_value is None else str(current_value),
@@ -70,7 +76,8 @@ if template:
                 continue
             print(LINE)
             print(
-                f"ID: {item.id} - Title: {item.title} "
+                f"{'* ' if item.required else ''}"
+                + f"ID: {item.id} - Title: {item.title} "
                 + f"- Input Type: {item.input_type}"
             )
             current_value = data.get(str(item.id))
@@ -84,6 +91,7 @@ if template:
                     template_input = prompt_string_answer(item, current_value)
 
                 try:
+                    print(template_input)
                     errors = question.validate_answer(template_input)
                     if not errors:
                         questionnaire[str(item.id)] = template_input
@@ -95,16 +103,6 @@ if template:
                     for error in e.errors:
                         print(f"    {error['msg']}")
                     print(LINE + RESET)
-                else:
-                    if item.required:
-                        if current_value != [""]:
-                            break
-                        else:
-                            print("This field is required. Please enter a value.")
-                            continue
-                    if not item.required:
-                        break
-                    print("This field is required. Please enter a value.")
     except KeyboardInterrupt:
         print("\nKeyboardInterrupt detected. Skipping the rest of the template")
 
@@ -118,6 +116,7 @@ data = device.get_template_data()
 
 # Iterate to check filled data
 print(f"[{template.name}] Data post:")
-print(data)
+print(LINE)
+print("\n".join(f"{k}\t{v}" for k, v in data.items()))
 
 device.close()
