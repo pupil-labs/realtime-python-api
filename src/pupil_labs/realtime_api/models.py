@@ -565,7 +565,7 @@ def make_template_answer_model_base(template_: Template):
                     ],
                 )
                 line = (
-                    f"    {item_id}={self.__dict__[item_id]!r},  "
+                    f"    {item_id}={self.__dict__[item_id]!r}, "
                     + f"# {' - '.join(infos)}"
                 )
                 args.append(line)
