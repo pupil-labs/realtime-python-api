@@ -502,7 +502,7 @@ class Template:
 
     def validate_answers(
         self,
-        answers: dict[str, T.List[str]],
+        answers: T.Dict[str, T.List[str]],
         raise_exception=True,
         format=QuestionModelFormats,
     ):
