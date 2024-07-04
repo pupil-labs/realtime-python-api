@@ -393,7 +393,6 @@ class TemplateItem:
                     answer_input_type = T.Annotated[
                         answer_input_type, StringConstraints(min_length=1)
                     ]
-
             else:
                 answer_input_type = T.Optional[answer_input_type]
                 field.default = None
@@ -422,6 +421,7 @@ class TemplateItem:
                         T.Optional[answer_input_entry_type],
                         BeforeValidator(allow_empty),
                     ]
+                field.default = [""]
 
         answer_input_type = conlist(
             answer_input_entry_type,
@@ -545,7 +545,7 @@ def option_in_allowed_values(value, allowed):
 def make_template_answer_model_base(template_: Template):
     class TemplateAnswerModelBase(BaseModel):
         template: T.ClassVar[Template] = template_
-        __config__ = ConfigDict(extra="forbid")
+        model_config = ConfigDict(extra="forbid")
 
         def get(self, item_id):
             return self.__dict__.get(item_id)
