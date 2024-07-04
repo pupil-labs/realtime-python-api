@@ -1,7 +1,7 @@
 import beaupy
 
-from pupil_labs.realtime_api.models import InvalidTemplateAnswersError
-from pupil_labs.realtime_api.simple import Device, discover_one_device
+from pupil_labs.realtime_api.models import InvalidTemplateAnswersError, TemplateItem
+from pupil_labs.realtime_api.simple import discover_one_device
 
 # handle KeyboardInterrupts ourselves
 beaupy.Config.raise_on_interrupt = True
@@ -26,6 +26,40 @@ RESET = "\033[0m"
 print(f"[{template.name}] Data pre-filled:")
 print(data)
 
+
+def prompt_checkbox_answer(item: TemplateItem, current_value):
+    ticked = []
+    for i, choice in enumerate(item.choices):
+        current_value: list
+        if choice in (current_value or []):
+            current_value.remove(choice)
+            ticked.append(i)
+    choices = beaupy.select_multiple(
+        item.choices,
+        ticked_indices=ticked,
+    )
+    return choices
+
+
+def prompt_radio_answer(item: TemplateItem, current_value):
+    cursor_index = 0
+    if current_value and current_value[0] in item.choices:
+        cursor_index = item.choices.index(current_value[0])
+
+    choice = beaupy.select(item.choices, cursor_index=cursor_index)
+    template_input = []
+    if choice is not None:
+        template_input = [choice]
+    return template_input
+
+
+def prompt_string_answer(item: TemplateItem, current_value):
+    return beaupy.prompt(
+        f"Enter value for '{item.title}': ",
+        initial_value="" if current_value is None else str(current_value),
+    )
+
+
 # Filling a template
 questionnaire = {}
 if template:
@@ -42,29 +76,11 @@ if template:
             while True:
                 question = template.get_question_by_id(item.id)
                 if item.widget_type == "CHECKBOX_LIST":
-                    ticked = []
-                    for i, choice in enumerate(item.choices):
-                        current_value: list
-                        if choice in (current_value or []):
-                            current_value.remove(choice)
-                            ticked.append(i)
-                    choices = beaupy.select_multiple(
-                        item.choices,
-                        ticked_indices=ticked,
-                    )
-                    template_input = choices
+                    template_input = prompt_checkbox_answer(item, current_value)
                 elif item.widget_type == "RADIO_LIST":
-                    choice = beaupy.select(item.choices)
-                    template_input = []
-                    if choice is not None:
-                        template_input = [choice]
+                    template_input = prompt_radio_answer(item, current_value)
                 else:
-                    template_input = beaupy.prompt(
-                        f"Enter value for '{item.title}': ",
-                        initial_value=""
-                        if current_value is None
-                        else str(current_value),
-                    )
+                    template_input = prompt_string_answer(item, current_value)
 
                 try:
                     errors = question.validate_answer(template_input)
@@ -78,7 +94,6 @@ if template:
                     for error in e.errors:
                         print(f"    {error['msg']}")
                     print(LINE + RESET)
-                    breakpoint()
                 else:
                     if item.required:
                         if current_value != [""]:
