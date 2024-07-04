@@ -22,6 +22,7 @@ from pydantic import (
     create_model,
 )
 from pydantic.dataclasses import dataclass as dataclass_pydantic
+from typing_extensions import Annotated
 
 try:
     from typing import Literal
@@ -375,7 +376,7 @@ class TemplateItem:
         field = Field(title=self.title, description=self.help_text)
         answer_input_type = self._value_type
         if self.widget_type in {"RADIO_LIST", "CHECKBOX_LIST"}:
-            answer_input_type = T.Annotated[
+            answer_input_type = Annotated[
                 answer_input_type,
                 AfterValidator(partial(option_in_allowed_values, allowed=self.choices)),
             ]
@@ -390,7 +391,7 @@ class TemplateItem:
         else:
             if self.required:
                 if self.input_type == "any":
-                    answer_input_type = T.Annotated[
+                    answer_input_type = Annotated[
                         answer_input_type, StringConstraints(min_length=1)
                     ]
             else:
@@ -404,18 +405,18 @@ class TemplateItem:
         answer_input_entry_type = self._value_type
 
         if self.widget_type in {"RADIO_LIST", "CHECKBOX_LIST"}:
-            answer_input_entry_type = T.Annotated[
+            answer_input_entry_type = Annotated[
                 answer_input_entry_type,
                 AfterValidator(partial(option_in_allowed_values, allowed=self.choices)),
             ]
         else:
             if self.required:
-                answer_input_entry_type = T.Annotated[
+                answer_input_entry_type = Annotated[
                     answer_input_entry_type, BeforeValidator(not_empty)
                 ]
             else:
                 if answer_input_entry_type in (int, float):
-                    answer_input_entry_type = T.Annotated[
+                    answer_input_entry_type = Annotated[
                         T.Optional[answer_input_entry_type],
                         BeforeValidator(allow_empty),
                     ]
