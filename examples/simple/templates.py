@@ -1,7 +1,10 @@
-from beaupy import prompt, select, select_multiple
+import beaupy
 
 from pupil_labs.realtime_api.models import InvalidTemplateAnswersError
-from pupil_labs.realtime_api.simple import discover_one_device
+from pupil_labs.realtime_api.simple import Device, discover_one_device
+
+# handle KeyboardInterrupts ourselves
+beaupy.Config.raise_on_interrupt = True
 
 # Look for devices. Returns as soon as it has found the first device.
 print("Looking for the next best device...")
@@ -17,7 +20,8 @@ template = device.get_template()
 data = device.get_template_data()
 
 LINE = "\u2500" * 40
-
+RED = "\033[31m"
+RESET = "\033[0m"
 
 print(f"[{template.name}] Data pre-filled:")
 print(data)
@@ -35,8 +39,6 @@ if template:
                 + f"- Input Type: {item.input_type}"
             )
             current_value = data.get(str(item.id))
-            print(f"Current value: {current_value}")
-
             while True:
                 question = template.get_question_by_id(item.id)
                 if item.widget_type == "CHECKBOX_LIST":
@@ -46,18 +48,22 @@ if template:
                         if choice in (current_value or []):
                             current_value.remove(choice)
                             ticked.append(i)
-                    choices = select_multiple(
+                    choices = beaupy.select_multiple(
                         item.choices,
                         ticked_indices=ticked,
                     )
                     template_input = choices
                 elif item.widget_type == "RADIO_LIST":
-                    choice = select(item.choices)
-                    template_input = [choice]
+                    choice = beaupy.select(item.choices)
+                    template_input = []
+                    if choice is not None:
+                        template_input = [choice]
                 else:
-                    template_input = prompt(
+                    template_input = beaupy.prompt(
                         f"Enter value for '{item.title}': ",
-                        initial_value=str(current_value),
+                        initial_value=""
+                        if current_value is None
+                        else str(current_value),
                     )
 
                 try:
@@ -68,8 +74,11 @@ if template:
                     else:
                         print(f"Errors: {errors}")
                 except InvalidTemplateAnswersError as e:
-                    print(f"Validation failed: {e.errors}")
-                    print(LINE)
+                    print(f"{RED}Validation failed for: {template_input}")
+                    for error in e.errors:
+                        print(f"    {error['msg']}")
+                    print(LINE + RESET)
+                    breakpoint()
                 else:
                     if item.required:
                         if current_value != [""]:

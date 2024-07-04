@@ -16,6 +16,7 @@ from pydantic import (
     BeforeValidator,
     ConfigDict,
     Field,
+    StringConstraints,
     ValidationError,
     conlist,
     create_model,
@@ -372,23 +373,31 @@ class TemplateItem:
 
     def _simple_model_validator(self):
         field = Field(title=self.title, description=self.help_text)
-        answer_input_entry_type = self._value_type
+        answer_input_type = self._value_type
         if self.widget_type in {"RADIO_LIST", "CHECKBOX_LIST"}:
-            answer_input_entry_type = T.Annotated[
-                answer_input_entry_type,
+            answer_input_type = T.Annotated[
+                answer_input_type,
                 AfterValidator(partial(option_in_allowed_values, allowed=self.choices)),
             ]
+            if not self.required:
+                field.default_factory = list
+
             answer_input_type = conlist(
-                answer_input_entry_type,
+                answer_input_type,
                 min_length=1 if self.required else 0,
                 max_length=None if self.widget_type in {"CHECKBOX_LIST"} else 1,
             )
-            if not self.required:
-                field.default_factory = list
         else:
-            answer_input_type = T.Optional[answer_input_entry_type]
-            if not self.required:
+            if self.required:
+                if self.input_type == "any":
+                    answer_input_type = T.Annotated[
+                        answer_input_type, StringConstraints(min_length=1)
+                    ]
+
+            else:
+                answer_input_type = T.Optional[answer_input_type]
                 field.default = None
+
         return (answer_input_type, field)
 
     def _api_model_validator(self):

@@ -186,9 +186,7 @@ class Device(DeviceBase):
                 return result
             elif format == "simple":
                 template = await self.get_template()
-                answer_model = template._create_answer_model(format="simple")
-                simple_format = template.convert_from_api_to_simple_format(result)
-                return answer_model(**simple_format)
+                return template.convert_from_api_to_simple_format(result)
 
     async def post_template(
         self,
