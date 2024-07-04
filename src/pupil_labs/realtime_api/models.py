@@ -479,7 +479,7 @@ class Template:
             simple_format[question_id] = value
         return simple_format
 
-    def get_question_by_id(self, question_id: str):
+    def get_question_by_id(self, question_id: T.Union[str, UUID]):
         for item in self.items:
             if str(item.id) == str(question_id):
                 return item

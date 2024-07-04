@@ -6,7 +6,7 @@ from pupil_labs.realtime_api import Device, Network
 from pupil_labs.realtime_api.models import InvalidTemplateAnswersError
 
 
-async def main():
+async def main():  # noqa: C901
     async with Network() as network:
         dev_info = await network.wait_for_new_device(timeout_seconds=5)
     if dev_info is None:
@@ -17,7 +17,7 @@ async def main():
         # Fetch current template definition
         template = await device.get_template()
         # Fetch data filled on the template
-        data = await device.get_template_data()
+        data = await device.get_template_data(format="api")
 
         async def print_opts(data, template):
             """Iterate to see pre-filled data"""
@@ -65,9 +65,9 @@ async def main():
                                     item.strip() for item in user_input.split(",")
                                 ]
                                 try:
-                                    errors = template.validate_answers(
-                                        {str(item.id): input_list}, only_passed=True
-                                    )
+                                    errors = template.get_question_by_id(
+                                        item.id
+                                    ).validate_answer(input_list, format="api")
                                     if not errors:
                                         questionnaire[str(item.id)] = input_list
                                         break
@@ -99,7 +99,7 @@ async def main():
             await device.post_template(questionnaire)
 
         # Fetch new data filled on the template
-        data = await device.get_template_data()
+        data = await device.get_template_data(format="api")
 
         # Iterate to check filled data
         print(f"[{template.name}] Data pre-filled:")
