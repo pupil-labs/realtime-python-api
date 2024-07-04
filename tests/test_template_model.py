@@ -217,7 +217,7 @@ def test_template_answer_api_format():
             validate_question_answer(id)(value)
 
     with pytest.raises(InvalidTemplateAnswersError) as exc:
-        validate_template_answers(good_template_answers | bad_number_answers)
+        validate_template_answers({**good_template_answers, **bad_number_answers})
         assert len(exc.errors) == 4
         for error in exc.errors:
             assert "unable to parse" in error["msg"]
@@ -238,7 +238,7 @@ def test_template_answer_api_format():
             validate_question_answer(id)(value)
 
     errors = validate_template_answers(
-        good_template_answers | missing_choice_answers, raise_exception=False
+        {**good_template_answers, **missing_choice_answers}, raise_exception=False
     )
     assert len(errors) == 6
     for error in errors:
@@ -258,7 +258,7 @@ def test_template_answer_api_format():
             validate_question_answer(id)(value)
 
     errors = validate_template_answers(
-        good_template_answers | too_many_answers, raise_exception=False
+        {**good_template_answers, **too_many_answers}, raise_exception=False
     )
     assert len(errors) == 4
     for error in errors:
@@ -313,7 +313,7 @@ def test_template_answers_simple_format():
             validate_question_answer(id)(value)
 
     with pytest.raises(InvalidTemplateAnswersError) as exc:
-        validate_template_answers(good_template_answers | bad_number_answers)
+        validate_template_answers({**good_template_answers, **bad_number_answers})
         assert len(exc.errors) == 4
         for error in exc.errors:
             assert "unable to parse" in error["msg"]
@@ -334,7 +334,7 @@ def test_template_answers_simple_format():
             validate_question_answer(id)(value)
 
     errors = validate_template_answers(
-        good_template_answers | missing_choice_answers, raise_exception=False
+        {**good_template_answers, **missing_choice_answers}, raise_exception=False
     )
     assert len(errors) == 6
     for error in errors:
@@ -354,7 +354,7 @@ def test_template_answers_simple_format():
             validate_question_answer(id)(value)
 
     errors = validate_template_answers(
-        good_template_answers | too_many_answers, raise_exception=False
+        {**good_template_answers, **too_many_answers}, raise_exception=False
     )
     assert len(errors) == 4
     for error in errors:
