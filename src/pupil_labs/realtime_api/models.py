@@ -580,7 +580,7 @@ def make_template_answer_model_base(template_: Template):
 class InvalidTemplateAnswersError(Exception):
     def __init__(
         self,
-        template: Template | TemplateItem,
+        template: T.Union[Template, TemplateItem],
         answers: T.Dict[str, T.List[str]],
         errors: T.List[T.Dict],
     ):

@@ -1,7 +1,7 @@
 import beaupy
 
 from pupil_labs.realtime_api.models import InvalidTemplateAnswersError, TemplateItem
-from pupil_labs.realtime_api.simple import discover_one_device
+from pupil_labs.realtime_api.simple import Device, discover_one_device
 
 # handle KeyboardInterrupts ourselves
 beaupy.Config.raise_on_interrupt = True
@@ -9,6 +9,7 @@ beaupy.Config.raise_on_interrupt = True
 # Look for devices. Returns as soon as it has found the first device.
 print("Looking for the next best device...")
 device = discover_one_device(max_search_duration_seconds=10)
+device = Device("10.55.0.156", 8080)
 if device is None:
     print("No device found.")
     raise SystemExit(-1)
