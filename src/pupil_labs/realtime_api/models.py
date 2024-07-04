@@ -408,8 +408,6 @@ class TemplateItem:
                 answer_input_entry_type,
                 AfterValidator(partial(option_in_allowed_values, allowed=self.choices)),
             ]
-            if not self.required:
-                field.default_factory = lambda: [""]
         else:
             if self.required:
                 answer_input_entry_type = T.Annotated[
@@ -421,7 +419,9 @@ class TemplateItem:
                         T.Optional[answer_input_entry_type],
                         BeforeValidator(allow_empty),
                     ]
-                field.default = [""]
+
+        if not self.required:
+            field.default_factory = lambda: [""]
 
         answer_input_type = conlist(
             answer_input_entry_type,
