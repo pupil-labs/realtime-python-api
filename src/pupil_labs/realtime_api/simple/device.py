@@ -14,7 +14,7 @@ except ImportError:
 from ..base import DeviceBase
 from ..device import Device as _DeviceAsync
 from ..device import StatusUpdateNotifier
-from ..models import Component, Event, Sensor, Status, Template
+from ..models import Component, Event, QuestionModelFormats, Sensor, Status, Template
 from ..streaming import (
     ImuPacket,
     RTSPGazeStreamer,
@@ -198,17 +198,17 @@ class Device(DeviceBase):
 
         return asyncio.run(_get_template())
 
-    def get_template_data(self):
+    def get_template_data(self, format: QuestionModelFormats = "simple"):
         async def _get_template_data():
             async with _DeviceAsync.convert_from(self) as control:
-                return await control.get_template_data()
+                return await control.get_template_data(format=format)
 
         return asyncio.run(_get_template_data())
 
-    def post_template(self, template_data):
+    def post_template(self, template_data, format: QuestionModelFormats = "simple"):
         async def _post_template():
             async with _DeviceAsync.convert_from(self) as control:
-                return await control.post_template(template_data)
+                return await control.post_template(template_data, format=format)
 
         return asyncio.run(_post_template())
 

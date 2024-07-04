@@ -1,6 +1,12 @@
-import datetime
+import os
 
+import beaupy
+
+from pupil_labs.realtime_api.models import InvalidTemplateAnswersError, TemplateItem
 from pupil_labs.realtime_api.simple import discover_one_device
+
+# handle KeyboardInterrupts ourselves
+beaupy.Config.raise_on_interrupt = True
 
 # Look for devices. Returns as soon as it has found the first device.
 print("Looking for the next best device...")
@@ -15,66 +21,102 @@ template = device.get_template()
 # Fetch data filled on the template
 data = device.get_template_data()
 
-
-def print_opts(data, template):
-    """Iterate to see pre-filled data"""
-    if not data:
-        print("Template is empty.")
-        return
-    print("\u2500" * 40)
-    for key, value in data.items():
-        for item in template.items:
-            if str(item.id) == key:
-                print(f"{item.title}: {value} - {item.help_text}")
-    print("\u2500" * 40)
-
+LINE = "\u2500" * os.get_terminal_size().columns
+RED = "\033[31m"
+RESET = "\033[0m"
 
 print(f"[{template.name}] Data pre-filled:")
-print_opts(data, template)
+print(LINE)
+print("\n".join(f"{k}\t{v}" for k, v in data.items()))
+
+
+def prompt_checkbox_answer(item: TemplateItem, current_value):
+    ticked = []
+    for i, choice in enumerate(item.choices):
+        current_value: list
+        if choice in (current_value or []):
+            current_value.remove(choice)
+            ticked.append(i)
+    choices = beaupy.select_multiple(
+        item.choices,
+        ticked_indices=ticked,
+    )
+    return choices
+
+
+def prompt_radio_answer(item: TemplateItem, current_value):
+    cursor_index = 0
+    if current_value and current_value[0] in item.choices:
+        cursor_index = item.choices.index(current_value[0])
+
+    choice = beaupy.select(item.choices, cursor_index=cursor_index)
+    template_input = []
+    if choice is not None:
+        template_input = [choice]
+    return template_input
+
+
+def prompt_string_answer(item: TemplateItem, current_value):
+    placeholder = item.help_text if item.help_text and item.help_text != [""] else None
+    current_value = (
+        placeholder if not current_value or current_value == [""] else current_value
+    )
+    return beaupy.prompt(
+        f"Enter value for '{item.title}': ",
+        initial_value="" if current_value is None else str(current_value),
+    )
+
 
 # Filling a template
 questionnaire = {}
 if template:
-    for item in template.items:
-        if item.widget_type != "SECTION_HEADER":
-            # Modifying based on the field's title
-            if item.title == "Short answer text":
-                questionnaire[str(item.id)] = ["Some more text"]
-            # Assuming we have created a component with this title and defined
-            # Recording Name in Cloud to use this component, we can programmatically
-            # set the recording's name
-            elif item.title == "Recording name test":
-                questionnaire[str(item.id)] = [
-                    f"{str(datetime.datetime.today())}_My_rec_name"
-                ]
-            # Modifying based on the input's type
-            elif item.input_type == "integer":
-                questionnaire[str(item.id)] = ["12345"]
-            elif item.input_type == "float":
-                questionnaire[str(item.id)] = ["123.45"]
-            # Modifying based on the widget's type
-            elif item.widget_type == "PARAGRAPH":
-                questionnaire[str(item.id)] = [
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-                    + "sed do eiusmod tempor incididunt ut labore et dolore "
-                    + "magna aliqua. Ut enim ad minim veniam, quis nostrud"
-                    + "exercitation ullamco laboris nisi ut aliquip ex"
-                ]
-            elif item.widget_type == "CHECKBOX_LIST":
-                questionnaire[str(item.id)] = ["Option 1", "Option 2"]
-            elif item.widget_type == "RADIO_LIST" and not item.required:
-                questionnaire[str(item.id)] = ["Option 1"]
-            elif item.widget_type == "RADIO_LIST":
-                questionnaire[str(item.id)] = ["Yes"]
+    try:
+        for item in template.items:
+            if item.widget_type in ("SECTION_HEADER", "PAGE_BREAK"):
+                continue
+            print(LINE)
+            print(
+                f"{'* ' if item.required else ''}"
+                + f"ID: {item.id} - Title: {item.title} "
+                + f"- Input Type: {item.input_type}"
+            )
+            current_value = data.get(str(item.id))
+            while True:
+                question = template.get_question_by_id(item.id)
+                if item.widget_type == "CHECKBOX_LIST":
+                    template_input = prompt_checkbox_answer(item, current_value)
+                elif item.widget_type == "RADIO_LIST":
+                    template_input = prompt_radio_answer(item, current_value)
+                else:
+                    template_input = prompt_string_answer(item, current_value)
 
+                try:
+                    print(template_input)
+                    errors = question.validate_answer(template_input)
+                    if not errors:
+                        questionnaire[str(item.id)] = template_input
+                        break
+                    else:
+                        print(f"Errors: {errors}")
+                except InvalidTemplateAnswersError as e:
+                    print(f"{RED}Validation failed for: {template_input}")
+                    for error in e.errors:
+                        print(f"    {error['msg']}")
+                    print(LINE + RESET)
+    except KeyboardInterrupt:
+        print("\nKeyboardInterrupt detected. Skipping the rest of the template")
+
+print(LINE)
 # Sending the template
-device.post_template(questionnaire)
+if questionnaire:
+    device.post_template(questionnaire)
 
 # Fetch new data filled on the template
 data = device.get_template_data()
 
 # Iterate to check filled data
 print(f"[{template.name}] Data post:")
-print_opts(data, template)
+print(LINE)
+print("\n".join(f"{k}\t{v}" for k, v in data.items()))
 
 device.close()
