@@ -16,6 +16,7 @@ from .models import (
     APIPath,
     Component,
     Event,
+    QuestionModelFormats,
     Status,
     Template,
     UnknownComponentError,
@@ -164,11 +165,15 @@ class Device(DeviceBase):
             self.template_definition = Template(**result)
             return self.template_definition
 
-    async def get_template_data(self):
+    async def get_template_data(self, format: QuestionModelFormats = "simple"):
         """
         :raises pupil_labs.realtime_api.device.DeviceError:
                 if the template's data could not be fetched
         """
+        assert (
+            format in QuestionModelFormats.__args__
+        ), f"format should be one of {QuestionModelFormats}"
+
         async with self.session.get(self.api_url(APIPath.TEMPLATE_DATA)) as response:
             confirmation = await response.json()
             if response.status != 200:
@@ -177,23 +182,49 @@ class Device(DeviceBase):
             logger.debug(
                 f"[{self}.get_template_data] Received data's template: {result}"
             )
-            return result
+            if format == "api":
+                return result
+            elif format == "simple":
+                template = await self.get_template()
+                answer_model = template._create_answer_model(format="simple")
+                simple_format = template.convert_from_api_to_simple_format(result)
+                return answer_model(**simple_format)
 
-    async def post_template(self, template_answers: T.Dict[str, T.List[str]]) -> None:
+    async def post_template(
+        self,
+        template_answers: T.Dict[str, T.List[str]],
+        format: QuestionModelFormats = "simple",
+    ) -> None:
         """
         :raises pupil_labs.realtime_api.device.DeviceError:
                 if the data can not be sent.
                 ValueError: if invalid data type.
         """
-        if not self.template_definition:
-            await self.get_template()
+        assert (
+            format in QuestionModelFormats.__args__
+        ), f"format should be one of {QuestionModelFormats}"
 
-        pre_populated_data = await self.get_template_data()
+        self.template_definition = await self.get_template()
+
+        if format == "simple":
+            template_answers = (
+                self.template_definition.convert_from_simple_to_api_format(
+                    template_answers
+                )
+            )
+
+        pre_populated_data = await self.get_template_data(format="api")
         errors = self.template_definition.validate_answers(
-            {**pre_populated_data, **template_answers}, format="api"
+            pre_populated_data | template_answers, format="api"
         )
         if errors:
             raise ValueError(errors=errors)
+
+        # workaround for issue with api as it fails when passing in an empty list
+        # ie. it wants [""] instead of []
+        template_answers = {
+            key: value if value else [""] for key, value in template_answers.items()
+        }
 
         async with self.session.post(
             self.api_url(APIPath.TEMPLATE_DATA), json=template_answers

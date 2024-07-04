@@ -12,6 +12,7 @@ from uuid import UUID
 
 from pydantic import (
     AfterValidator,
+    BaseModel,
     BeforeValidator,
     ConfigDict,
     Field,
@@ -363,10 +364,11 @@ class TemplateItem:
 
     @property
     def _value_type(self):
-        return {
-            "integer": int,
-            "float": float,
-        }.get(self.input_type, str)
+        if self.input_type == "integer":
+            return int
+        if self.input_type == "float":
+            return float
+        return str
 
     def _simple_model_validator(self):
         field = Field(title=self.title, description=self.help_text)
@@ -392,24 +394,25 @@ class TemplateItem:
     def _api_model_validator(self):
         field = Field(title=self.title, description=self.help_text)
         answer_input_entry_type = self._value_type
-        if self.required:
-            answer_input_entry_type = T.Annotated[
-                answer_input_entry_type, BeforeValidator(not_empty)
-            ]
-        else:
-            if answer_input_entry_type in (int, float):
-                answer_input_entry_type = T.Annotated[
-                    T.Optional[answer_input_entry_type],
-                    BeforeValidator(allow_empty),
-                ]
+
         if self.widget_type in {"RADIO_LIST", "CHECKBOX_LIST"}:
             answer_input_entry_type = T.Annotated[
                 answer_input_entry_type,
                 AfterValidator(partial(option_in_allowed_values, allowed=self.choices)),
             ]
-
-        if not self.required:
-            field.default_factory = lambda: [""]
+            if not self.required:
+                field.default_factory = lambda: [""]
+        else:
+            if self.required:
+                answer_input_entry_type = T.Annotated[
+                    answer_input_entry_type, BeforeValidator(not_empty)
+                ]
+            else:
+                if answer_input_entry_type in (int, float):
+                    answer_input_entry_type = T.Annotated[
+                        T.Optional[answer_input_entry_type],
+                        BeforeValidator(allow_empty),
+                    ]
 
         answer_input_type = conlist(
             answer_input_entry_type,
@@ -434,6 +437,38 @@ class Template:
     published_at: T.Optional[datetime] = None
     archived_at: T.Optional[datetime] = None
 
+    def convert_from_simple_to_api_format(self, data: T.Dict[str, T.Any]):
+        api_format = {}
+        for question_id, value in data.items():
+            if value is None:
+                value = ""
+            if not isinstance(value, list):
+                value = [value]
+
+            api_format[question_id] = value
+        return api_format
+
+    def convert_from_api_to_simple_format(self, data: T.Dict[str, T.List[str]]):
+        simple_format = {}
+        for question_id, value in data.items():
+            question = self.get_question_by_id(question_id)
+            if question.widget_type in {"CHECKBOX_LIST", "RADIO_LIST"}:
+                if value == [""] and "" not in question.choices:
+                    value = []
+            else:
+                if not value:
+                    value = [""]
+
+                value = value[0]
+                if question.input_type != "any":
+                    if value == "":
+                        value = None
+                    else:
+                        value = question._value_type(value)
+
+            simple_format[question_id] = value
+        return simple_format
+
     def get_question_by_id(self, question_id: str):
         for item in self.items:
             if str(item.id) == str(question_id):
@@ -451,8 +486,9 @@ class Template:
         model = create_model(
             f"Template_{self.id}_Answers",
             **(answer_types),
-            __config__=ConfigDict(extra="forbid"),
+            __base__=make_template_answer_model_base(self),
         )
+
         return model
 
     def validate_answers(
@@ -473,6 +509,7 @@ class Template:
             question = self.get_question_by_id(question_id)
             if question:
                 error["question"] = asdict(question)
+
         if errors and raise_exception:
             raise InvalidTemplateAnswersError(self, answers, errors)
         return errors
@@ -494,6 +531,41 @@ def option_in_allowed_values(value, allowed):
     if value not in allowed:
         raise ValueError(f"{value!r} is not a valid choice from: {allowed}")
     return value
+
+
+def make_template_answer_model_base(template_: Template):
+    class TemplateAnswerModelBase(BaseModel):
+        template: T.ClassVar[Template] = template_
+        __config__ = ConfigDict(extra="forbid")
+
+        def get(self, item_id):
+            return self.__dict__.get(item_id)
+
+        def __repr__(self):
+            args = []
+            for item_id, validator in self.model_fields.items():
+                question = self.template.get_question_by_id(item_id)
+                infos = map(
+                    str,
+                    [
+                        question.title,
+                        question.widget_type,
+                        question.input_type,
+                        question.choices,
+                    ],
+                )
+                line = (
+                    f"    {item_id}={self.__dict__[item_id]!r},  "
+                    + f"# {' - '.join(infos)}"
+                )
+                args.append(line)
+            args = "\n".join(args)
+
+            return f"Template_{self.template.id}_AnswerModel(\n" + args + "\n)"
+
+        __str__ = __repr__
+
+    return TemplateAnswerModelBase
 
 
 class InvalidTemplateAnswersError(Exception):
