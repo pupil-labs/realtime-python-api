@@ -1,3 +1,22 @@
+1.3.0
+###########
+- Add support for templates for Neon Companion app (2.8.25+)
+
+  - Simple API
+
+    - :py:func:`pupil_labs.realtime_api.simple.Device.get_template`
+    - :py:func:`pupil_labs.realtime_api.simple.Device.get_template_data`
+    - :py:func:`pupil_labs.realtime_api.simple.Device.post_template_data`
+
+  - Async API
+
+    - :py:func:`pupil_labs.realtime_api.device.Device.get_template`
+    - :py:func:`pupil_labs.realtime_api.device.Device.get_template_data`
+    - :py:func:`pupil_labs.realtime_api.device.Device.post_template_data`
+
+- Add :ref:`simple_template_example` example
+- Add :ref:`async_templat_example` example
+
 1.2.1
 ###########
 - Add typing annotations for various gaze data types

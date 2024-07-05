@@ -141,3 +141,24 @@ See :py:mod:`pupil_labs.realtime_api.time_echo` for details.
    :language: python
    :emphasize-lines: 9,14,15
    :linenos:
+
+Templates
+=========
+
+.. _simple_template_example:
+
+Simple Template example
+-----------------------
+
+.. literalinclude:: ../../examples/simple/templates.py
+   :language: python
+   :linenos:
+
+.. _async_template_example:
+
+Async Template example
+----------------------
+
+.. literalinclude:: ../../examples/async/templates.py
+   :language: python
+   :linenos:
