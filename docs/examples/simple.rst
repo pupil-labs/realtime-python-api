@@ -69,7 +69,7 @@ recording name if the template is created correctly.
 
 .. literalinclude:: ../../examples/simple/templates.py
    :language: python
-   :emphasize-lines: 13,16,35-71
+   :emphasize-lines: 19,22,70-107,112
    :linenos:
 
 Streaming
