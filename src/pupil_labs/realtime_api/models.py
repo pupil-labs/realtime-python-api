@@ -179,7 +179,7 @@ _model_class_map: T.Dict[str, T.Type[Component]] = {
     "NetworkDevice": NetworkDevice,
 }
 
-QuestionModelFormats = T.Literal["api", "simple"]
+TemplateDataFormat = T.Literal["api", "simple"]
 
 
 def _init_cls_with_annotated_fields_only(cls, d: T.Dict[str, T.Any]):
@@ -325,7 +325,7 @@ class TemplateItem:
     def validate_answer(
         self,
         answer: T.Any,
-        format: QuestionModelFormats = "simple",
+        format: TemplateDataFormat = "simple",
         raise_exception=True,
     ):
         answers = {str(self.id): self._pydantic_validator(format=format)}
@@ -346,7 +346,7 @@ class TemplateItem:
             raise InvalidTemplateAnswersError(self, answers, errors)
         return errors
 
-    def _pydantic_validator(self, format: QuestionModelFormats):
+    def _pydantic_validator(self, format: TemplateDataFormat):
         if self.widget_type in ("SECTION_HEADER", "PAGE_BREAK"):
             return None
         if self.widget_type not in (
@@ -362,7 +362,7 @@ class TemplateItem:
         elif format == "api":
             return self._api_model_validator()
         else:
-            raise ValueError(f"unknown format, must be one of: {QuestionModelFormats}")
+            raise ValueError(f"unknown format, must be one of: {TemplateDataFormat}")
 
     @property
     def _value_type(self):
@@ -485,7 +485,7 @@ class Template:
                 return item
         return None
 
-    def _create_answer_model(self, format: QuestionModelFormats):
+    def _create_answer_model(self, format: TemplateDataFormat):
         answer_types = {}
         for question in self.items:
             validator = question._pydantic_validator(format=format)
@@ -505,7 +505,7 @@ class Template:
         self,
         answers: T.Dict[str, T.List[str]],
         raise_exception=True,
-        format=QuestionModelFormats,
+        format=TemplateDataFormat,
     ):
         AnswerModel = self._create_answer_model(format=format)
         errors = []

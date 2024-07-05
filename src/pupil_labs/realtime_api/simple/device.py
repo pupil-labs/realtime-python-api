@@ -14,7 +14,7 @@ except ImportError:
 from ..base import DeviceBase
 from ..device import Device as _DeviceAsync
 from ..device import StatusUpdateNotifier
-from ..models import Component, Event, QuestionModelFormats, Sensor, Status, Template
+from ..models import Component, Event, Sensor, Status, Template, TemplateDataFormat
 from ..streaming import (
     ImuPacket,
     RTSPGazeStreamer,
@@ -187,9 +187,13 @@ class Device(DeviceBase):
         return asyncio.run(_send_event())
 
     def get_template(self) -> Template:
-        """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.get_template_def`
+        """
+        Wraps :py:meth:`pupil_labs.realtime_api.device.Device.get_template`
 
-        :raises
+        Gets the template currently selected on device
+
+        :raises pupil_labs.realtime_api.device.DeviceError:
+            if the template can't be fetched.
         """
 
         async def _get_template():
@@ -198,16 +202,41 @@ class Device(DeviceBase):
 
         return asyncio.run(_get_template())
 
-    def get_template_data(self, format: QuestionModelFormats = "simple"):
+    def get_template_data(self, format: TemplateDataFormat = "simple"):
+        """
+        Wraps :py:meth:`pupil_labs.realtime_api.device.Device.get_template_data`
+
+        Gets the template data entered on device
+
+        :param str format: "simple" | "api"
+            "api" returns the data as is from the api eg. {"item_uuid": ["42"]}
+            "simple" returns the data parsed eg. {"item_uuid": 42}
+
+        :raises pupil_labs.realtime_api.device.DeviceError:
+                if the template's data could not be fetched
+        """
+
         async def _get_template_data():
             async with _DeviceAsync.convert_from(self) as control:
                 return await control.get_template_data(format=format)
 
         return asyncio.run(_get_template_data())
 
-    def post_template_data(
-        self, template_data, format: QuestionModelFormats = "simple"
-    ):
+    def post_template_data(self, template_data, format: TemplateDataFormat = "simple"):
+        """
+        Wraps :py:meth:`pupil_labs.realtime_api.device.Device.post_template_data`
+
+        Sets the data for the currently selected template
+
+        :param str format: "simple" | "api"
+            "api" accepts the data as in realtime api format eg. {"item_uuid": ["42"]}
+            "simple" accepts the data in parsed format eg. {"item_uuid": 42}
+
+        :raises pupil_labs.realtime_api.device.DeviceError:
+            if the data can not be sent.
+            ValueError: if invalid data type.
+        """
+
         async def _post_template_data():
             async with _DeviceAsync.convert_from(self) as control:
                 return await control.post_template_data(template_data, format=format)

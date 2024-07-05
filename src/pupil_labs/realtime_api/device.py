@@ -16,9 +16,9 @@ from .models import (
     APIPath,
     Component,
     Event,
-    QuestionModelFormats,
     Status,
     Template,
+    TemplateDataFormat,
     UnknownComponentError,
     parse_component,
 )
@@ -151,6 +151,8 @@ class Device(DeviceBase):
 
     async def get_template(self) -> Template:
         """
+        Gets the template currently selected on device
+
         :raises pupil_labs.realtime_api.device.DeviceError:
             if the template can't be fetched.
         """
@@ -165,14 +167,20 @@ class Device(DeviceBase):
             self.template_definition = Template(**result)
             return self.template_definition
 
-    async def get_template_data(self, format: QuestionModelFormats = "simple"):
+    async def get_template_data(self, format: TemplateDataFormat = "simple"):
         """
+        Gets the template data entered on device
+
+        :param str format: "simple" | "api"
+            "api" returns the data as is from the api eg. {"item_uuid": ["42"]}
+            "simple" returns the data parsed eg. {"item_uuid": 42}
+
         :raises pupil_labs.realtime_api.device.DeviceError:
-                if the template's data could not be fetched
+            if the template's data could not be fetched
         """
         assert (
-            format in QuestionModelFormats.__args__
-        ), f"format should be one of {QuestionModelFormats}"
+            format in TemplateDataFormat.__args__
+        ), f"format should be one of {TemplateDataFormat}"
 
         async with self.session.get(self.api_url(APIPath.TEMPLATE_DATA)) as response:
             confirmation = await response.json()
@@ -191,16 +199,22 @@ class Device(DeviceBase):
     async def post_template_data(
         self,
         template_answers: T.Dict[str, T.List[str]],
-        format: QuestionModelFormats = "simple",
+        format: TemplateDataFormat = "simple",
     ) -> None:
         """
+        Sets the data for the currently selected template
+
+        :param str format: "simple" | "api"
+            "api" accepts the data as in realtime api format eg. {"item_uuid": ["42"]}
+            "simple" accepts the data in parsed format eg. {"item_uuid": 42}
+
         :raises pupil_labs.realtime_api.device.DeviceError:
-                if the data can not be sent.
-                ValueError: if invalid data type.
+            if the data can not be sent.
+            ValueError: if invalid data type.
         """
         assert (
-            format in QuestionModelFormats.__args__
-        ), f"format should be one of {QuestionModelFormats}"
+            format in TemplateDataFormat.__args__
+        ), f"format should be one of {TemplateDataFormat}"
 
         self.template_definition = await self.get_template()
 

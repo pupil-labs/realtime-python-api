@@ -15,7 +15,7 @@
     - :py:func:`pupil_labs.realtime_api.device.Device.post_template_data`
 
 - Add :ref:`simple_template_example` example
-- Add :ref:`async_templat_example` example
+- Add :ref:`async_template_example` example
 
 1.2.1
 ###########
