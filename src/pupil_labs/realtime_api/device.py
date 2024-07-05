@@ -188,7 +188,7 @@ class Device(DeviceBase):
                 template = await self.get_template()
                 return template.convert_from_api_to_simple_format(result)
 
-    async def post_template(
+    async def post_template_data(
         self,
         template_answers: T.Dict[str, T.List[str]],
         format: QuestionModelFormats = "simple",

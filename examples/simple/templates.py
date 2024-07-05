@@ -109,7 +109,7 @@ if template:
 print(LINE)
 # Sending the template
 if questionnaire:
-    device.post_template(questionnaire)
+    device.post_template_data(questionnaire)
 
 # Fetch new data filled on the template
 data = device.get_template_data()

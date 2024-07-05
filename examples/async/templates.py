@@ -108,7 +108,7 @@ async def main():  # noqa: C901
 
         # Sending the template
         if questionnaire:
-            await device.post_template(questionnaire)
+            await device.post_template_data(questionnaire)
 
         # Fetch new data filled on the template
         data = await device.get_template_data(format="api")

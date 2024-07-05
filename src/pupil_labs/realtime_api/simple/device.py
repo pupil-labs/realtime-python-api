@@ -205,12 +205,14 @@ class Device(DeviceBase):
 
         return asyncio.run(_get_template_data())
 
-    def post_template(self, template_data, format: QuestionModelFormats = "simple"):
-        async def _post_template():
+    def post_template_data(
+        self, template_data, format: QuestionModelFormats = "simple"
+    ):
+        async def _post_template_data():
             async with _DeviceAsync.convert_from(self) as control:
-                return await control.post_template(template_data, format=format)
+                return await control.post_template_data(template_data, format=format)
 
-        return asyncio.run(_post_template())
+        return asyncio.run(_post_template_data())
 
     def receive_scene_video_frame(
         self, timeout_seconds: T.Optional[float] = None
