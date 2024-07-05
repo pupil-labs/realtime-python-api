@@ -1,9 +1,51 @@
 import asyncio
+import os
 
-import aioconsole
+import beaupy
 
 from pupil_labs.realtime_api import Device, Network
-from pupil_labs.realtime_api.models import InvalidTemplateAnswersError
+from pupil_labs.realtime_api.models import InvalidTemplateAnswersError, TemplateItem
+
+LINE = "\u2500" * os.get_terminal_size().columns
+RED = "\033[31m"
+RESET = "\033[0m"
+
+
+def prompt_checkbox_answer(item: TemplateItem, current_value):
+    ticked = []
+    for i, choice in enumerate(item.choices):
+        current_value: list
+        if choice in (current_value or []):
+            current_value.remove(choice)
+            ticked.append(i)
+    choices = beaupy.select_multiple(
+        item.choices,
+        ticked_indices=ticked,
+    )
+    return choices
+
+
+def prompt_radio_answer(item: TemplateItem, current_value):
+    cursor_index = 0
+    if current_value and current_value[0] in item.choices:
+        cursor_index = item.choices.index(current_value[0])
+
+    choice = beaupy.select(item.choices, cursor_index=cursor_index)
+    template_input = []
+    if choice is not None:
+        template_input = [choice]
+    return template_input
+
+
+def prompt_string_answer(item: TemplateItem, current_value):
+    placeholder = item.help_text if item.help_text and item.help_text != [""] else None
+    current_value = (
+        placeholder if not current_value or current_value == [""] else current_value
+    )
+    return beaupy.prompt(
+        f"Enter value for '{item.title}': ",
+        initial_value="" if current_value is None else str(current_value),
+    )
 
 
 async def main():  # noqa: C901
@@ -17,82 +59,52 @@ async def main():  # noqa: C901
         # Fetch current template definition
         template = await device.get_template()
         # Fetch data filled on the template
-        data = await device.get_template_data(format="api")
-
-        async def print_opts(data, template):
-            """Iterate to see pre-filled data"""
-            if not data:
-                print("Template is empty.")
-                return
-            print("\u2500" * 40)
-            for key, value in data.items():
-                for item in template.items:
-                    if str(item.id) == key:
-                        print(f"{item.title}: {value} - {item.help_text}")
-            print("\u2500" * 40)
+        data = await device.get_template_data(format="simple")
 
         print(f"[{template.name}] Data pre-filled:")
-        await print_opts(data, template)
+        print(LINE)
+        print("\n".join(f"{k}\t{v}" for k, v in data.items()))
 
         # Filling a template
         questionnaire = {}
         if template:
             try:
                 for item in template.items:
-                    if item.widget_type not in ("SECTION_HEADER", "PAGE_BREAK"):
-                        print("\u2500" * 40)
-                        print(
-                            f"ID: {item.id} - Title: {item.title}"
-                            + "- Input Type: {item.input_type}"
-                        )
-                        if item.widget_type in ["CHECKBOX_LIST", "RADIO_LIST"]:
-                            print(f"Choices: {item.choices}")
-                        for key, value in data.items():
-                            if str(item.id) == key:
-                                if not value or value == [""]:
-                                    if item.help_text and item.help_text != [""]:
-                                        value = item.help_text
-                                    else:
-                                        value = None
-                                print(f"Current value: {value}")
-                        while True:
-                            user_input = await aioconsole.ainput(
-                                f"Enter value for '{item.title}': "
-                            )
+                    if item.widget_type in ("SECTION_HEADER", "PAGE_BREAK"):
+                        continue
+                    print(LINE)
+                    print(
+                        f"{'* ' if item.required else ''}"
+                        + f"ID: {item.id} - Title: {item.title} "
+                        + f"- Input Type: {item.input_type}"
+                    )
+                    current_value = data.get(str(item.id))
+                    while True:
+                        question = template.get_question_by_id(item.id)
+                        if item.widget_type == "CHECKBOX_LIST":
+                            template_input = prompt_checkbox_answer(item, current_value)
+                        elif item.widget_type == "RADIO_LIST":
+                            template_input = prompt_radio_answer(item, current_value)
+                        else:
+                            template_input = prompt_string_answer(item, current_value)
 
-                            if user_input:
-                                input_list = [
-                                    item.strip() for item in user_input.split(",")
-                                ]
-                                try:
-                                    errors = template.get_question_by_id(
-                                        item.id
-                                    ).validate_answer(input_list, format="api")
-                                    if not errors:
-                                        questionnaire[str(item.id)] = input_list
-                                        break
-                                    else:
-                                        print(f"Errors: {errors}")
-                                except InvalidTemplateAnswersError as e:
-                                    print(f"Validation failed: {e.errors}")
-                                    print("\u2500" * 40)
+                        try:
+                            print(template_input)
+                            errors = question.validate_answer(template_input)
+                            if not errors:
+                                questionnaire[str(item.id)] = template_input
+                                break
                             else:
-                                if item.required:
-                                    if value != [""]:
-                                        break
-                                    else:
-                                        print(
-                                            "This field is required."
-                                            + "Please enter a value."
-                                        )
-                                        continue
-                                if not item.required:
-                                    break
-                                print("This field is required. Please enter a value.")
+                                print(f"Errors: {errors}")
+                        except InvalidTemplateAnswersError as e:
+                            print(f"{RED}Validation failed for: {template_input}")
+                            for error in e.errors:
+                                print(f"    {error['msg']}")
+                            print(LINE + RESET)
             except KeyboardInterrupt:
-                print("\nKeyboardInterrupt detected. Async task stopped.")
+                print("\nKeyboardInterrupt detected. Skipping line.")
 
-        print("\u2500" * 40)
+        print(LINE)
 
         # Sending the template
         if questionnaire:
@@ -102,8 +114,9 @@ async def main():  # noqa: C901
         data = await device.get_template_data(format="api")
 
         # Iterate to check filled data
-        print(f"[{template.name}] Data pre-filled:")
-        await print_opts(data, template)
+        print(f"[{template.name}] Data post:")
+        print(LINE)
+        print("\n".join(f"{k}\t{v}" for k, v in data.items()))
 
 
 if __name__ == "__main__":
