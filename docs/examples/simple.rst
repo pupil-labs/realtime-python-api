@@ -67,6 +67,8 @@ Templates
 You can programmatically fill the template. This allows you to also define the
 recording name if the template is created correctly.
 
+.. _simple_template_example:
+
 .. literalinclude:: ../../examples/simple/templates.py
    :language: python
    :emphasize-lines: 19,22,70-107,112
@@ -140,25 +142,4 @@ See :py:mod:`pupil_labs.realtime_api.time_echo` for details.
 .. literalinclude:: ../../examples/simple/device_time_offset.py
    :language: python
    :emphasize-lines: 9,14,15
-   :linenos:
-
-Templates
-=========
-
-.. _simple_template_example:
-
-Simple Template example
------------------------
-
-.. literalinclude:: ../../examples/simple/templates.py
-   :language: python
-   :linenos:
-
-.. _async_template_example:
-
-Async Template example
-----------------------
-
-.. literalinclude:: ../../examples/async/templates.py
-   :language: python
    :linenos:

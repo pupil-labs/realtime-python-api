@@ -59,6 +59,8 @@ Templates
 You can programmatically fill the template. This allows you to also define the
 recording name if the template is created correctly.
 
+.. _async_template_example:
+
 .. literalinclude:: ../../examples/async/templates.py
    :language: python
    :emphasize-lines: 59,61,68-104,110,113
