@@ -2,7 +2,7 @@
 try:
     from importlib.metadata import version as import_version
 except ImportError:
-    from importlib_metadata import version as import_version
+    from importlib_metadata import version as import_version  # type: ignore
 
 extensions = [
     "jaraco.packaging.sphinx",
