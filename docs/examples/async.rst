@@ -61,7 +61,7 @@ recording name if the template is created correctly.
 
 .. literalinclude:: ../../examples/async/templates.py
    :language: python
-   :emphasize-lines: 16,18,35-71
+   :emphasize-lines: 59,61,68-104,110,113
    :linenos:
 
 Streaming
