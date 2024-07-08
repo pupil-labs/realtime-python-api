@@ -4,12 +4,12 @@ import json
 import logging
 import types
 import typing as T
+from uuid import UUID
 
 import aiohttp
 import numpy as np
-import websockets
-
 import pupil_labs  # noqa: F401
+import websockets
 
 from .base import DeviceBase
 from .models import (
@@ -182,6 +182,8 @@ class Device(DeviceBase):
             format in TemplateDataFormat.__args__
         ), f"format should be one of {TemplateDataFormat}"
 
+        self.template_definition = await self.get_template()
+
         async with self.session.get(self.api_url(APIPath.TEMPLATE_DATA)) as response:
             confirmation = await response.json()
             if response.status != 200:
@@ -193,8 +195,9 @@ class Device(DeviceBase):
             if format == "api":
                 return result
             elif format == "simple":
-                template = await self.get_template()
-                return template.convert_from_api_to_simple_format(result)
+                return self.template_definition.convert_from_api_to_simple_format(
+                    result
+                )
 
     async def post_template_data(
         self,
@@ -247,6 +250,14 @@ class Device(DeviceBase):
             result = confirmation["result"]
             logger.debug(f"[{self}.get_template_data] Send data's template: {result}")
             return result
+
+    async def get_question_by_id(self, question_id: T.Union[str, UUID]):
+        self.template_definition = await self.get_template()
+
+        for item in self.template_definition.items:
+            if str(item.id) == str(question_id):
+                return item
+        return None
 
     async def close(self):
         await self.session.close()
