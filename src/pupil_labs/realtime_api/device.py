@@ -253,11 +253,25 @@ class Device(DeviceBase):
             return result
 
     async def get_question_by_id(self, question_id: T.Union[str, UUID]):
-        self.template_definition = await self.get_template()
+        item = (
+            self.template_definition.get_question_by_id(question_id)
+            if self.template_definition
+            else None
+        )
 
-        for item in self.template_definition.items:
-            if str(item.id) == str(question_id):
-                return item
+        if item:
+            return item
+
+        old_template = self.template_definition if self.template_definition else None
+
+        await self.get_template()
+
+        if (
+            self.template_definition is not None
+            and self.template_definition is not old_template
+        ):
+            return self.template_definition.get_question_by_id(question_id)
+
         return None
 
     async def close(self):
