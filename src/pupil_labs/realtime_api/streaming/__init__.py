@@ -1,5 +1,7 @@
 import typing as T
 
+from pupil_labs.neon_recording.stream.imu.imu_pb2 import ImuPacket
+
 from .base import (
     RTSPData,
     RTSPRawStreamer,
@@ -14,7 +16,6 @@ from .gaze import (
     receive_gaze_data,
 )
 from .imu import RTSPImuStreamer, receive_imu_data
-from .imu_pb2 import ImuPacket
 from .video import RTSPVideoFrameStreamer, VideoFrame, receive_video_frames
 
 RTSPStreamerType = T.TypeVar("RTSPStreamerType", bound="RTSPRawStreamer")
