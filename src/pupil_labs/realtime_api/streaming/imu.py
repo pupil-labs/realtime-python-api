@@ -2,8 +2,9 @@ import datetime
 import logging
 import typing as T
 
+from pupil_labs.neon_recording.stream.imu.imu_pb2 import ImuPacket
+
 from .base import RTSPRawStreamer
-from .imu_pb2 import ImuPacket
 
 logger = logging.getLogger(__name__)
 
