@@ -14,6 +14,7 @@ import pupil_labs  # noqa: F401
 from .base import DeviceBase
 from .models import (
     APIPath,
+    Calibration,
     Component,
     Event,
     Status,
@@ -21,7 +22,6 @@ from .models import (
     TemplateDataFormat,
     UnknownComponentError,
     parse_component,
-    Calibration,
 )
 
 logger = logging.getLogger(__name__)

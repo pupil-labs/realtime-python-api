@@ -10,6 +10,8 @@ from functools import partial
 from textwrap import indent
 from uuid import UUID
 
+import numpy as np
+import numpy.typing as npt
 from pydantic import (
     AfterValidator,
     BaseModel,
@@ -23,9 +25,6 @@ from pydantic import (
 )
 from pydantic.dataclasses import dataclass as dataclass_pydantic
 from typing_extensions import Annotated
-
-import numpy as np
-import numpy.typing as npt
 
 try:
     from typing import Literal
