@@ -23,6 +23,8 @@ from .models import (
     parse_component,
 )
 
+from pupil_labs.neon_recording.calib import calibration_from_buffer
+
 logger = logging.getLogger(__name__)
 
 UpdateCallbackSync = T.Callable[["pupil_labs.realtime_api.models.Component"], None]
@@ -277,25 +279,7 @@ class Device(DeviceBase):
                 raise DeviceError(response.status, "Failed to fetch calibration")
 
             raw_data = await response.read()
-            return np.frombuffer(
-                raw_data,
-                np.dtype(
-                    [
-                        ("version", "u1"),
-                        ("serial", "6a"),
-                        ("scene_camera_matrix", "(3,3)d"),
-                        ("scene_distortion_coefficients", "8d"),
-                        ("scene_extrinsics_affine_matrix", "(4,4)d"),
-                        ("right_camera_matrix", "(3,3)d"),
-                        ("right_distortion_coefficients", "8d"),
-                        ("right_extrinsics_affine_matrix", "(4,4)d"),
-                        ("left_camera_matrix", "(3,3)d"),
-                        ("left_distortion_coefficients", "8d"),
-                        ("left_extrinsics_affine_matrix", "(4,4)d"),
-                        ("crc", "u4"),
-                    ]
-                ),
-            )
+            return calibration_from_buffer(raw_data)
 
 
 class StatusUpdateNotifier:
