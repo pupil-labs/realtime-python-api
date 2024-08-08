@@ -24,6 +24,9 @@ from pydantic import (
 from pydantic.dataclasses import dataclass as dataclass_pydantic
 from typing_extensions import Annotated
 
+import numpy as np
+import numpy.typing as npt
+
 try:
     from typing import Literal
 except ImportError:
@@ -617,3 +620,18 @@ class InvalidTemplateAnswersError(Exception):
             return f"{name} ({self.template.id}) validation errors:\n" f"{error_lines}"
         except Exception as e:
             return f"InvalidTemplateAnswersError.__str__ error: {e}"
+
+
+class Calibration(T.NamedTuple):
+    version: int
+    serial: str
+    scene_camera_matrix: npt.NDArray[np.float64]
+    scene_distortion_coefficients: npt.NDArray[np.float64]
+    scene_extrinsics_affine_matrix: npt.NDArray[np.float64]
+    right_camera_matrix: npt.NDArray[np.float64]
+    right_distortion_coefficients: npt.NDArray[np.float64]
+    right_extrinsics_affine_matrix: npt.NDArray[np.float64]
+    left_camera_matrix: npt.NDArray[np.float64]
+    left_distortion_coefficients: npt.NDArray[np.float64]
+    left_extrinsics_affine_matrix: npt.NDArray[np.float64]
+    crc: int

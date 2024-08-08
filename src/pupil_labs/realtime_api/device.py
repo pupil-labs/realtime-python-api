@@ -21,6 +21,7 @@ from .models import (
     TemplateDataFormat,
     UnknownComponentError,
     parse_component,
+    Calibration,
 )
 
 logger = logging.getLogger(__name__)
@@ -277,7 +278,7 @@ class Device(DeviceBase):
                 raise DeviceError(response.status, "Failed to fetch calibration")
 
             raw_data = await response.read()
-            return np.frombuffer(
+            data = np.frombuffer(
                 raw_data,
                 np.dtype(
                     [
@@ -296,6 +297,8 @@ class Device(DeviceBase):
                     ]
                 ),
             )
+            data = {field: np.squeeze(data[field]) for field in data.dtype.names}
+            return Calibration(**data)
 
 
 class StatusUpdateNotifier:
