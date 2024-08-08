@@ -277,7 +277,7 @@ class Device(DeviceBase):
                 raise DeviceError(response.status, "Failed to fetch calibration")
 
             raw_data = await response.read()
-            return np.frombuffer(
+            data = np.frombuffer(
                 raw_data,
                 np.dtype(
                     [
@@ -296,6 +296,7 @@ class Device(DeviceBase):
                     ]
                 ),
             )
+            return {field: np.squeeze(data[field]) for field in data.dtype.names}
 
 
 class StatusUpdateNotifier:
