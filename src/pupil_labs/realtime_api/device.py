@@ -23,7 +23,7 @@ from .models import (
     parse_component,
 )
 
-from pupil_labs.neon_recording.calib import calibration_from_buffer
+from pupil_labs.neon_recording.calib import Calibration
 
 logger = logging.getLogger(__name__)
 
@@ -279,7 +279,7 @@ class Device(DeviceBase):
                 raise DeviceError(response.status, "Failed to fetch calibration")
 
             raw_data = await response.read()
-            return calibration_from_buffer(raw_data)
+            return Calibration.from_buffer(raw_data)
 
 
 class StatusUpdateNotifier:
