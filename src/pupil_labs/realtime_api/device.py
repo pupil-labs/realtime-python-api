@@ -8,6 +8,7 @@ import typing as T
 import aiohttp
 import numpy as np
 import websockets
+from pupil_labs.neon_recording.calib import Calibration
 
 import pupil_labs  # noqa: F401
 
@@ -22,8 +23,6 @@ from .models import (
     UnknownComponentError,
     parse_component,
 )
-
-from pupil_labs.neon_recording.calib import Calibration
 
 logger = logging.getLogger(__name__)
 
