@@ -1,4 +1,9 @@
 import cv2
+import numpy as np
+
+# Workaround for https://github.com/opencv/opencv/issues/21952
+cv2.imshow("cv/av bug", np.zeros(1))
+cv2.destroyAllWindows()
 
 from pupil_labs.realtime_api.simple import discover_one_device
 
