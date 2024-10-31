@@ -24,11 +24,7 @@ from pydantic import (
 from pydantic.dataclasses import dataclass as dataclass_pydantic
 from typing_extensions import Annotated
 
-try:
-    from typing import Literal
-except ImportError:
-    # FIXME: Remove when dropping py3.7 support
-    from typing_extensions import Literal
+from typing_extensions import Literal
 
 logger = logging.getLogger(__name__)
 
