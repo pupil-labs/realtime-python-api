@@ -61,6 +61,12 @@ class RTSPVideoFrameStreamer(RTSPRawStreamer):
                         f"Session description protocol data not available yet: {err}"
                     )
                     continue
+                except av.codec.UnknownCodecError as e:
+                    logger.error(
+                        f"Unknown codec error: {e}. "
+                        "Please try clearing the app's storage and cache."
+                    )
+                    raise
             # if pkt is the start of a new fragmented frame, parse will return a packet
             # containing the data from the previous fragments
             for packet in codec.parse(extract_payload_from_nal_unit(data.raw)):
