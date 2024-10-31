@@ -16,14 +16,14 @@ The Pupil Invisible Companion app hosts an `HTTP REST API <https://restfulapi.ne
 that can be used to query the phone's current state, remote control it, and look up
 information about available data streams.
 
-By default, the API is hosted at `<http://pi.local:8080/>`_. The app will fallback
-to a different DNS name and/or port if the default values are taken by another app
+By default, the API is hosted at `<http://neon.local:8080/>` or `<http://pi.local:8080/>`_. 
+The app will fallback to a different DNS name and/or port if the default values are taken by another app
 already. The current connection details can be looked up under the app's main menu →
 Streaming. Alternatively, you can use `Service discovery in the local network`_ to find
 available devices.
 
 .. note::
-    The device serves the built-in monitor web app (to be released soon!) at the
+    The device serves the built-in monitor web app at the
     document root ``/``. The API is served under the ``/api`` path. You can find the
     full `OpenAPI 3 <https://swagger.io/specification/>`_ specification of the REST API
     `here <https://pupil-labs.github.io/realtime-network-api/>`__.
@@ -109,7 +109,7 @@ In addition to the :ref:`http_api` above, the Pupil Invisible Companion device a
 pushes status updates via a `websocket
 <https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API>`_ connection. It is
 hosted on the same port as the REST API. By default, you can connect to it via
-``ws://pi.local:8080/api/status``.
+``ws://neon.local:8080/api/status`` or ``ws://pi.local:8080/api/status``.
 
 .. tip::
     You can use this `website <http://livepersoninc.github.io/ws-test-page/>`_ to test
@@ -255,7 +255,8 @@ Gaze data is encoded in network byte order (big-endian) and consists of
 3. ``worn`` - a boolean indicating whether the user is wearing the device. The value is
    encoded as an unsigned 8-bit integer as either ``255`` (device is being worn) or ``0`` (device is *not* being worn).
 
-Each RTP packet contains one gaze datum and has therefore a payload length of 9 bytes.
+Each RTP packet contains one gaze datum and has payload that varies in length being either 21 or 77 bytes 
+(if it includes eye state parameters), with a 12 bytes header. .
 
 .. seealso::
     The Realtime Python API exposes gaze data via
@@ -284,7 +285,7 @@ decoder, e.g. :py:meth:`pyav's av.CodecContext <av.codec.context.CodecContext.pa
 Service discovery in the local network
 ======================================
 
-To avoid having to manually copy the IP address from the Pupil Invisible Companion user
+To avoid having to manually copy the IP address from the Neon / Pupil Invisible Companion user
 interface, the application announces its REST API endpoint via `multicast DNS service
 discovery <https://en.wikipedia.org/wiki/Zero-configuration_networking#DNS-SD_with_multicast>`_.
 Specifically, it announces a service of type ``_http._tcp.local.`` and uses the folloing
