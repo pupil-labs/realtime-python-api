@@ -12,7 +12,7 @@ estimation of the direct offset between the host's and the client's clocks.
 
 The Time Echo protocol works in the following way:
 
-1. The API host (Pupil Invisible Companion app) opens a TCP server at a specific port
+1. The API host (Neon / Pupil Invisible Companion app) opens a TCP server at a specific port
 2. The client connects to the host address and port
 3. The client sends its current time (``t1``) in milliseconds as an uint64 in network
    byte order to the host

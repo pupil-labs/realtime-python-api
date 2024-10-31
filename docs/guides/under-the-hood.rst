@@ -12,7 +12,7 @@ client library abstracts away some of the complexities of the underlying protoco
 HTTP REST API
 =============
 
-The Pupil Invisible Companion app hosts an `HTTP REST API <https://restfulapi.net/>`_
+The Neon / Pupil Invisible Companion app hosts an `HTTP REST API <https://restfulapi.net/>`_
 that can be used to query the phone's current state, remote control it, and look up
 information about available data streams.
 
@@ -105,7 +105,7 @@ connected sensors, and running recordings.
 Websocket API
 =============
 
-In addition to the :ref:`http_api` above, the Pupil Invisible Companion device also
+In addition to the :ref:`http_api` above, the Neon / Pupil Invisible Companion device also
 pushes status updates via a `websocket
 <https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API>`_ connection. It is
 hosted on the same port as the REST API. By default, you can connect to it via
@@ -121,7 +121,7 @@ Status`_ endpoint.
 Streaming API
 =============
 
-The Pupil Invisible Companion app uses the RTSP protocol (`RFC 2326
+The Neon / Pupil Invisible Companion app uses the RTSP protocol (`RFC 2326
 <https://datatracker.ietf.org/doc/html/rfc2326>`_) to stream scene video and gaze data.
 Under the hood, communication is three-fold:
 

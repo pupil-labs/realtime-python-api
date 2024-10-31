@@ -28,7 +28,7 @@ The module comes in two flavours, we recommend using the `simple` version.
 
 To get started with either version, see our code examples :ref:`code_examples`.
 
-We also provide more detailed guides as part of the Pupil Invisible and Pupil Cloud
+We also provide more detailed guides as part of the Neon, Pupil Invisible and Pupil Cloud
 documentation: `docs.pupil-labs.com`_
 
 Bug Reports and Contributing
@@ -40,7 +40,8 @@ Help us make great tool! Bugs reports, suggestions, and fixes are always welcome
 The source code and issue tracker are both hosted on `GitHub`_.
 
 .. _asyncio: https://docs.python.org/3/library/asyncio.html
-.. _docs.pupil-labs.com: https://docs.pupil-labs.com/invisible/how-tos/integrate-with-the-real-time-api/introduction/
+.. _docs.pupil-labs.com: https://docs.pupil-labs.com/neon/real-time-api/tutorials/
+.. _docs.pupil-labs.com: https://docs.pupil-labs.com/invisible/real-time-api/tutorials/
 .. _GitHub: https://github.com/pupil-labs/realtime-python-api
 
 
