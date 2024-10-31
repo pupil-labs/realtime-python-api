@@ -22,9 +22,7 @@ from pydantic import (
     create_model,
 )
 from pydantic.dataclasses import dataclass as dataclass_pydantic
-from typing_extensions import Annotated
-
-from typing_extensions import Literal
+from typing_extensions import Annotated, Literal
 
 logger = logging.getLogger(__name__)
 

@@ -16,7 +16,7 @@ The Neon / Pupil Invisible Companion app hosts an `HTTP REST API <https://restfu
 that can be used to query the phone's current state, remote control it, and look up
 information about available data streams.
 
-By default, the API is hosted at `<http://neon.local:8080/>` or `<http://pi.local:8080/>`_. 
+By default, the API is hosted at `<http://neon.local:8080/>` or `<http://pi.local:8080/>`_.
 The app will fallback to a different DNS name and/or port if the default values are taken by another app
 already. The current connection details can be looked up under the app's main menu →
 Streaming. Alternatively, you can use `Service discovery in the local network`_ to find
@@ -255,7 +255,7 @@ Gaze data is encoded in network byte order (big-endian) and consists of
 3. ``worn`` - a boolean indicating whether the user is wearing the device. The value is
    encoded as an unsigned 8-bit integer as either ``255`` (device is being worn) or ``0`` (device is *not* being worn).
 
-Each RTP packet contains one gaze datum and has payload that varies in length being either 21 or 77 bytes 
+Each RTP packet contains one gaze datum and has payload that varies in length being either 21 or 77 bytes
 (if it includes eye state parameters), with a 12 bytes header. .
 
 .. seealso::
