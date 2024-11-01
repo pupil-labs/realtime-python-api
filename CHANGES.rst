@@ -1,3 +1,11 @@
+1.3.4
+###########
+- Add av/cv issue workaround to example scripts
+
+1.3.3
+###########
+- Use pl-neon-recording for loading calibration data
+
 1.3.0
 ###########
 - Add support for templates for Neon Companion app (2.8.25+)
