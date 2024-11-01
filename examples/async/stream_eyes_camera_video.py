@@ -3,8 +3,13 @@ import contextlib
 import time
 
 import cv2
+import numpy as np
 
-from pupil_labs.realtime_api import Device, Network, receive_video_frames
+# Workaround for https://github.com/opencv/opencv/issues/21952
+cv2.imshow("cv/av bug", np.zeros(1))
+cv2.destroyAllWindows()
+
+from pupil_labs.realtime_api import Device, Network, receive_video_frames  # noqa
 
 
 async def main(preview_frame_rate=30):
