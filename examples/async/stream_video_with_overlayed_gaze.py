@@ -9,7 +9,7 @@ import numpy as np
 cv2.imshow("cv/av bug", np.zeros(1))
 cv2.destroyAllWindows()
 
-from pupil_labs.realtime_api import ( # noqa
+from pupil_labs.realtime_api import (  # noqa
     Device,
     Network,
     receive_gaze_data,
