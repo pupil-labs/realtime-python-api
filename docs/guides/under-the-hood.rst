@@ -246,21 +246,48 @@ corresponding time.
 Decoding Gaze Data
 ------------------
 
-Gaze data is encoded in network byte order (big-endian) and consists of
+Gaze data is encoded in network byte order (big-endian) and consists of:
 
-1. ``x`` - horizontal component of the gaze location in pixels within the scene cameras
-   coordinate system. The value is encoded as a 32-bit float.
-2. ``y`` - vertical component of the gaze location in pixels within the scene cameras
-   coordinate system. The value is encoded as a 32-bit float.
-3. ``worn`` - a boolean indicating whether the user is wearing the device. The value is
+1. ``x`` - Horizontal component of the gaze location in pixels within the scene camera's
+    coordinate system. The value is encoded as a 32-bit float.
+2. ``y`` - Vertical component of the gaze location in pixels within the scene camera's
+    coordinate system. The value is encoded as a 32-bit float.
+3. ``worn`` - Boolean indicating whether the user is wearing the device. The value is
    encoded as an unsigned 8-bit integer as either ``255`` (device is being worn) or ``0`` (device is *not* being worn).
 
-Each RTP packet contains one gaze datum and has payload that varies in length being either 21 or 77 bytes
-(if it includes eye state parameters), with a 12 bytes header. .
+**Eye State Data (Optional)**
+
+If eye state computation is enabled (not available for Pupil Invisible), additional parameters are included(all encoded as a 32-bit float):
+
+4. **`pupil_diameter_left`**: Physical diameter of the left pupil in millimetres. 
+5. **`eyeball_center_left_x`**: X-coordinate of the left eyeball centre relative to the scene camera.
+6. **`eyeball_center_left_y`**: Y-coordinate of the left eyeball centre relative to the scene camera.
+7. **`eyeball_center_left_z`**: Z-coordinate of the left eyeball centre relative to the scene camera.
+8. **`optical_axis_left_x`**: X-component of the left eye's optical axis vector.
+9. **`optical_axis_left_y`**: Y-component of the left eye's optical axis vector.
+10. **`optical_axis_left_z`**: Z-component of the left eye's optical axis vector.
+11. **`pupil_diameter_right`**: Physical diameter of the right pupil in millimetres.
+12. **`eyeball_center_right_x`**: X-coordinate of the right eyeball centre relative to the scene camera.
+13. **`eyeball_center_right_y`**: Y-coordinate of the right eyeball centre relative to the scene camera.
+14. **`eyeball_center_right_z`**: Z-coordinate of the right eyeball centre relative to the scene camera.
+15. **`optical_axis_right_x`**: X-component of the right eye's optical axis vector.
+16. **`optical_axis_right_y`**: Y-component of the right eye's optical axis vector.
+17. **`optical_axis_right_z`**: Z-component of the right eye's optical axis vector.
+18. **`timestamp_unix_seconds`**: Unix timestamp representing the time of data capture.
+
+Each RTP packet contains one gaze datum. The payload length varies:
+
+- **21 bytes**: When only gaze data is included. To unpack - (!ffB)
+- **77 bytes**: When both gaze and eye state data are included. To unpack - (!ffBffffffffffffff)
+
+.. tip::
+   RTSP packets can be captured and analysed using **Wireshark**, a comprehensive network protocol analyser. 
+   This tool allows detailed inspection of packet data for in-depth analysis and troubleshooting.
 
 .. seealso::
-    The Realtime Python API exposes gaze data via
-    :py:func:`pupil_labs.realtime_api.streaming.gaze.RTSPGazeStreamer.receive` and
+   The Realtime Python API exposes gaze data via 
+   :py:func:`pupil_labs.realtime_api.streaming.gaze.RTSPGazeStreamer.receive` and 
+   :py:mod:`pupil_labs.realtime_api.streaming.gaze`.
 
 Decoding Video Data
 -------------------
