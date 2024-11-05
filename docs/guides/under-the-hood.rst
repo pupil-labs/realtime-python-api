@@ -12,18 +12,18 @@ client library abstracts away some of the complexities of the underlying protoco
 HTTP REST API
 =============
 
-The Pupil Invisible Companion app hosts an `HTTP REST API <https://restfulapi.net/>`_
+The Neon / Pupil Invisible Companion app hosts an `HTTP REST API <https://restfulapi.net/>`_
 that can be used to query the phone's current state, remote control it, and look up
 information about available data streams.
 
-By default, the API is hosted at `<http://pi.local:8080/>`_. The app will fallback
-to a different DNS name and/or port if the default values are taken by another app
+By default, the API is hosted at `<http://neon.local:8080/>` or `<http://pi.local:8080/>`_.
+The app will fallback to a different DNS name and/or port if the default values are taken by another app
 already. The current connection details can be looked up under the app's main menu →
 Streaming. Alternatively, you can use `Service discovery in the local network`_ to find
 available devices.
 
 .. note::
-    The device serves the built-in monitor web app (to be released soon!) at the
+    The device serves the built-in monitor web app at the
     document root ``/``. The API is served under the ``/api`` path. You can find the
     full `OpenAPI 3 <https://swagger.io/specification/>`_ specification of the REST API
     `here <https://pupil-labs.github.io/realtime-network-api/>`__.
@@ -105,11 +105,11 @@ connected sensors, and running recordings.
 Websocket API
 =============
 
-In addition to the :ref:`http_api` above, the Pupil Invisible Companion device also
+In addition to the :ref:`http_api` above, the Neon / Pupil Invisible Companion device also
 pushes status updates via a `websocket
 <https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API>`_ connection. It is
 hosted on the same port as the REST API. By default, you can connect to it via
-``ws://pi.local:8080/api/status``.
+``ws://neon.local:8080/api/status`` or ``ws://pi.local:8080/api/status``.
 
 .. tip::
     You can use this `website <http://livepersoninc.github.io/ws-test-page/>`_ to test
@@ -121,7 +121,7 @@ Status`_ endpoint.
 Streaming API
 =============
 
-The Pupil Invisible Companion app uses the RTSP protocol (`RFC 2326
+The Neon / Pupil Invisible Companion app uses the RTSP protocol (`RFC 2326
 <https://datatracker.ietf.org/doc/html/rfc2326>`_) to stream scene video and gaze data.
 Under the hood, communication is three-fold:
 
@@ -246,20 +246,48 @@ corresponding time.
 Decoding Gaze Data
 ------------------
 
-Gaze data is encoded in network byte order (big-endian) and consists of
+Gaze data is encoded in network byte order (big-endian) and consists of:
 
-1. ``x`` - horizontal component of the gaze location in pixels within the scene cameras
-   coordinate system. The value is encoded as a 32-bit float.
-2. ``y`` - vertical component of the gaze location in pixels within the scene cameras
-   coordinate system. The value is encoded as a 32-bit float.
-3. ``worn`` - a boolean indicating whether the user is wearing the device. The value is
+1. ``x`` - Horizontal component of the gaze location in pixels within the scene camera's
+    coordinate system. The value is encoded as a 32-bit float.
+2. ``y`` - Vertical component of the gaze location in pixels within the scene camera's
+    coordinate system. The value is encoded as a 32-bit float.
+3. ``worn`` - Boolean indicating whether the user is wearing the device. The value is
    encoded as an unsigned 8-bit integer as either ``255`` (device is being worn) or ``0`` (device is *not* being worn).
 
-Each RTP packet contains one gaze datum and has therefore a payload length of 9 bytes.
+**Eye State Data (Optional)**
+
+If eye state computation is enabled (not available for Pupil Invisible), additional parameters are included(all encoded as a 32-bit float):
+
+4. **`pupil_diameter_left`**: Physical diameter of the left pupil in millimetres.
+5. **`eyeball_center_left_x`**: X-coordinate of the left eyeball centre relative to the scene camera.
+6. **`eyeball_center_left_y`**: Y-coordinate of the left eyeball centre relative to the scene camera.
+7. **`eyeball_center_left_z`**: Z-coordinate of the left eyeball centre relative to the scene camera.
+8. **`optical_axis_left_x`**: X-component of the left eye's optical axis vector.
+9. **`optical_axis_left_y`**: Y-component of the left eye's optical axis vector.
+10. **`optical_axis_left_z`**: Z-component of the left eye's optical axis vector.
+11. **`pupil_diameter_right`**: Physical diameter of the right pupil in millimetres.
+12. **`eyeball_center_right_x`**: X-coordinate of the right eyeball centre relative to the scene camera.
+13. **`eyeball_center_right_y`**: Y-coordinate of the right eyeball centre relative to the scene camera.
+14. **`eyeball_center_right_z`**: Z-coordinate of the right eyeball centre relative to the scene camera.
+15. **`optical_axis_right_x`**: X-component of the right eye's optical axis vector.
+16. **`optical_axis_right_y`**: Y-component of the right eye's optical axis vector.
+17. **`optical_axis_right_z`**: Z-component of the right eye's optical axis vector.
+18. **`timestamp_unix_seconds`**: Unix timestamp representing the time of data capture.
+
+Each RTP packet contains one gaze datum. The payload length varies:
+
+- **21 bytes**: When only gaze data is included. To unpack - (!ffB)
+- **77 bytes**: When both gaze and eye state data are included. To unpack - (!ffBffffffffffffff)
+
+.. tip::
+   RTSP packets can be captured and analysed using **Wireshark**, a comprehensive network protocol analyser.
+   This tool allows detailed inspection of packet data for in-depth analysis and troubleshooting.
 
 .. seealso::
-    The Realtime Python API exposes gaze data via
-    :py:func:`pupil_labs.realtime_api.streaming.gaze.RTSPGazeStreamer.receive` and
+   The Realtime Python API exposes gaze data via
+   :py:func:`pupil_labs.realtime_api.streaming.gaze.RTSPGazeStreamer.receive` and
+   :py:mod:`pupil_labs.realtime_api.streaming.gaze`.
 
 Decoding Video Data
 -------------------
@@ -284,7 +312,7 @@ decoder, e.g. :py:meth:`pyav's av.CodecContext <av.codec.context.CodecContext.pa
 Service discovery in the local network
 ======================================
 
-To avoid having to manually copy the IP address from the Pupil Invisible Companion user
+To avoid having to manually copy the IP address from the Neon / Pupil Invisible Companion user
 interface, the application announces its REST API endpoint via `multicast DNS service
 discovery <https://en.wikipedia.org/wiki/Zero-configuration_networking#DNS-SD_with_multicast>`_.
 Specifically, it announces a service of type ``_http._tcp.local.`` and uses the folloing

@@ -6,7 +6,7 @@ Simple Examples
 Code examples that use the :ref:`simple_api`.
 
 .. note::
-   The examples require Python 3.7+ to run.
+   The examples require Python 3.9+ to run.
 
 .. _simple_discovery_example:
 
@@ -35,7 +35,7 @@ Automatic status updates
 ------------------------
 
 The :py:class:`Device <pupil_labs.realtime_api.simple.Device>` class monitors a
-Pupil Invisible/Neon Companion device in the background and mirrors its state accordingly.
+Neon / Pupil Invisible Companion device in the background and mirrors its state accordingly.
 
 .. literalinclude:: ../../examples/simple/status_auto_update.py
    :language: python
@@ -45,7 +45,7 @@ Pupil Invisible/Neon Companion device in the background and mirrors its state ac
 Send event
 ----------
 
-An event without an explicit timestamp, will be timestamped on arrival at the Pupil
+An event without an explicit timestamp, will be timestamped on arrival at the Neon / Pupil
 Invisible Companion device.
 
 .. literalinclude:: ../../examples/simple/send_event.py

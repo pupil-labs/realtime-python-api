@@ -5,11 +5,7 @@ import threading
 import typing as T
 import weakref
 
-try:
-    from typing import Literal
-except ImportError:
-    # FIXME: Remove when dropping py3.7 support
-    from typing_extensions import Literal
+from typing_extensions import Literal
 
 from ..base import DeviceBase
 from ..device import Device as _DeviceAsync

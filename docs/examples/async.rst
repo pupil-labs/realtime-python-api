@@ -37,7 +37,7 @@ Get a callback when there is a new status updates
 Send Event
 ----------
 
-An event without an explicit timestamp, will be timestamped on arrival at the Pupil
+An event without an explicit timestamp, will be timestamped on arrival at the Neon / Pupil
 Invisible Companion device.
 
 .. literalinclude:: ../../examples/async/send_event.py

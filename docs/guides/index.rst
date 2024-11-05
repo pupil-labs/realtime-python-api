@@ -2,7 +2,7 @@ Guides
 ======
 
 An introduction to the Pupil Labs Realtime Python API can be found in the `official
-Pupil Labs documentation <https://docs.pupil-labs.com/invisible/how-tos/integrate-with-the-real-time-api/introduction/>`_.
+Pupil Labs documentation <https://docs.pupil-labs.com/neon/real-time-api/tutorials/>`_.
 For more advanced guides, see below.
 
 .. toctree::
