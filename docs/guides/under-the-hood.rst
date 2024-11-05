@@ -259,7 +259,7 @@ Gaze data is encoded in network byte order (big-endian) and consists of:
 
 If eye state computation is enabled (not available for Pupil Invisible), additional parameters are included(all encoded as a 32-bit float):
 
-4. **`pupil_diameter_left`**: Physical diameter of the left pupil in millimetres. 
+4. **`pupil_diameter_left`**: Physical diameter of the left pupil in millimetres.
 5. **`eyeball_center_left_x`**: X-coordinate of the left eyeball centre relative to the scene camera.
 6. **`eyeball_center_left_y`**: Y-coordinate of the left eyeball centre relative to the scene camera.
 7. **`eyeball_center_left_z`**: Z-coordinate of the left eyeball centre relative to the scene camera.
@@ -281,12 +281,12 @@ Each RTP packet contains one gaze datum. The payload length varies:
 - **77 bytes**: When both gaze and eye state data are included. To unpack - (!ffBffffffffffffff)
 
 .. tip::
-   RTSP packets can be captured and analysed using **Wireshark**, a comprehensive network protocol analyser. 
+   RTSP packets can be captured and analysed using **Wireshark**, a comprehensive network protocol analyser.
    This tool allows detailed inspection of packet data for in-depth analysis and troubleshooting.
 
 .. seealso::
-   The Realtime Python API exposes gaze data via 
-   :py:func:`pupil_labs.realtime_api.streaming.gaze.RTSPGazeStreamer.receive` and 
+   The Realtime Python API exposes gaze data via
+   :py:func:`pupil_labs.realtime_api.streaming.gaze.RTSPGazeStreamer.receive` and
    :py:mod:`pupil_labs.realtime_api.streaming.gaze`.
 
 Decoding Video Data
