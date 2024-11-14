@@ -81,7 +81,7 @@ class RTSPVideoFrameStreamer(RTSPRawStreamer):
         """:raises pupil_labs.realtime_api.streaming.base.SDPDataNotAvailableError:"""
         if self._sprop_parameter_set_payloads is None:
             try:
-                attributes = self.reader.session.sdp["medias"][0]["attributes"]
+                attributes = self.reader.get_primary_media()["attributes"]
                 sprop_parameter_sets = attributes["fmtp"]["sprop-parameter-sets"]
                 params = (
                     base64.b64decode(param) for param in sprop_parameter_sets.split(",")
