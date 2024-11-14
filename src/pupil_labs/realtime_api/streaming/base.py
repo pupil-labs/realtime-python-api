@@ -128,5 +128,5 @@ class _WallclockRTSPReader(RTSPReader):
 
     def get_primary_media(self):
         for media in self.session.sdp["medias"]:
-            if media["type"] != "audio":
+            if media["type"] in ["video", "application"]:
                 return media
