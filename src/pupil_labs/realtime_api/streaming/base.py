@@ -60,8 +60,7 @@ class RTSPRawStreamer:
         """:raises pupil_labs.realtime_api.streaming.base.SDPDataNotAvailableError:"""
         if self._encoding is None:
             try:
-                attributes = self._reader.session.sdp["medias"][0]["attributes"]
-                rtpmap = attributes["rtpmap"]
+                rtpmap = self._reader.get_rtpmap()
                 self._encoding = rtpmap["encoding"].lower()
             except (IndexError, KeyError) as err:
                 raise SDPDataNotAvailableError(
@@ -110,7 +109,7 @@ class _WallclockRTSPReader(RTSPReader):
             )
 
     def relative_timestamp_from_packet(self, packet):
-        rtpmap = self.session.sdp["medias"][0]["attributes"]["rtpmap"]
+        rtpmap = self.get_rtpmap()
         clock_rate = rtpmap["clockRate"]
         return packet.ts / clock_rate
 
@@ -122,3 +121,12 @@ class _WallclockRTSPReader(RTSPReader):
         self._relative_to_ntp_clock_offset = (
             sr_pkt.ntp - self.relative_timestamp_from_packet(sr_pkt)
         )
+
+    def get_rtpmap(self):
+        media = self.get_primary_media()
+        return media["attributes"]["rtpmap"]
+
+    def get_primary_media(self):
+        for media in self.session.sdp["medias"]:
+            if media["type"] in ["video", "application"]:
+                return media

@@ -1,3 +1,7 @@
+1.3.5
+###########
+- Fixes streaming bug when audio is enabled
+
 1.3.4
 ###########
 - Add av/cv issue workaround to example scripts
