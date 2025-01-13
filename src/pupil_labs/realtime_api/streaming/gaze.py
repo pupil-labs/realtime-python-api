@@ -128,6 +128,95 @@ class EyestateGazeData(T.NamedTuple):
         return int(self.timestamp_unix_seconds * 1e9)
 
 
+class EyestateEyelidGazeData(T.NamedTuple):
+    x: float
+    y: float
+    worn: bool
+    pupil_diameter_left: float
+    eyeball_center_left_x: float
+    eyeball_center_left_y: float
+    eyeball_center_left_z: float
+    optical_axis_left_x: float
+    optical_axis_left_y: float
+    optical_axis_left_z: float
+    pupil_diameter_right: float
+    eyeball_center_right_x: float
+    eyeball_center_right_y: float
+    eyeball_center_right_z: float
+    optical_axis_right_x: float
+    optical_axis_right_y: float
+    optical_axis_right_z: float
+    eyelid_angle_top_left: float
+    eyelid_angle_bottom_left: float
+    eyelid_aperture_left: float
+    eyelid_angle_top_right: float
+    eyelid_angle_bottom_right: float
+    eyelid_aperture_right: float
+    timestamp_unix_seconds: float
+
+    @classmethod
+    def from_raw(cls, data: RTSPData) -> "EyestateEyelidGazeData":
+        (
+            x,
+            y,
+            worn,
+            pupil_diameter_left,
+            eyeball_center_left_x,
+            eyeball_center_left_y,
+            eyeball_center_left_z,
+            optical_axis_left_x,
+            optical_axis_left_y,
+            optical_axis_left_z,
+            pupil_diam_right,
+            eyeball_center_right_x,
+            eyeball_center_right_y,
+            eyeball_center_right_z,
+            optical_axis_right_x,
+            optical_axis_right_y,
+            optical_axis_right_z,
+            eyelid_angle_top_left,
+            eyelid_angle_bottom_left,
+            eyelid_aperture_left,
+            eyelid_angle_top_right,
+            eyelid_angle_bottom_right,
+            eyelid_aperture_right
+        ) = struct.unpack("!ffBffffffffffffffffffff", data.raw)
+        return cls(
+            x,
+            y,
+            worn == 255,
+            pupil_diameter_left,
+            eyeball_center_left_x,
+            eyeball_center_left_y,
+            eyeball_center_left_z,
+            optical_axis_left_x,
+            optical_axis_left_y,
+            optical_axis_left_z,
+            pupil_diam_right,
+            eyeball_center_right_x,
+            eyeball_center_right_y,
+            eyeball_center_right_z,
+            optical_axis_right_x,
+            optical_axis_right_y,
+            optical_axis_right_z,
+            eyelid_angle_top_left,
+            eyelid_angle_bottom_left,
+            eyelid_aperture_left,
+            eyelid_angle_top_right,
+            eyelid_angle_bottom_right,
+            eyelid_aperture_right,
+            data.timestamp_unix_seconds,
+        )
+
+    @property
+    def datetime(self):
+        return datetime.datetime.fromtimestamp(self.timestamp_unix_seconds)
+
+    @property
+    def timestamp_unix_ns(self):
+        return int(self.timestamp_unix_seconds * 1e9)
+
+
 async def receive_gaze_data(
     url, *args, **kwargs
 ) -> T.AsyncIterator[T.Union[GazeData, DualMonocularGazeData, EyestateGazeData]]:
@@ -144,6 +233,7 @@ class RTSPGazeStreamer(RTSPRawStreamer):
             9: GazeData,
             17: DualMonocularGazeData,
             65: EyestateGazeData,
+            89: EyestateEyelidGazeData
         }
         async for data in super().receive():
             try:
