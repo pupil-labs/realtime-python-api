@@ -12,11 +12,16 @@ from .streaming import (
     RTSPImuStreamer,
     RTSPRawStreamer,
     RTSPVideoFrameStreamer,
+    RTSPEyeEventStreamer,
     VideoFrame,
     receive_gaze_data,
     receive_imu_data,
     receive_raw_rtsp_data,
     receive_video_frames,
+    receive_eye_events_data,
+    FixationEventData,
+    FixationOnsetEventData,
+    BlinkEventData,
 )
 
 try:
@@ -51,4 +56,9 @@ __all__ = [
     "receive_imu_data",
     "RTSPImuStreamer",
     "imu_pb2",
+    "RTSPEyeEventStreamer",
+    "FixationEventData",
+    "FixationOnsetEventData",
+    "BlinkEventData",
+    "receive_eye_events_data",
 ]

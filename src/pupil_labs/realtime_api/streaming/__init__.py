@@ -15,6 +15,14 @@ from .gaze import (
     RTSPGazeStreamer,
     receive_gaze_data,
 )
+from .eye_events import  (
+    FixationEventData,
+    FixationOnsetEventData,
+    BlinkEventData,
+    RTSPEyeEventStreamer,
+    receive_eye_events_data,
+
+)
 from .imu import RTSPImuStreamer, receive_imu_data
 from .video import RTSPVideoFrameStreamer, VideoFrame, receive_video_frames
 
@@ -38,4 +46,9 @@ __all__ = [
     "receive_imu_data",
     "ImuPacket",
     "imu_pb2",
+    "RTSPEyeEventStreamer",
+    "FixationEventData",
+    "FixationOnsetEventData",
+    "BlinkEventData",
+    "receive_eye_events_data",
 ]
