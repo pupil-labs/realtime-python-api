@@ -203,7 +203,7 @@ class _StreamManager:
                             )
                             device._event_new_item[MATCHED_GAZE_EYES_LABEL].set()
 
-                    logger_receive_data.info(
+                    logger_receive_data.debug(
                         f"Found matching samples. Time differences:\n"
                         f"\tscene - gaze: {gaze_match_time_difference:.3f}s\n"
                         f"\tscene - eyes: {eyes_match_time_difference:.3f}s)\n"
