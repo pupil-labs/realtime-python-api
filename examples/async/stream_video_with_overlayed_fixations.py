@@ -17,7 +17,7 @@ from pupil_labs.realtime_api import (  # noqa
     receive_video_frames,
 )
 
-from pupil_labs.realtime_api.streaming import (
+from pupil_labs.realtime_api.streaming import (  # noqa
     BlinkEventData,
     FixationEventData,
 )
