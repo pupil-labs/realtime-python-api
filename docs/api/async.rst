@@ -41,6 +41,14 @@ IMU Data
     :undoc-members:
     :show-inheritance:
 
+Eye Events
+---------
+
+.. automodule:: pupil_labs.realtime_api.streaming.eye_events
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Scene Video
 -----------
 
