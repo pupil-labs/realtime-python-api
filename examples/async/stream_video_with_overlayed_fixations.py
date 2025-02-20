@@ -16,11 +16,7 @@ from pupil_labs.realtime_api import (  # noqa
     receive_eye_events_data,
     receive_video_frames,
 )
-
-from pupil_labs.realtime_api.streaming import (
-    BlinkEventData,
-    FixationEventData,
-)
+from pupil_labs.realtime_api.streaming import BlinkEventData, FixationEventData
 
 
 async def main():
@@ -57,8 +53,10 @@ async def main():
         )
         process_gaze = asyncio.create_task(
             enqueue_sensor_data(
-                receive_eye_events_data(sensor_eye_events.url, run_loop=restart_on_disconnect),
-                queue_eye_events
+                receive_eye_events_data(
+                    sensor_eye_events.url, run_loop=restart_on_disconnect
+                ),
+                queue_eye_events,
             )
         )
         try:
@@ -90,10 +88,12 @@ async def match_and_draw(queue_video, queue_eye_events):
         while not queue_eye_events.empty():
             _, eye_event = await queue_eye_events.get()
             if isinstance(eye_event, FixationEventData):
-                fixation_history.append({
-                    'id': fixation_counter,
-                    'fixation': eye_event,
-                })
+                fixation_history.append(
+                    {
+                        "id": fixation_counter,
+                        "fixation": eye_event,
+                    }
+                )
                 fixation_counter += 1
 
             elif isinstance(eye_event, BlinkEventData):
@@ -101,10 +101,10 @@ async def match_and_draw(queue_video, queue_eye_events):
                 blink_counter += 1
 
         for fixation_meta in fixation_history:
-            fixation_id = fixation_meta['id']
-            fixation = fixation_meta['fixation']
+            fixation_id = fixation_meta["id"]
+            fixation = fixation_meta["fixation"]
 
-            age = (video_frame.timestamp_unix_seconds - fixation.end_time_ns * 1e-9)
+            age = video_frame.timestamp_unix_seconds - fixation.end_time_ns * 1e-9
             duration = (fixation.end_time_ns - fixation.start_time_ns) * 1e-9
 
             overlay = bgr_buffer.copy()
@@ -140,7 +140,7 @@ async def match_and_draw(queue_video, queue_eye_events):
                 2,
                 cv2.LINE_AA,
             )
-            age = (video_frame.timestamp_unix_seconds - blink.end_time_ns * 1e-9)
+            age = video_frame.timestamp_unix_seconds - blink.end_time_ns * 1e-9
             alpha = min(max(0, 1.0 - age / 5.0), 1.0)
             cv2.addWeighted(overlay, alpha, bgr_buffer, 1 - alpha, 0, bgr_buffer)
 
