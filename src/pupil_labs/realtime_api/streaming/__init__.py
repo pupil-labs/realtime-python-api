@@ -8,20 +8,19 @@ from .base import (
     SDPDataNotAvailableError,
     receive_raw_rtsp_data,
 )
+from .eye_events import (
+    BlinkEventData,
+    FixationEventData,
+    FixationOnsetEventData,
+    RTSPEyeEventStreamer,
+    receive_eye_events_data,
+)
 from .gaze import (
     DualMonocularGazeData,
     EyestateGazeData,
     GazeData,
     RTSPGazeStreamer,
     receive_gaze_data,
-)
-from .eye_events import  (
-    FixationEventData,
-    FixationOnsetEventData,
-    BlinkEventData,
-    RTSPEyeEventStreamer,
-    receive_eye_events_data,
-
 )
 from .imu import RTSPImuStreamer, receive_imu_data
 from .video import RTSPVideoFrameStreamer, VideoFrame, receive_video_frames

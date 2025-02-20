@@ -7,6 +7,7 @@ from .base import RTSPData, RTSPRawStreamer
 
 logger = logging.getLogger(__name__)
 
+
 class BlinkEventData(T.NamedTuple):
     event_type: int
     start_time_ns: int
@@ -16,15 +17,11 @@ class BlinkEventData(T.NamedTuple):
     @classmethod
     def from_raw(cls, data: RTSPData) -> "BlinkEventData":
         (
-        event_type,
-        start_time_ns,
-        end_time_ns,
-        ) = struct.unpack("!iqq", data.raw)
-        return cls(
             event_type,
             start_time_ns,
             end_time_ns,
-            data.timestamp_unix_seconds)
+        ) = struct.unpack("!iqq", data.raw)
+        return cls(event_type, start_time_ns, end_time_ns, data.timestamp_unix_seconds)
 
     @property
     def datetime(self):
@@ -34,8 +31,9 @@ class BlinkEventData(T.NamedTuple):
     def timestamp_unix_ns(self):
         return int(self.rtp_ts_unix_seconds * 1e9)
 
+
 class FixationEventData(T.NamedTuple):
-    event_type: int            # 0: Saccade, 1: Fixation
+    event_type: int  # 0: Saccade, 1: Fixation
     start_time_ns: int
     end_time_ns: int
     start_gaze_x: float
@@ -53,19 +51,19 @@ class FixationEventData(T.NamedTuple):
     @classmethod
     def from_raw(cls, data: RTSPData) -> "FixationEventData":
         (
-        event_type,
-        start_time_ns,
-        end_time_ns,
-        start_gaze_x,
-        start_gaze_y,
-        end_gaze_x,
-        end_gaze_y,
-        mean_gaze_x,
-        mean_gaze_y,
-        amplitude_pixels,
-        amplitude_angle_deg,
-        mean_velocity,
-        max_velocity,
+            event_type,
+            start_time_ns,
+            end_time_ns,
+            start_gaze_x,
+            start_gaze_y,
+            end_gaze_x,
+            end_gaze_y,
+            mean_gaze_x,
+            mean_gaze_y,
+            amplitude_pixels,
+            amplitude_angle_deg,
+            mean_velocity,
+            max_velocity,
         ) = struct.unpack("!iqqffffffffff", data.raw)
         return cls(
             event_type,
@@ -81,7 +79,8 @@ class FixationEventData(T.NamedTuple):
             amplitude_angle_deg,
             mean_velocity,
             max_velocity,
-            data.timestamp_unix_seconds)
+            data.timestamp_unix_seconds,
+        )
 
     @property
     def datetime(self):
@@ -100,13 +99,10 @@ class FixationOnsetEventData(T.NamedTuple):
     @classmethod
     def from_raw(cls, data: RTSPData) -> "FixationOnsetEventData":
         (
-        event_type,
-        start_time_ns,
-        ) = struct.unpack("!iq", data.raw)
-        return cls(
             event_type,
             start_time_ns,
-            data.timestamp_unix_seconds)
+        ) = struct.unpack("!iq", data.raw)
+        return cls(event_type, start_time_ns, data.timestamp_unix_seconds)
 
     @property
     def datetime(self):
@@ -115,7 +111,6 @@ class FixationOnsetEventData(T.NamedTuple):
     @property
     def timestamp_unix_ns(self):
         return int(self.rtp_ts_unix_seconds * 1e9)
-
 
 
 async def receive_eye_events_data(
@@ -129,18 +124,18 @@ async def receive_eye_events_data(
 class RTSPEyeEventStreamer(RTSPRawStreamer):
     async def receive(
         self,
-    ) -> T.AsyncIterator[T.Union[FixationEventData,BlinkEventData]]:
+    ) -> T.AsyncIterator[T.Union[FixationEventData, BlinkEventData]]:
         data_class_by_type = {
             0: FixationEventData,
             1: FixationEventData,
             2: FixationOnsetEventData,
             3: FixationOnsetEventData,
             4: BlinkEventData,
-            5: None, # KEEPALIVE MSG, SKIP
+            5: None,  # KEEPALIVE MSG, SKIP
         }
         async for data in super().receive():
             try:
-                event_type = struct.unpack_from("!i",data.raw)[0]
+                event_type = struct.unpack_from("!i", data.raw)[0]
                 cls = data_class_by_type[event_type]
                 if cls is not None:
                     yield cls.from_raw(data)

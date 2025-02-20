@@ -140,7 +140,7 @@ class Sensor(T.NamedTuple):
         WORLD = "world"
         IMU = "imu"
         EYES = "eyes"
-        EYE_EVENTS="eye_events"
+        EYE_EVENTS = "eye_events"
 
     class Connection(enum.Enum):
         ANY = None

@@ -4,24 +4,24 @@
 from .device import APIPath, Device, DeviceError, StatusUpdateNotifier
 from .discovery import Network, discover_devices
 from .streaming import (
+    BlinkEventData,
     DualMonocularGazeData,
     EyestateGazeData,
+    FixationEventData,
+    FixationOnsetEventData,
     GazeData,
     RTSPData,
+    RTSPEyeEventStreamer,
     RTSPGazeStreamer,
     RTSPImuStreamer,
     RTSPRawStreamer,
     RTSPVideoFrameStreamer,
-    RTSPEyeEventStreamer,
     VideoFrame,
+    receive_eye_events_data,
     receive_gaze_data,
     receive_imu_data,
     receive_raw_rtsp_data,
     receive_video_frames,
-    receive_eye_events_data,
-    FixationEventData,
-    FixationOnsetEventData,
-    BlinkEventData,
 )
 
 try:
