@@ -8,6 +8,13 @@ from .base import (
     SDPDataNotAvailableError,
     receive_raw_rtsp_data,
 )
+from .eye_events import (
+    BlinkEventData,
+    FixationEventData,
+    FixationOnsetEventData,
+    RTSPEyeEventStreamer,
+    receive_eye_events_data,
+)
 from .gaze import (
     DualMonocularGazeData,
     EyestateGazeData,
@@ -38,4 +45,9 @@ __all__ = [
     "receive_imu_data",
     "ImuPacket",
     "imu_pb2",
+    "RTSPEyeEventStreamer",
+    "FixationEventData",
+    "FixationOnsetEventData",
+    "BlinkEventData",
+    "receive_eye_events_data",
 ]

@@ -140,6 +140,7 @@ class Sensor(T.NamedTuple):
         WORLD = "world"
         IMU = "imu"
         EYES = "eyes"
+        EYE_EVENTS = "eye_events"
 
     class Connection(enum.Enum):
         ANY = None
@@ -294,6 +295,14 @@ class Status:
     def direct_eyes_sensor(self) -> T.Optional[Sensor]:
         return next(
             self.matching_sensors(Sensor.Name.EYES, Sensor.Connection.DIRECT),
+            Sensor(
+                sensor=Sensor.Name.EYES.value, conn_type=Sensor.Connection.DIRECT.value
+            ),
+        )
+
+    def direct_eye_events_sensor(self) -> T.Optional[Sensor]:
+        return next(
+            self.matching_sensors(Sensor.Name.EYE_EVENTS, Sensor.Connection.DIRECT),
             Sensor(
                 sensor=Sensor.Name.EYES.value, conn_type=Sensor.Connection.DIRECT.value
             ),
