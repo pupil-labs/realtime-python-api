@@ -179,7 +179,7 @@ class EyestateEyelidGazeData(T.NamedTuple):
             eyelid_aperture_left,
             eyelid_angle_top_right,
             eyelid_angle_bottom_right,
-            eyelid_aperture_right
+            eyelid_aperture_right,
         ) = struct.unpack("!ffBffffffffffffffffffff", data.raw)
         return cls(
             x,
@@ -233,7 +233,7 @@ class RTSPGazeStreamer(RTSPRawStreamer):
             9: GazeData,
             17: DualMonocularGazeData,
             65: EyestateGazeData,
-            89: EyestateEyelidGazeData
+            89: EyestateEyelidGazeData,
         }
         async for data in super().receive():
             try:
