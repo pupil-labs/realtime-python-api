@@ -2,12 +2,12 @@ import enum
 import json
 import logging
 import typing as T
-from dataclasses import asdict
+from dataclasses import asdict, field
 from dataclasses import dataclass as dataclass_python
-from dataclasses import field
 from datetime import datetime
 from functools import partial
 from textwrap import indent
+from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import (
@@ -22,7 +22,6 @@ from pydantic import (
     create_model,
 )
 from pydantic.dataclasses import dataclass as dataclass_pydantic
-from typing_extensions import Annotated, Literal
 
 logger = logging.getLogger(__name__)
 
@@ -52,17 +51,17 @@ class DiscoveredDeviceInfo(T.NamedTuple):
     "e.g. ``'pi.local.'``"
     port: int
     "e.g. `8080`"
-    addresses: T.List[str]
+    addresses: list[str]
     "e.g. ``['192.168.0.2']``"
 
 
 class Event(T.NamedTuple):
-    name: T.Optional[str]
-    recording_id: T.Optional[str]
+    name: str | None
+    recording_id: str | None
     timestamp: int  # unix epoch, in nanoseconds
 
     @classmethod
-    def from_dict(cls, dct: T.Dict[str, T.Any]) -> "Event":
+    def from_dict(cls, dct: dict[str, T.Any]) -> "Event":
         return cls(
             name=dct.get("name"),
             recording_id=dct.get("recording_id"),
@@ -90,7 +89,7 @@ class Phone(T.NamedTuple):
     ip: str
     memory: int
     memory_state: Literal["OK", "LOW", "CRITICAL"]
-    time_echo_port: T.Optional[int] = None
+    time_echo_port: int | None = None
 
 
 class Hardware(T.NamedTuple):
@@ -123,13 +122,13 @@ class Sensor(T.NamedTuple):
     sensor: str
     conn_type: str
     connected: bool = False
-    ip: T.Optional[str] = None
-    params: T.Optional[str] = None
-    port: T.Optional[int] = None
+    ip: str | None = None
+    params: str | None = None
+    port: int | None = None
     protocol: str = "rtsp"
 
     @property
-    def url(self) -> T.Optional[str]:
+    def url(self) -> str | None:
         if self.connected:
             return f"{self.protocol}://{self.ip}:{self.port}/?{self.params}"
         return None
@@ -162,10 +161,10 @@ class Recording(T.NamedTuple):
 Component = T.Union[Phone, Hardware, Sensor, Recording, NetworkDevice]
 """Type annotation for :py:class:`Status <.Status>` components."""
 
-ComponentRaw = T.Dict[str, T.Any]
+ComponentRaw = dict[str, T.Any]
 """Type annotation for json-parsed responses from the REST and Websocket API."""
 
-_model_class_map: T.Dict[str, T.Type[Component]] = {
+_model_class_map: dict[str, type[Component]] = {
     "Phone": Phone,
     "Hardware": Hardware,
     "Sensor": Sensor,
@@ -177,8 +176,8 @@ _model_class_map: T.Dict[str, T.Type[Component]] = {
 TemplateDataFormat = T.Literal["api", "simple"]
 
 
-def _init_cls_with_annotated_fields_only(cls, d: T.Dict[str, T.Any]):
-    return cls(**{attr: d.get(attr, None) for attr in cls.__annotations__})
+def _init_cls_with_annotated_fields_only(cls, d: dict[str, T.Any]):
+    return cls(**{attr: d.get(attr) for attr in cls.__annotations__})
 
 
 class UnknownComponentError(ValueError):
@@ -211,11 +210,11 @@ class Status:
 
     phone: Phone
     hardware: Hardware
-    sensors: T.List[Sensor]
-    recording: T.Optional[Recording]
+    sensors: list[Sensor]
+    recording: Recording | None
 
     @classmethod
-    def from_dict(cls, status_json_result: T.List[ComponentRaw]) -> "Status":
+    def from_dict(cls, status_json_result: list[ComponentRaw]) -> "Status":
         phone = None  # always present
         recording = None  # might not be present
         hardware = Hardware()  # won't be present if glasses are not connected
@@ -268,7 +267,7 @@ class Status:
                 continue
             yield sensor
 
-    def direct_world_sensor(self) -> T.Optional[Sensor]:
+    def direct_world_sensor(self) -> Sensor | None:
         return next(
             self.matching_sensors(Sensor.Name.WORLD, Sensor.Connection.DIRECT),
             Sensor(
@@ -276,7 +275,7 @@ class Status:
             ),
         )
 
-    def direct_gaze_sensor(self) -> T.Optional[Sensor]:
+    def direct_gaze_sensor(self) -> Sensor | None:
         return next(
             self.matching_sensors(Sensor.Name.GAZE, Sensor.Connection.DIRECT),
             Sensor(
@@ -284,7 +283,7 @@ class Status:
             ),
         )
 
-    def direct_imu_sensor(self) -> T.Optional[Sensor]:
+    def direct_imu_sensor(self) -> Sensor | None:
         return next(
             self.matching_sensors(Sensor.Name.IMU, Sensor.Connection.DIRECT),
             Sensor(
@@ -292,7 +291,7 @@ class Status:
             ),
         )
 
-    def direct_eyes_sensor(self) -> T.Optional[Sensor]:
+    def direct_eyes_sensor(self) -> Sensor | None:
         return next(
             self.matching_sensors(Sensor.Name.EYES, Sensor.Connection.DIRECT),
             Sensor(
@@ -300,11 +299,12 @@ class Status:
             ),
         )
 
-    def direct_eye_events_sensor(self) -> T.Optional[Sensor]:
+    def direct_eye_events_sensor(self) -> Sensor | None:
         return next(
             self.matching_sensors(Sensor.Name.EYE_EVENTS, Sensor.Connection.DIRECT),
             Sensor(
-                sensor=Sensor.Name.EYES.value, conn_type=Sensor.Connection.DIRECT.value
+                sensor=Sensor.Name.EYE_EVENTS.value,
+                conn_type=Sensor.Connection.DIRECT.value,
             ),
         )
 
@@ -321,8 +321,8 @@ class TemplateItem:
     title: str
     widget_type: TemplateItemWidgetType
     input_type: TemplateItemInputType
-    choices: T.Optional[T.List[str]]
-    help_text: T.Optional[str]
+    choices: list[str] | None
+    help_text: str | None
     required: bool
 
     def validate_answer(
@@ -389,7 +389,7 @@ class TemplateItem:
             answer_input_type = conlist(
                 answer_input_type,
                 min_length=1 if self.required else 0,
-                max_length=None if self.widget_type in {"CHECKBOX_LIST"} else 1,
+                max_length=None if self.widget_type == "CHECKBOX_LIST" else 1,
             )
         else:
             if self.required:
@@ -420,7 +420,7 @@ class TemplateItem:
             else:
                 if answer_input_entry_type in (int, float):
                     answer_input_entry_type = Annotated[
-                        T.Optional[answer_input_entry_type],
+                        answer_input_entry_type | None,
                         BeforeValidator(allow_empty),
                     ]
 
@@ -430,7 +430,7 @@ class TemplateItem:
         answer_input_type = conlist(
             answer_input_entry_type,
             min_length=1 if self.required else 0,
-            max_length=None if self.widget_type in {"CHECKBOX_LIST"} else 1,
+            max_length=None if self.widget_type == "CHECKBOX_LIST" else 1,
         )
         return (answer_input_type, field)
 
@@ -441,16 +441,16 @@ class Template:
     id: UUID
     name: str
     updated_at: datetime
-    recording_name_format: T.List[str]
-    items: T.List[TemplateItem] = field(default_factory=list)
-    label_ids: T.List[UUID] = field(default_factory=list, metadata={"readonly": True})
+    recording_name_format: list[str]
+    items: list[TemplateItem] = field(default_factory=list)
+    label_ids: list[UUID] = field(default_factory=list, metadata={"readonly": True})
     is_default_template: bool = True
-    description: T.Optional[str] = None
-    recording_ids: T.Optional[T.List[UUID]] = None
-    published_at: T.Optional[datetime] = None
-    archived_at: T.Optional[datetime] = None
+    description: str | None = None
+    recording_ids: list[UUID] | None = None
+    published_at: datetime | None = None
+    archived_at: datetime | None = None
 
-    def convert_from_simple_to_api_format(self, data: T.Dict[str, T.Any]):
+    def convert_from_simple_to_api_format(self, data: dict[str, T.Any]):
         api_format = {}
         for question_id, value in data.items():
             if value is None:
@@ -461,7 +461,7 @@ class Template:
             api_format[question_id] = value
         return api_format
 
-    def convert_from_api_to_simple_format(self, data: T.Dict[str, T.List[str]]):
+    def convert_from_api_to_simple_format(self, data: dict[str, list[str]]):
         simple_format = {}
         for question_id, value in data.items():
             question = self.get_question_by_id(question_id)
@@ -482,7 +482,7 @@ class Template:
             simple_format[question_id] = value
         return simple_format
 
-    def get_question_by_id(self, question_id: T.Union[str, UUID]):
+    def get_question_by_id(self, question_id: str | UUID):
         for item in self.items:
             if str(item.id) == str(question_id):
                 return item
@@ -506,7 +506,7 @@ class Template:
 
     def validate_answers(
         self,
-        answers: T.Dict[str, T.List[str]],
+        answers: dict[str, list[str]],
         raise_exception=True,
         format=TemplateDataFormat,
     ):
@@ -584,9 +584,9 @@ def make_template_answer_model_base(template_: Template):
 class InvalidTemplateAnswersError(Exception):
     def __init__(
         self,
-        template: T.Union[Template, TemplateItem],
-        answers: T.Dict[str, T.List[str]],
-        errors: T.List[T.Dict],
+        template: Template | TemplateItem,
+        answers: dict[str, list[str]],
+        errors: list[dict],
     ):
         self.template = template
         self.errors = errors
@@ -597,9 +597,9 @@ class InvalidTemplateAnswersError(Exception):
             error_lines = []
             for error in self.errors:
                 error_msg = ""
-                error_msg += f'location: {error["loc"]}\n'
-                error_msg += f'  input: {error["input"]}\n'
-                error_msg += f'  message: {error["msg"]}\n'
+                error_msg += f"location: {error['loc']}\n"
+                error_msg += f"  input: {error['input']}\n"
+                error_msg += f"  message: {error['msg']}\n"
                 question = error.get("question")
                 if question:
                     error_msg += (
@@ -617,6 +617,6 @@ class InvalidTemplateAnswersError(Exception):
                 name = self.template.name
             elif isinstance(self.template, TemplateItem):
                 name = self.template.title
-            return f"{name} ({self.template.id}) validation errors:\n" f"{error_lines}"
+            return f"{name} ({self.template.id}) validation errors:\n{error_lines}"
         except Exception as e:
             return f"InvalidTemplateAnswersError.__str__ error: {e}"

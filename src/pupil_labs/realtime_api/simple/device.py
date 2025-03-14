@@ -2,17 +2,18 @@ import asyncio
 import collections
 import enum
 import threading
-import typing as T
 import weakref
-
-from typing_extensions import Literal
+from typing import Literal
 
 from ..base import DeviceBase
 from ..device import Device as _DeviceAsync
 from ..device import StatusUpdateNotifier
 from ..models import Component, Event, Sensor, Status, Template, TemplateDataFormat
 from ..streaming import (
+    BlinkEventData,
+    FixationEventData,
     ImuPacket,
+    RTSPEyeEventStreamer,
     RTSPGazeStreamer,
     RTSPImuStreamer,
     RTSPVideoFrameStreamer,
@@ -31,19 +32,18 @@ from .models import (
 
 
 class Device(DeviceBase):
-    """
-    .. hint::
-        Use :py:func:`pupil_labs.realtime_api.simple.discover_devices` instead of
-        initializing the class manually. See the :ref:`simple_discovery_example`
-        example.
+    """.. hint::
+    Use :py:func:`pupil_labs.realtime_api.simple.discover_devices` instead of
+    initializing the class manually. See the :ref:`simple_discovery_example`
+    example.
     """
 
     def __init__(
         self,
         address: str,
         port: int,
-        full_name: T.Optional[str] = None,
-        dns_name: T.Optional[str] = None,
+        full_name: str | None = None,
+        dns_name: str | None = None,
         start_streaming_by_default: bool = False,
         suppress_decoding_warnings: bool = True,
     ) -> None:
@@ -90,25 +90,28 @@ class Device(DeviceBase):
         return self._status.hardware.version
 
     @property
-    def module_serial(self) -> T.Union[str, None, Literal["default"]]:
+    def module_serial(self) -> str | None | Literal["default"]:
         """Returns ``None`` or ``"default"`` if no glasses are connected"""
         return self._status.hardware.module_serial
 
     @property
-    def serial_number_glasses(self) -> T.Union[str, None, Literal["default"]]:
+    def serial_number_glasses(self) -> str | None | Literal["default"]:
         """Returns ``None`` or ``"default"`` if no glasses are connected"""
         return self._status.hardware.glasses_serial
 
     @property
-    def serial_number_scene_cam(self) -> T.Optional[str]:
+    def serial_number_scene_cam(self) -> str | None:
         """Returns ``None`` if no scene camera is connected"""
         return self._status.hardware.world_camera_serial
 
-    def world_sensor(self) -> T.Optional[Sensor]:
+    def world_sensor(self) -> Sensor | None:
         return self._status.direct_world_sensor()
 
-    def gaze_sensor(self) -> T.Optional[Sensor]:
+    def gaze_sensor(self) -> Sensor | None:
         return self._status.direct_gaze_sensor()
+
+    def eye_events_sensor(self) -> Sensor | None:
+        return self._status.direct_eye_events_sensor()
 
     def get_calibration(self):
         async def _get_calibration():
@@ -170,11 +173,9 @@ class Device(DeviceBase):
         return asyncio.run(_cancel_recording())
 
     def send_event(
-        self, event_name: str, event_timestamp_unix_ns: T.Optional[int] = None
+        self, event_name: str, event_timestamp_unix_ns: int | None = None
     ) -> Event:
-        """
-        :raises pupil_labs.realtime_api.device.DeviceError: if sending the event fails
-        """
+        """:raises pupil_labs.realtime_api.device.DeviceError: if sending the event fails"""
 
         async def _send_event():
             async with _DeviceAsync.convert_from(self) as control:
@@ -183,8 +184,7 @@ class Device(DeviceBase):
         return asyncio.run(_send_event())
 
     def get_template(self) -> Template:
-        """
-        Wraps :py:meth:`pupil_labs.realtime_api.device.Device.get_template`
+        """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.get_template`
 
         Gets the template currently selected on device
 
@@ -199,8 +199,7 @@ class Device(DeviceBase):
         return asyncio.run(_get_template())
 
     def get_template_data(self, format: TemplateDataFormat = "simple"):
-        """
-        Wraps :py:meth:`pupil_labs.realtime_api.device.Device.get_template_data`
+        """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.get_template_data`
 
         Gets the template data entered on device
 
@@ -219,8 +218,7 @@ class Device(DeviceBase):
         return asyncio.run(_get_template_data())
 
     def post_template_data(self, template_data, format: TemplateDataFormat = "simple"):
-        """
-        Wraps :py:meth:`pupil_labs.realtime_api.device.Device.post_template_data`
+        """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.post_template_data`
 
         Sets the data for the currently selected template
 
@@ -240,38 +238,43 @@ class Device(DeviceBase):
         return asyncio.run(_post_template_data())
 
     def receive_scene_video_frame(
-        self, timeout_seconds: T.Optional[float] = None
-    ) -> T.Optional[SimpleVideoFrame]:
+        self, timeout_seconds: float | None = None
+    ) -> SimpleVideoFrame | None:
         return self._receive_item(Sensor.Name.WORLD.value, timeout_seconds)
 
     def receive_gaze_datum(
-        self, timeout_seconds: T.Optional[float] = None
-    ) -> T.Optional[GazeDataType]:
+        self, timeout_seconds: float | None = None
+    ) -> GazeDataType | None:
         return self._receive_item(Sensor.Name.GAZE.value, timeout_seconds)
 
     def receive_eyes_video_frame(
-        self, timeout_seconds: T.Optional[float] = None
-    ) -> T.Optional[SimpleVideoFrame]:
+        self, timeout_seconds: float | None = None
+    ) -> SimpleVideoFrame | None:
         return self._receive_item(Sensor.Name.EYES.value, timeout_seconds)
 
     def receive_imu_datum(
-        self, timeout_seconds: T.Optional[float] = None
-    ) -> T.Optional[ImuPacket]:
+        self, timeout_seconds: float | None = None
+    ) -> ImuPacket | None:
         return self._receive_item(Sensor.Name.IMU.value, timeout_seconds)
 
+    def receive_eye_events(
+        self, timeout_seconds: float | None = None
+    ) -> FixationEventData | BlinkEventData | None:
+        return self._receive_item(Sensor.Name.EYE_EVENTS.value, timeout_seconds)
+
     def receive_matched_scene_video_frame_and_gaze(
-        self, timeout_seconds: T.Optional[float] = None
-    ) -> T.Optional[MatchedItem]:
+        self, timeout_seconds: float | None = None
+    ) -> MatchedItem | None:
         return self._receive_item(MATCHED_ITEM_LABEL, timeout_seconds)
 
     def receive_matched_scene_and_eyes_video_frames_and_gaze(
-        self, timeout_seconds: T.Optional[float] = None
-    ) -> T.Optional[MatchedGazeEyesSceneItem]:
+        self, timeout_seconds: float | None = None
+    ) -> MatchedGazeEyesSceneItem | None:
         return self._receive_item(MATCHED_GAZE_EYES_LABEL, timeout_seconds)
 
     def _receive_item(
-        self, sensor: str, timeout_seconds: T.Optional[float] = None
-    ) -> T.Optional[T.Union[VideoFrame, GazeDataType]]:
+        self, sensor: str, timeout_seconds: float | None = None
+    ) -> VideoFrame | GazeDataType | None:
         if not self.is_currently_streaming:
             logger.debug("receive_* called without being streaming")
             self.streaming_start()
@@ -306,8 +309,8 @@ class Device(DeviceBase):
     def estimate_time_offset(
         self,
         number_of_measurements: int = 100,
-        sleep_between_measurements_seconds: T.Optional[float] = None,
-    ) -> T.Optional[TimeEchoEstimates]:
+        sleep_between_measurements_seconds: float | None = None,
+    ) -> TimeEchoEstimates | None:
         """Estimate the time offset between the host device and the client.
 
         See :py:mod:`pupil_labs.realtime_api.time_echo` for details.
@@ -352,6 +355,7 @@ class Device(DeviceBase):
             Sensor.Name.WORLD.value,
             Sensor.Name.EYES.value,
             Sensor.Name.IMU.value,
+            Sensor.Name.EYE_EVENTS.value,
             MATCHED_ITEM_LABEL,
             MATCHED_GAZE_EYES_LABEL,
         ]
@@ -360,8 +364,8 @@ class Device(DeviceBase):
         }
         self._event_new_item = {name: threading.Event() for name in sensor_names}
         # only cache 3-4 seconds worth of gaze data in case no scene camera is connected
-        GazeCacheType = T.Deque[T.Tuple[float, GazeDataType]]
-        EyesCacheType = T.Deque[T.Tuple[float, SimpleVideoFrame]]
+        GazeCacheType = collections.deque[tuple[float, GazeDataType]]
+        EyesCacheType = collections.deque[tuple[float, SimpleVideoFrame]]
         self._cached_gaze_for_matching: GazeCacheType = collections.deque(maxlen=200)
         self._cached_eyes_for_matching: EyesCacheType = collections.deque(maxlen=200)
 
@@ -420,6 +424,11 @@ class Device(DeviceBase):
             Sensor.Name.IMU.value: _StreamManager(
                 device_weakref,
                 RTSPImuStreamer,
+                should_be_streaming_by_default=start_streaming_by_default,
+            ),
+            Sensor.Name.EYE_EVENTS.value: _StreamManager(
+                device_weakref,
+                RTSPEyeEventStreamer,
                 should_be_streaming_by_default=start_streaming_by_default,
             ),
         }
