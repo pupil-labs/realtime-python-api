@@ -4,6 +4,7 @@ import enum
 import threading
 import typing as T
 import weakref
+from uuid import UUID
 
 from typing_extensions import Literal
 
@@ -238,6 +239,13 @@ class Device(DeviceBase):
                 return await control.post_template_data(template_data, format=format)
 
         return asyncio.run(_post_template_data())
+
+    def get_question_by_id(self, question_id: T.Union[str, UUID]):
+        async def _get_question_by_id():
+            async with _DeviceAsync.convert_from(self) as control:
+                return await control.get_question_by_id(question_id)
+
+        return asyncio.run(_get_question_by_id())
 
     def receive_scene_video_frame(
         self, timeout_seconds: T.Optional[float] = None
