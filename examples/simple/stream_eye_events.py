@@ -1,4 +1,10 @@
+from datetime.datetime import utcfromtimestamp
+
 from pupil_labs.realtime_api.simple import discover_one_device
+from pupil_labs.realtime_api.streaming.eye_events import (
+    BlinkEventData,
+    FixationEventData,
+)
 
 # Look for devices. Returns as soon as it has found the first device.
 print("Looking for the next best device...")
@@ -11,7 +17,16 @@ if device is None:
 
 try:
     while True:
-        print(device.receive_eye_events())
+        event = device.receive_eye_events()
+        if isinstance(event, BlinkEventData):
+            print(f"Blink event at {utcfromtimestamp(event.start_time_ns / 1e9)}")
+        elif isinstance(event, FixationEventData) and event.event_type == 0:
+            print(f"Saccade event with {event.max_velocity} px/sec max velocity.")
+        elif isinstance(event, FixationEventData) and event.event_type == 1:
+            print(
+                "Fixation event with duration of "
+                f"{(event.start_time_ns - event.end_time_ns) / 1e9} seconds."
+            )
 except KeyboardInterrupt:
     pass
 finally:
