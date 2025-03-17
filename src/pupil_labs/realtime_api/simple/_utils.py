@@ -4,6 +4,7 @@ import asyncio
 import logging
 import typing as T
 import weakref
+from collections import deque
 from collections.abc import Hashable, Iterable, Mapping
 from types import MappingProxyType
 
@@ -45,7 +46,7 @@ class _AsyncEventManager(T.Generic[EventKey]):
         self._events[name].set()
 
     def trigger_threadsafe(
-        self, name: EventKey, loop: T.Optional[asyncio.AbstractEventLoop] = None
+        self, name: EventKey, loop: asyncio.AbstractEventLoop | None = None
     ) -> None:
         loop = loop or self._loop
         loop.call_soon_threadsafe(self.trigger, name)
@@ -71,16 +72,14 @@ class _StreamManager:
     def __init__(
         self,
         device_weakref: weakref.ReferenceType,
-        streaming_cls: T.Union[
-            T.Type[RTSPVideoFrameStreamer], T.Type[RTSPGazeStreamer]
-        ],
+        streaming_cls: type[RTSPVideoFrameStreamer] | type[RTSPGazeStreamer],
         should_be_streaming_by_default: bool = False,
     ) -> None:
         self._device = device_weakref
         self._streaming_cls = streaming_cls
         self._streaming_task = None
         self._should_be_streaming = should_be_streaming_by_default
-        self._recent_sensor: T.Optional[Sensor] = None
+        self._recent_sensor: Sensor | None = None
 
     @property
     def should_be_streaming(self) -> bool:
@@ -111,8 +110,7 @@ class _StreamManager:
     def _stop_streaming_task_if_running(self):
         if self._streaming_task is not None:
             logger_receive_data.info(
-                f"Cancelling prior streaming connection to "
-                f"{self._recent_sensor.sensor}"
+                f"Cancelling prior streaming connection to {self._recent_sensor.sensor}"
             )
             self._streaming_task.cancel()
             self._streaming_task = None
@@ -137,9 +135,10 @@ class _StreamManager:
                 logger_receive_data.debug(f"{self} received {item}")
                 device._most_recent_item[name].append(item)
                 if name == Sensor.Name.GAZE.value:
-                    device._cached_gaze_for_matching.append(
-                        (item.timestamp_unix_seconds, item)
-                    )
+                    device._cached_gaze_for_matching.append((
+                        item.timestamp_unix_seconds,
+                        item,
+                    ))
                 elif name == Sensor.Name.WORLD.value:
                     # Matching priority
                     # 1. Match gaze datum to scene video frame (MATCHED_ITEM_LABEL)
@@ -210,10 +209,14 @@ class _StreamManager:
                         f"\tgaze - eyes: {gaze_eyes_time_difference:.3f}s)"
                     )
                 elif name == Sensor.Name.EYES.value:
-                    device._cached_eyes_for_matching.append(
-                        (item.timestamp_unix_seconds, item)
-                    )
-                elif name == Sensor.Name.IMU.value:
+                    device._cached_eyes_for_matching.append((
+                        item.timestamp_unix_seconds,
+                        item,
+                    ))
+                elif (
+                    name == Sensor.Name.IMU.value
+                    or name == Sensor.Name.EYE_EVENTS.value
+                ):
                     pass
                 else:
                     logger.error(f"Unhandled {item} for sensor {name}")
@@ -222,7 +225,7 @@ class _StreamManager:
                 del device  # remove Device reference
 
     @staticmethod
-    def _get_closest_item(cache: T.Deque[GazeDataType], timestamp) -> GazeDataType:
+    def _get_closest_item(cache: deque[GazeDataType], timestamp) -> GazeDataType:
         item_ts, item = cache.popleft()
         # assumes monotonically increasing timestamps
         if item_ts > timestamp:
