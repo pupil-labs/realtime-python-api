@@ -1,4 +1,4 @@
-from datetime.datetime import utcfromtimestamp
+from datetime import datetime, timezone
 
 from pupil_labs.realtime_api.simple import discover_one_device
 from pupil_labs.realtime_api.streaming.eye_events import (
@@ -17,16 +17,26 @@ if device is None:
 
 try:
     while True:
-        event = device.receive_eye_events()
-        if isinstance(event, BlinkEventData):
-            print(f"Blink event at {utcfromtimestamp(event.start_time_ns / 1e9)}")
-        elif isinstance(event, FixationEventData) and event.event_type == 0:
-            print(f"Saccade event with {event.max_velocity} px/sec max velocity.")
-        elif isinstance(event, FixationEventData) and event.event_type == 1:
+        eye_event = device.receive_eye_events()
+        if isinstance(eye_event, BlinkEventData):
             print(
-                "Fixation event with duration of "
-                f"{(event.start_time_ns - event.end_time_ns) / 1e9} seconds."
+                "[BLINK] Blinked at "
+                f"{
+                    datetime.fromtimestamp(
+                        eye_event.start_time_ns // 1e9, timezone.utc
+                    ).strftime('%H:%M:%S')
+                } UTC"
             )
+        elif isinstance(eye_event, FixationEventData) and eye_event.event_type == 0:
+            print(
+                f"[SACCADE] event with {eye_event.amplitude_angle_deg:.0f}° amplitude."
+            )
+        elif isinstance(eye_event, FixationEventData) and eye_event.event_type == 1:
+            print(
+                "[FIXATION] event with duration of "
+                f"{(eye_event.end_time_ns - eye_event.start_time_ns) / 1e9:.2f} seconds."
+            )
+        # print(eye_event) # This will print all the fields of the eye event
 except KeyboardInterrupt:
     pass
 finally:
