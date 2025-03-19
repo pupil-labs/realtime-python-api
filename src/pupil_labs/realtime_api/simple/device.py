@@ -10,7 +10,15 @@ from typing_extensions import Literal
 from ..base import DeviceBase
 from ..device import Device as _DeviceAsync
 from ..device import StatusUpdateNotifier
-from ..models import Component, Event, Recording, Sensor, Status, Template, TemplateDataFormat
+from ..models import (
+    Component,
+    Event,
+    Recording,
+    Sensor,
+    Status,
+    Template,
+    TemplateDataFormat,
+)
 from ..streaming import (
     ImuPacket,
     RTSPGazeStreamer,

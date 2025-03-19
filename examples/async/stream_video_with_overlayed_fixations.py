@@ -91,10 +91,12 @@ async def match_and_draw(queue_video, queue_eye_events):
                 if eye_event.event_type == 0:
                     continue
 
-                fixation_history.append({
-                    "id": fixation_counter,
-                    "fixation": eye_event,
-                })
+                fixation_history.append(
+                    {
+                        "id": fixation_counter,
+                        "fixation": eye_event,
+                    }
+                )
                 fixation_counter += 1
 
             elif isinstance(eye_event, BlinkEventData):
