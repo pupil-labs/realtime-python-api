@@ -4,7 +4,6 @@ import asyncio
 import logging
 import typing as T
 import weakref
-from collections import deque
 from collections.abc import Hashable, Iterable, Mapping
 from types import MappingProxyType
 
@@ -46,7 +45,7 @@ class _AsyncEventManager(T.Generic[EventKey]):
         self._events[name].set()
 
     def trigger_threadsafe(
-        self, name: EventKey, loop: asyncio.AbstractEventLoop | None = None
+        self, name: EventKey, loop: T.Optional[asyncio.AbstractEventLoop] = None
     ) -> None:
         loop = loop or self._loop
         loop.call_soon_threadsafe(self.trigger, name)
@@ -72,14 +71,16 @@ class _StreamManager:
     def __init__(
         self,
         device_weakref: weakref.ReferenceType,
-        streaming_cls: type[RTSPVideoFrameStreamer] | type[RTSPGazeStreamer],
+        streaming_cls: T.Union[
+            T.Type[RTSPVideoFrameStreamer], T.Type[RTSPGazeStreamer]
+        ],
         should_be_streaming_by_default: bool = False,
     ) -> None:
         self._device = device_weakref
         self._streaming_cls = streaming_cls
         self._streaming_task = None
         self._should_be_streaming = should_be_streaming_by_default
-        self._recent_sensor: Sensor | None = None
+        self._recent_sensor: T.Optional[Sensor] = None
 
     @property
     def should_be_streaming(self) -> bool:
@@ -225,7 +226,7 @@ class _StreamManager:
                 del device  # remove Device reference
 
     @staticmethod
-    def _get_closest_item(cache: deque[GazeDataType], timestamp) -> GazeDataType:
+    def _get_closest_item(cache: T.Deque[GazeDataType], timestamp) -> GazeDataType:
         item_ts, item = cache.popleft()
         # assumes monotonically increasing timestamps
         if item_ts > timestamp:

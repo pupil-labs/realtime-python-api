@@ -2,8 +2,10 @@ import asyncio
 import collections
 import enum
 import threading
+import typing as T
 import weakref
-from typing import Literal
+
+from typing_extensions import Literal
 
 from ..base import DeviceBase
 from ..device import Device as _DeviceAsync
@@ -12,6 +14,7 @@ from ..models import Component, Event, Sensor, Status, Template, TemplateDataFor
 from ..streaming import (
     BlinkEventData,
     FixationEventData,
+    FixationOnsetEventData,
     ImuPacket,
     RTSPEyeEventStreamer,
     RTSPGazeStreamer,
@@ -42,8 +45,8 @@ class Device(DeviceBase):
         self,
         address: str,
         port: int,
-        full_name: str | None = None,
-        dns_name: str | None = None,
+        full_name: T.Optional[str] = None,
+        dns_name: T.Optional[str] = None,
         start_streaming_by_default: bool = False,
         suppress_decoding_warnings: bool = True,
     ) -> None:
@@ -90,27 +93,27 @@ class Device(DeviceBase):
         return self._status.hardware.version
 
     @property
-    def module_serial(self) -> str | None | Literal["default"]:
+    def module_serial(self) -> T.Union[str, Literal["default"], None]:
         """Returns ``None`` or ``"default"`` if no glasses are connected"""
         return self._status.hardware.module_serial
 
     @property
-    def serial_number_glasses(self) -> str | None | Literal["default"]:
+    def serial_number_glasses(self) -> T.Union[str, Literal["default"], None]:
         """Returns ``None`` or ``"default"`` if no glasses are connected"""
         return self._status.hardware.glasses_serial
 
     @property
-    def serial_number_scene_cam(self) -> str | None:
+    def serial_number_scene_cam(self) -> T.Optional[str]:
         """Returns ``None`` if no scene camera is connected"""
         return self._status.hardware.world_camera_serial
 
-    def world_sensor(self) -> Sensor | None:
+    def world_sensor(self) -> T.Optional[Sensor]:
         return self._status.direct_world_sensor()
 
-    def gaze_sensor(self) -> Sensor | None:
+    def gaze_sensor(self) -> T.Optional[Sensor]:
         return self._status.direct_gaze_sensor()
 
-    def eye_events_sensor(self) -> Sensor | None:
+    def eye_events_sensor(self) -> T.Optional[Sensor]:
         return self._status.direct_eye_events_sensor()
 
     def get_calibration(self):
@@ -173,7 +176,7 @@ class Device(DeviceBase):
         return asyncio.run(_cancel_recording())
 
     def send_event(
-        self, event_name: str, event_timestamp_unix_ns: int | None = None
+        self, event_name: str, event_timestamp_unix_ns: T.Optional[int] = None
     ) -> Event:
         """:raises pupil_labs.realtime_api.device.DeviceError: if sending the event fails"""
 
@@ -238,28 +241,28 @@ class Device(DeviceBase):
         return asyncio.run(_post_template_data())
 
     def receive_scene_video_frame(
-        self, timeout_seconds: float | None = None
-    ) -> SimpleVideoFrame | None:
+        self, timeout_seconds: T.Optional[float] = None
+    ) -> T.Optional[SimpleVideoFrame]:
         return self._receive_item(Sensor.Name.WORLD.value, timeout_seconds)
 
     def receive_gaze_datum(
-        self, timeout_seconds: float | None = None
-    ) -> GazeDataType | None:
+        self, timeout_seconds: T.Optional[float] = None
+    ) -> T.Optional[GazeDataType]:
         return self._receive_item(Sensor.Name.GAZE.value, timeout_seconds)
 
     def receive_eyes_video_frame(
-        self, timeout_seconds: float | None = None
-    ) -> SimpleVideoFrame | None:
+        self, timeout_seconds: T.Optional[float] = None
+    ) -> T.Optional[SimpleVideoFrame]:
         return self._receive_item(Sensor.Name.EYES.value, timeout_seconds)
 
     def receive_imu_datum(
-        self, timeout_seconds: float | None = None
-    ) -> ImuPacket | None:
+        self, timeout_seconds: T.Optional[float] = None
+    ) -> T.Optional[ImuPacket]:
         return self._receive_item(Sensor.Name.IMU.value, timeout_seconds)
 
     def receive_eye_events(
-        self, timeout_seconds: float | None = None
-    ) -> FixationEventData | BlinkEventData | None:
+        self, timeout_seconds: T.Optional[float] = None
+    ) -> T.Optional[T.Union[FixationEventData, BlinkEventData, FixationOnsetEventData]]:
         return self._receive_item(Sensor.Name.EYE_EVENTS.value, timeout_seconds)
 
     def receive_matched_scene_video_frame_and_gaze(
@@ -268,13 +271,13 @@ class Device(DeviceBase):
         return self._receive_item(MATCHED_ITEM_LABEL, timeout_seconds)
 
     def receive_matched_scene_and_eyes_video_frames_and_gaze(
-        self, timeout_seconds: float | None = None
-    ) -> MatchedGazeEyesSceneItem | None:
+        self, timeout_seconds: T.Optional[float] = None
+    ) -> T.Optional[MatchedGazeEyesSceneItem]:
         return self._receive_item(MATCHED_GAZE_EYES_LABEL, timeout_seconds)
 
     def _receive_item(
-        self, sensor: str, timeout_seconds: float | None = None
-    ) -> VideoFrame | GazeDataType | None:
+        self, sensor: str, timeout_seconds: T.Optional[float] = None
+    ) -> T.Optional[T.Union[VideoFrame, GazeDataType]]:
         if not self.is_currently_streaming:
             logger.debug("receive_* called without being streaming")
             self.streaming_start()
@@ -309,8 +312,8 @@ class Device(DeviceBase):
     def estimate_time_offset(
         self,
         number_of_measurements: int = 100,
-        sleep_between_measurements_seconds: float | None = None,
-    ) -> TimeEchoEstimates | None:
+        sleep_between_measurements_seconds: T.Optional[float] = None,
+    ) -> T.Optional[TimeEchoEstimates]:
         """Estimate the time offset between the host device and the client.
 
         See :py:mod:`pupil_labs.realtime_api.time_echo` for details.
@@ -364,8 +367,8 @@ class Device(DeviceBase):
         }
         self._event_new_item = {name: threading.Event() for name in sensor_names}
         # only cache 3-4 seconds worth of gaze data in case no scene camera is connected
-        GazeCacheType = collections.deque[tuple[float, GazeDataType]]
-        EyesCacheType = collections.deque[tuple[float, SimpleVideoFrame]]
+        GazeCacheType = T.Deque[T.Tuple[float, GazeDataType]]
+        EyesCacheType = T.Deque[T.Tuple[float, SimpleVideoFrame]]
         self._cached_gaze_for_matching: GazeCacheType = collections.deque(maxlen=200)
         self._cached_eyes_for_matching: EyesCacheType = collections.deque(maxlen=200)
 
