@@ -266,8 +266,8 @@ class Device(DeviceBase):
         return self._receive_item(Sensor.Name.EYE_EVENTS.value, timeout_seconds)
 
     def receive_matched_scene_video_frame_and_gaze(
-        self, timeout_seconds: float | None = None
-    ) -> MatchedItem | None:
+        self, timeout_seconds: T.Optional[float] = None
+    ) -> T.Optional[MatchedItem]:
         return self._receive_item(MATCHED_ITEM_LABEL, timeout_seconds)
 
     def receive_matched_scene_and_eyes_video_frames_and_gaze(
