@@ -4,6 +4,7 @@ import json
 import logging
 import types
 import typing as T
+from uuid import UUID
 
 import aiohttp
 import numpy as np
@@ -183,6 +184,8 @@ class Device(DeviceBase):
             format in TemplateDataFormat.__args__
         ), f"format should be one of {TemplateDataFormat}"
 
+        self.template_definition = await self.get_template()
+
         async with self.session.get(self.api_url(APIPath.TEMPLATE_DATA)) as response:
             confirmation = await response.json()
             if response.status != 200:
@@ -194,8 +197,9 @@ class Device(DeviceBase):
             if format == "api":
                 return result
             elif format == "simple":
-                template = await self.get_template()
-                return template.convert_from_api_to_simple_format(result)
+                return self.template_definition.convert_from_api_to_simple_format(
+                    result
+                )
 
     async def post_template_data(
         self,
@@ -248,6 +252,28 @@ class Device(DeviceBase):
             result = confirmation["result"]
             logger.debug(f"[{self}.get_template_data] Send data's template: {result}")
             return result
+
+    async def get_question_by_id(self, question_id: T.Union[str, UUID]):
+        item = (
+            self.template_definition.get_question_by_id(question_id)
+            if self.template_definition
+            else None
+        )
+
+        if item:
+            return item
+
+        old_template = self.template_definition if self.template_definition else None
+
+        await self.get_template()
+
+        if (
+            self.template_definition is not None
+            and self.template_definition is not old_template
+        ):
+            return self.template_definition.get_question_by_id(question_id)
+
+        return None
 
     async def close(self):
         await self.session.close()
