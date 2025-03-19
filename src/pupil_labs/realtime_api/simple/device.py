@@ -20,7 +20,11 @@ from ..models import (
     TemplateDataFormat,
 )
 from ..streaming import (
+    BlinkEventData,
+    FixationEventData,
+    FixationOnsetEventData,
     ImuPacket,
+    RTSPEyeEventStreamer,
     RTSPGazeStreamer,
     RTSPImuStreamer,
     RTSPVideoFrameStreamer,
@@ -39,11 +43,10 @@ from .models import (
 
 
 class Device(DeviceBase):
-    """
-    .. hint::
-        Use :py:func:`pupil_labs.realtime_api.simple.discover_devices` instead of
-        initializing the class manually. See the :ref:`simple_discovery_example`
-        example.
+    """.. hint::
+    Use :py:func:`pupil_labs.realtime_api.simple.discover_devices` instead of
+    initializing the class manually. See the :ref:`simple_discovery_example`
+    example.
     """
 
     def __init__(
@@ -100,12 +103,12 @@ class Device(DeviceBase):
         return self._status.hardware.version
 
     @property
-    def module_serial(self) -> T.Union[str, None, Literal["default"]]:
+    def module_serial(self) -> T.Union[str, Literal["default"], None]:
         """Returns ``None`` or ``"default"`` if no glasses are connected"""
         return self._status.hardware.module_serial
 
     @property
-    def serial_number_glasses(self) -> T.Union[str, None, Literal["default"]]:
+    def serial_number_glasses(self) -> T.Union[str, Literal["default"], None]:
         """Returns ``None`` or ``"default"`` if no glasses are connected"""
         return self._status.hardware.glasses_serial
 
@@ -125,6 +128,9 @@ class Device(DeviceBase):
 
     def gaze_sensor(self) -> T.Optional[Sensor]:
         return self._status.direct_gaze_sensor()
+
+    def eye_events_sensor(self) -> T.Optional[Sensor]:
+        return self._status.direct_eye_events_sensor()
 
     def get_calibration(self):
         async def _get_calibration():
@@ -188,9 +194,7 @@ class Device(DeviceBase):
     def send_event(
         self, event_name: str, event_timestamp_unix_ns: T.Optional[int] = None
     ) -> Event:
-        """
-        :raises pupil_labs.realtime_api.device.DeviceError: if sending the event fails
-        """
+        """:raises pupil_labs.realtime_api.device.DeviceError: if sending the event fails"""
 
         async def _send_event():
             async with _DeviceAsync.convert_from(self) as control:
@@ -199,8 +203,7 @@ class Device(DeviceBase):
         return asyncio.run(_send_event())
 
     def get_template(self) -> Template:
-        """
-        Wraps :py:meth:`pupil_labs.realtime_api.device.Device.get_template`
+        """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.get_template`
 
         Gets the template currently selected on device
 
@@ -215,8 +218,7 @@ class Device(DeviceBase):
         return asyncio.run(_get_template())
 
     def get_template_data(self, format: TemplateDataFormat = "simple"):
-        """
-        Wraps :py:meth:`pupil_labs.realtime_api.device.Device.get_template_data`
+        """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.get_template_data`
 
         Gets the template data entered on device
 
@@ -235,8 +237,7 @@ class Device(DeviceBase):
         return asyncio.run(_get_template_data())
 
     def post_template_data(self, template_data, format: TemplateDataFormat = "simple"):
-        """
-        Wraps :py:meth:`pupil_labs.realtime_api.device.Device.post_template_data`
+        """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.post_template_data`
 
         Sets the data for the currently selected template
 
@@ -274,6 +275,11 @@ class Device(DeviceBase):
         self, timeout_seconds: T.Optional[float] = None
     ) -> T.Optional[ImuPacket]:
         return self._receive_item(Sensor.Name.IMU.value, timeout_seconds)
+
+    def receive_eye_events(
+        self, timeout_seconds: T.Optional[float] = None
+    ) -> T.Optional[T.Union[FixationEventData, BlinkEventData, FixationOnsetEventData]]:
+        return self._receive_item(Sensor.Name.EYE_EVENTS.value, timeout_seconds)
 
     def receive_matched_scene_video_frame_and_gaze(
         self, timeout_seconds: T.Optional[float] = None
@@ -368,6 +374,7 @@ class Device(DeviceBase):
             Sensor.Name.WORLD.value,
             Sensor.Name.EYES.value,
             Sensor.Name.IMU.value,
+            Sensor.Name.EYE_EVENTS.value,
             MATCHED_ITEM_LABEL,
             MATCHED_GAZE_EYES_LABEL,
         ]
@@ -436,6 +443,11 @@ class Device(DeviceBase):
             Sensor.Name.IMU.value: _StreamManager(
                 device_weakref,
                 RTSPImuStreamer,
+                should_be_streaming_by_default=start_streaming_by_default,
+            ),
+            Sensor.Name.EYE_EVENTS.value: _StreamManager(
+                device_weakref,
+                RTSPEyeEventStreamer,
                 should_be_streaming_by_default=start_streaming_by_default,
             ),
         }

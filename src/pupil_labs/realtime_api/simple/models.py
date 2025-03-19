@@ -1,10 +1,17 @@
 import datetime
 import typing as T
 
-from ..streaming.gaze import DualMonocularGazeData, EyestateGazeData, GazeData
+from ..streaming.gaze import (
+    DualMonocularGazeData,
+    EyestateEyelidGazeData,
+    EyestateGazeData,
+    GazeData,
+)
 from ..streaming.video import BGRBuffer, VideoFrame
 
-GazeDataType = T.Union[GazeData, DualMonocularGazeData, EyestateGazeData]
+GazeDataType = T.Union[
+    GazeData, DualMonocularGazeData, EyestateGazeData, EyestateEyelidGazeData
+]
 
 
 class SimpleVideoFrame(T.NamedTuple):

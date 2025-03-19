@@ -111,8 +111,7 @@ class _StreamManager:
     def _stop_streaming_task_if_running(self):
         if self._streaming_task is not None:
             logger_receive_data.info(
-                f"Cancelling prior streaming connection to "
-                f"{self._recent_sensor.sensor}"
+                f"Cancelling prior streaming connection to {self._recent_sensor.sensor}"
             )
             self._streaming_task.cancel()
             self._streaming_task = None
@@ -137,9 +136,10 @@ class _StreamManager:
                 logger_receive_data.debug(f"{self} received {item}")
                 device._most_recent_item[name].append(item)
                 if name == Sensor.Name.GAZE.value:
-                    device._cached_gaze_for_matching.append(
-                        (item.timestamp_unix_seconds, item)
-                    )
+                    device._cached_gaze_for_matching.append((
+                        item.timestamp_unix_seconds,
+                        item,
+                    ))
                 elif name == Sensor.Name.WORLD.value:
                     # Matching priority
                     # 1. Match gaze datum to scene video frame (MATCHED_ITEM_LABEL)
@@ -210,10 +210,14 @@ class _StreamManager:
                         f"\tgaze - eyes: {gaze_eyes_time_difference:.3f}s)"
                     )
                 elif name == Sensor.Name.EYES.value:
-                    device._cached_eyes_for_matching.append(
-                        (item.timestamp_unix_seconds, item)
-                    )
-                elif name == Sensor.Name.IMU.value:
+                    device._cached_eyes_for_matching.append((
+                        item.timestamp_unix_seconds,
+                        item,
+                    ))
+                elif (
+                    name == Sensor.Name.IMU.value
+                    or name == Sensor.Name.EYE_EVENTS.value
+                ):
                     pass
                 else:
                     logger.error(f"Unhandled {item} for sensor {name}")
