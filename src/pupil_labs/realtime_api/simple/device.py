@@ -57,7 +57,7 @@ class Device(DeviceBase):
         self._status = self._get_status()
         self._start_background_worker(start_streaming_by_default)
 
-        self._recording_errors = []
+        self._errors: T.List[str] = []
 
     @property
     def phone_name(self) -> str:
@@ -106,16 +106,11 @@ class Device(DeviceBase):
         """Returns ``None`` if no scene camera is connected"""
         return self._status.hardware.world_camera_serial
 
-    @property
-    def has_recording_errors(self) -> bool:
-        return len(self._recording_errors) > 0
+    def get_errors(self) -> T.List[str]:
+        errors = self._errors.copy()
+        self._errors.clear()
 
-    @property
-    def recording_errors(self) -> T.List[str]:
-        return self._recording_errors.copy()
-
-    def clear_recording_errors(self):
-        self._recording_errors.clear()
+        return errors
 
     def world_sensor(self) -> T.Optional[Sensor]:
         return self._status.direct_world_sensor()
@@ -448,7 +443,7 @@ class Device(DeviceBase):
                     logger.debug(f"Unhandled DIRECT sensor {changed.sensor}")
 
             elif isinstance(changed, Recording) and changed.action == "ERROR":
-                device_weakref()._recording_errors.append(changed.message)
+                device_weakref()._errors.append(changed.message)
 
         async def _auto_update_until_closed():
             async with _DeviceAsync.convert_from(device_weakref()) as device:

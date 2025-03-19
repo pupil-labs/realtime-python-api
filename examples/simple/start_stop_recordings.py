@@ -16,11 +16,8 @@ print(f"Started recording with id {recording_id}")
 # Check for errors while recording runs
 start_time = time.time()
 while time.time() - start_time < 5:
-    if device.has_recording_errors:
-        for error in device.recording_errors:
-            print("Error:", error)
-
-        device.clear_recording_errors()
+    for e in device.get_errors():
+        print("Error:", e)
 
     time.sleep(1)
 
