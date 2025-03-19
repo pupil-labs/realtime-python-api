@@ -10,7 +10,7 @@ from typing_extensions import Literal
 from ..base import DeviceBase
 from ..device import Device as _DeviceAsync
 from ..device import StatusUpdateNotifier
-from ..models import Component, Event, Sensor, Status, Template, TemplateDataFormat
+from ..models import Component, Event, Recording, Sensor, Status, Template, TemplateDataFormat
 from ..streaming import (
     ImuPacket,
     RTSPGazeStreamer,
@@ -56,6 +56,8 @@ class Device(DeviceBase):
         )
         self._status = self._get_status()
         self._start_background_worker(start_streaming_by_default)
+
+        self._recording_errors = []
 
     @property
     def phone_name(self) -> str:
@@ -103,6 +105,17 @@ class Device(DeviceBase):
     def serial_number_scene_cam(self) -> T.Optional[str]:
         """Returns ``None`` if no scene camera is connected"""
         return self._status.hardware.world_camera_serial
+
+    @property
+    def has_recording_errors(self) -> bool:
+        return len(self._recording_errors) > 0
+
+    @property
+    def recording_errors(self) -> T.List[str]:
+        return self._recording_errors.copy()
+
+    def clear_recording_errors(self):
+        self._recording_errors.clear()
 
     def world_sensor(self) -> T.Optional[Sensor]:
         return self._status.direct_world_sensor()
@@ -433,6 +446,9 @@ class Device(DeviceBase):
                     await stream_managers[changed.sensor].handle_sensor_update(changed)
                 else:
                     logger.debug(f"Unhandled DIRECT sensor {changed.sensor}")
+
+            elif isinstance(changed, Recording) and changed.action == "ERROR":
+                device_weakref()._recording_errors.append(changed.message)
 
         async def _auto_update_until_closed():
             async with _DeviceAsync.convert_from(device_weakref()) as device:
