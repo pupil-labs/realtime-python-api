@@ -1,15 +1,17 @@
 import asyncio
 
 from pupil_labs.realtime_api import Device, Network, StatusUpdateNotifier
-from pupil_labs.realtime_api.models import Recording
+from pupil_labs.realtime_api.models import Recording, Sensor
 
 
 async def on_status_update(component):
     if isinstance(component, Recording):
         if component.action == "ERROR":
             print(f"Error : {component.message}")
-        else:
-            print(f"Update: {component.message}")
+
+    elif isinstance(component, Sensor):
+        if component.stream_error:
+            print(f"Stream error in sensor {component.sensor}")
 
 
 async def main():
