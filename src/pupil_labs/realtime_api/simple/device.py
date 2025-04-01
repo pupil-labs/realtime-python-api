@@ -288,9 +288,16 @@ class Device(DeviceBase):
     def _receive_item(
         self, sensor: str, timeout_seconds: T.Optional[float] = None
     ) -> T.Optional[T.Union[VideoFrame, GazeDataType]]:
-        if not self.is_currently_streaming:
-            logger.debug("receive_* called without being streaming")
-            self.streaming_start()
+        if sensor == MATCHED_ITEM_LABEL:
+            self.start_stream_if_needed(Sensor.Name.GAZE.value)
+            self.start_stream_if_needed(Sensor.Name.WORLD.value)
+        elif sensor == MATCHED_GAZE_EYES_LABEL:
+            self.start_stream_if_needed(Sensor.Name.GAZE.value)
+            self.start_stream_if_needed(Sensor.Name.EYES.value)
+            self.start_stream_if_needed(Sensor.Name.WORLD.value)
+        else:
+            self.start_stream_if_needed(sensor)
+
         try:
             return self._most_recent_item[sensor].popleft()
         except IndexError:
@@ -301,23 +308,67 @@ class Device(DeviceBase):
                 return self._most_recent_item[sensor].popleft()
             return None
 
-    def streaming_start(self):
-        self._streaming_trigger_action(self._EVENT.SHOULD_STREAMS_START)
+    def start_stream_if_needed(self, sensor: str):
+        if not self._is_streaming_flags[sensor].is_set():
+            logger.debug("receive_* called without being streaming")
+            self.streaming_start(sensor)
 
-    def streaming_stop(self):
-        self._streaming_trigger_action(self._EVENT.SHOULD_STREAMS_STOP)
+    def streaming_start(self, stream_name: str):
+        if stream_name is None:
+            for event in (
+                self._EVENT.SHOULD_START_GAZE,
+                self._EVENT.SHOULD_START_WORLD,
+                self._EVENT.SHOULD_START_EYES,
+                self._EVENT.SHOULD_START_IMU,
+            ):
+                self._streaming_trigger_action(event)
+            return
+
+        event = None
+        if stream_name == Sensor.Name.GAZE.value:
+            event = self._EVENT.SHOULD_START_GAZE
+        elif stream_name == Sensor.Name.WORLD.value:
+            event = self._EVENT.SHOULD_START_WORLD
+        elif stream_name == Sensor.Name.EYES.value:
+            event = self._EVENT.SHOULD_START_EYES
+        elif stream_name == Sensor.Name.IMU.value:
+            event = self._EVENT.SHOULD_START_IMU
+
+        self._streaming_trigger_action(event)
+
+    def streaming_stop(self, stream_name: str = None):
+        if stream_name is None:
+            for event in (
+                self._EVENT.SHOULD_STOP_GAZE,
+                self._EVENT.SHOULD_STOP_WORLD,
+                self._EVENT.SHOULD_STOP_EYES,
+                self._EVENT.SHOULD_STOP_IMU,
+            ):
+                self._streaming_trigger_action(event)
+            return
+
+        event = None
+        if stream_name == Sensor.Name.GAZE.value:
+            event = self._EVENT.SHOULD_STOP_GAZE
+        elif stream_name == Sensor.Name.WORLD.value:
+            event = self._EVENT.SHOULD_STOP_WORLD
+        elif stream_name == Sensor.Name.EYES.value:
+            event = self._EVENT.SHOULD_STOP_EYES
+        elif stream_name == Sensor.Name.IMU.value:
+            event = self._EVENT.SHOULD_STOP_IMU
+
+        self._streaming_trigger_action(event)
 
     def _streaming_trigger_action(self, action):
         if self._event_manager and self._background_loop:
             logger.debug(f"Sending {action.name} trigger")
             self._event_manager.trigger_threadsafe(action)
         else:
-            logger.debug(f"Could send {action.name} trigger")
+            logger.debug(f"Could not send {action.name} trigger")
 
     @property
     def is_currently_streaming(self) -> bool:
-        is_streaming = self._is_streaming_flag.is_set()
-        return is_streaming
+        return any(flag.is_set() for flag in self._is_streaming_flags.values())
 
     def estimate_time_offset(
         self,
@@ -355,8 +406,14 @@ class Device(DeviceBase):
 
     class _EVENT(enum.Enum):
         SHOULD_WORKER_CLOSE = "should worker close"
-        SHOULD_STREAMS_START = "should stream start"
-        SHOULD_STREAMS_STOP = "should streams stop"
+        SHOULD_START_GAZE = "should start gaze"
+        SHOULD_START_WORLD = "should start world"
+        SHOULD_START_EYES = "should start eyes"
+        SHOULD_START_IMU = "should start imu"
+        SHOULD_STOP_GAZE = "should stop gaze"
+        SHOULD_STOP_WORLD = "should stop world"
+        SHOULD_STOP_EYES = "should stop eyes"
+        SHOULD_STOP_IMU = "should stop imu"
 
     def _start_background_worker(self, start_streaming_by_default):
         self._event_manager = None
@@ -382,13 +439,18 @@ class Device(DeviceBase):
         self._cached_eyes_for_matching: EyesCacheType = collections.deque(maxlen=200)
 
         event_auto_update_started = threading.Event()
-        self._is_streaming_flag = threading.Event()
+        self._is_streaming_flags = {
+            Sensor.Name.GAZE.value: threading.Event(),
+            Sensor.Name.WORLD.value: threading.Event(),
+            Sensor.Name.EYES.value: threading.Event(),
+            Sensor.Name.IMU.value: threading.Event(),
+        }
         self._auto_update_thread = threading.Thread(
             target=self._auto_update,
             kwargs=dict(
                 device_weakref=weakref.ref(self),  # weak ref to avoid cycling ref
                 auto_update_started_flag=event_auto_update_started,
-                is_streaming_flag=self._is_streaming_flag,
+                is_streaming_flags=self._is_streaming_flags,
                 start_streaming_by_default=start_streaming_by_default,
             ),
             name=f"{self} auto-update thread",
@@ -414,7 +476,7 @@ class Device(DeviceBase):
     def _auto_update(
         device_weakref: weakref.ReferenceType,
         auto_update_started_flag: threading.Event,
-        is_streaming_flag: threading.Event,
+        is_streaming_flags: T.Dict[str, threading.Event],
         start_streaming_by_default: bool = False,
     ):
         stream_managers = {
@@ -470,28 +532,51 @@ class Device(DeviceBase):
                 auto_update_started_flag.set()
                 if start_streaming_by_default:
                     logger.debug("Streaming started by default")
-                    is_streaming_flag.set()
+                    start_stream(Sensor.Name.GAZE.value)
+                    start_stream(Sensor.Name.WORLD.value)
+                    start_stream(Sensor.Name.EYES.value)
+                    start_stream(Sensor.Name.IMU.value)
 
                 while True:
                     logger.debug("Background worker waiting for event...")
                     event = await event_manager.wait_for_first_event()
                     logger.debug(f"Background worker received {event}")
+
                     if event is Device._EVENT.SHOULD_WORKER_CLOSE:
                         break
-                    elif event is Device._EVENT.SHOULD_STREAMS_START:
-                        for manager in stream_managers.values():
-                            manager.should_be_streaming = True
-                        is_streaming_flag.set()
-                        logger.debug("Streaming started")
-                    elif event is Device._EVENT.SHOULD_STREAMS_STOP:
-                        for manager in stream_managers.values():
-                            manager.should_be_streaming = False
-                        is_streaming_flag.clear()
-                        logger.debug("Streaming stopped")
+
+                    elif event is Device._EVENT.SHOULD_START_GAZE:
+                        start_stream(Sensor.Name.GAZE.value)
+                    elif event is Device._EVENT.SHOULD_START_WORLD:
+                        start_stream(Sensor.Name.WORLD.value)
+                    elif event is Device._EVENT.SHOULD_START_EYES:
+                        start_stream(Sensor.Name.EYES.value)
+                    elif event is Device._EVENT.SHOULD_START_IMU:
+                        start_stream(Sensor.Name.IMU.value)
+
+                    elif event is Device._EVENT.SHOULD_STOP_GAZE:
+                        stop_stream(Sensor.Name.GAZE.value)
+                    elif event is Device._EVENT.SHOULD_STOP_WORLD:
+                        stop_stream(Sensor.Name.WORLD.value)
+                    elif event is Device._EVENT.SHOULD_STOP_EYES:
+                        stop_stream(Sensor.Name.EYES.value)
+                    elif event is Device._EVENT.SHOULD_STOP_IMU:
+                        stop_stream(Sensor.Name.IMU.value)
+
                     else:
                         raise RuntimeError(f"Unhandled {event!r}")
 
                 await notifier.receive_updates_stop()
                 device_weakref()._event_manager = None
+
+        def start_stream(stream_name):
+            is_streaming_flags[stream_name].set()
+            stream_managers[stream_name].should_be_streaming = True
+            logger.debug(f"Streaming started {stream_name}")
+
+        def stop_stream(stream_name):
+            stream_managers[stream_name].should_be_streaming = False
+            is_streaming_flags[stream_name].clear()
+            logger.debug(f"Streaming stopped {stream_name}")
 
         return asyncio.run(_auto_update_until_closed())
