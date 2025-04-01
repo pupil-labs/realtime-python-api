@@ -1,3 +1,15 @@
+1.4.1
+###########
+- Adds error information
+
+1.4.0
+###########
+- Adds eye events (blinks, fixations)
+
+1.3.6
+###########
+- Adds eyelid data
+
 1.3.5
 ###########
 - Fixes streaming bug when audio is enabled
