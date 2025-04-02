@@ -178,7 +178,11 @@ class Device(DeviceBase):
     def send_event(
         self, event_name: str, event_timestamp_unix_ns: T.Optional[int] = None
     ) -> Event:
-        """:raises pupil_labs.realtime_api.device.DeviceError: if sending the event fails"""
+        """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.send_event`
+
+        :raises pupil_labs.realtime_api.device.DeviceError:
+            if sending the event fails
+        """
 
         async def _send_event():
             async with _DeviceAsync.convert_from(self) as control:
