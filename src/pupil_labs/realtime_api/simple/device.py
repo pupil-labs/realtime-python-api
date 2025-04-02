@@ -70,12 +70,20 @@ class Device(DeviceBase):
 
         self._errors: T.List[str] = []
 
-        self.stream_name_event_map = {
+        self.stream_name_start_event_map = {
             Sensor.Name.GAZE.value: self._EVENT.SHOULD_START_GAZE,
             Sensor.Name.WORLD.value: self._EVENT.SHOULD_START_WORLD,
             Sensor.Name.EYES.value: self._EVENT.SHOULD_START_EYES,
             Sensor.Name.IMU.value: self._EVENT.SHOULD_START_IMU,
             Sensor.Name.EYE_EVENTS.value: self._EVENT.SHOULD_START_EYE_EVENTS,
+        }
+
+        self.stream_name_stop_event_map = {
+            Sensor.Name.GAZE.value: self._EVENT.SHOULD_STOP_GAZE,
+            Sensor.Name.WORLD.value: self._EVENT.SHOULD_STOP_WORLD,
+            Sensor.Name.EYES.value: self._EVENT.SHOULD_STOP_EYES,
+            Sensor.Name.IMU.value: self._EVENT.SHOULD_STOP_IMU,
+            Sensor.Name.EYE_EVENTS.value: self._EVENT.SHOULD_STOP_EYE_EVENTS,
         }
 
     @property
@@ -340,11 +348,12 @@ class Device(DeviceBase):
                 self._EVENT.SHOULD_START_WORLD,
                 self._EVENT.SHOULD_START_EYES,
                 self._EVENT.SHOULD_START_IMU,
+                self._EVENT.SHOULD_START_EYE_EVENTS,
             ):
                 self._streaming_trigger_action(event)
             return
 
-        event = self.stream_name_event_map[stream_name]
+        event = self.stream_name_start_event_map[stream_name]
         self._streaming_trigger_action(event)
 
     def streaming_stop(self, stream_name: str = None):
@@ -354,20 +363,12 @@ class Device(DeviceBase):
                 self._EVENT.SHOULD_STOP_WORLD,
                 self._EVENT.SHOULD_STOP_EYES,
                 self._EVENT.SHOULD_STOP_IMU,
+                self._EVENT.SHOULD_STOP_EYE_EVENTS,
             ):
                 self._streaming_trigger_action(event)
             return
 
-        event = None
-        if stream_name == Sensor.Name.GAZE.value:
-            event = self._EVENT.SHOULD_STOP_GAZE
-        elif stream_name == Sensor.Name.WORLD.value:
-            event = self._EVENT.SHOULD_STOP_WORLD
-        elif stream_name == Sensor.Name.EYES.value:
-            event = self._EVENT.SHOULD_STOP_EYES
-        elif stream_name == Sensor.Name.IMU.value:
-            event = self._EVENT.SHOULD_STOP_IMU
-
+        event = self.stream_name_stop_event_map[stream_name]
         self._streaming_trigger_action(event)
 
     def _streaming_trigger_action(self, action):
