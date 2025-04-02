@@ -20,7 +20,11 @@ from ..models import (
     TemplateDataFormat,
 )
 from ..streaming import (
+    BlinkEventData,
+    FixationEventData,
+    FixationOnsetEventData,
     ImuPacket,
+    RTSPEyeEventStreamer,
     RTSPGazeStreamer,
     RTSPImuStreamer,
     RTSPVideoFrameStreamer,
@@ -39,11 +43,10 @@ from .models import (
 
 
 class Device(DeviceBase):
-    """
-    .. hint::
-        Use :py:func:`pupil_labs.realtime_api.simple.discover_devices` instead of
-        initializing the class manually. See the :ref:`simple_discovery_example`
-        example.
+    """.. hint::
+    Use :py:func:`pupil_labs.realtime_api.simple.discover_devices` instead of
+    initializing the class manually. See the :ref:`simple_discovery_example`
+    example.
     """
 
     def __init__(
@@ -66,6 +69,14 @@ class Device(DeviceBase):
         self._start_background_worker(start_streaming_by_default)
 
         self._errors: T.List[str] = []
+
+        self.stream_name_event_map = {
+            Sensor.Name.GAZE.value: self._EVENT.SHOULD_START_GAZE,
+            Sensor.Name.WORLD.value: self._EVENT.SHOULD_START_WORLD,
+            Sensor.Name.EYES.value: self._EVENT.SHOULD_START_EYES,
+            Sensor.Name.IMU.value: self._EVENT.SHOULD_START_IMU,
+            Sensor.Name.EYE_EVENTS.value: self._EVENT.SHOULD_START_EYE_EVENTS,
+        }
 
     @property
     def phone_name(self) -> str:
@@ -100,12 +111,12 @@ class Device(DeviceBase):
         return self._status.hardware.version
 
     @property
-    def module_serial(self) -> T.Union[str, None, Literal["default"]]:
+    def module_serial(self) -> T.Union[str, Literal["default"], None]:
         """Returns ``None`` or ``"default"`` if no glasses are connected"""
         return self._status.hardware.module_serial
 
     @property
-    def serial_number_glasses(self) -> T.Union[str, None, Literal["default"]]:
+    def serial_number_glasses(self) -> T.Union[str, Literal["default"], None]:
         """Returns ``None`` or ``"default"`` if no glasses are connected"""
         return self._status.hardware.glasses_serial
 
@@ -125,6 +136,9 @@ class Device(DeviceBase):
 
     def gaze_sensor(self) -> T.Optional[Sensor]:
         return self._status.direct_gaze_sensor()
+
+    def eye_events_sensor(self) -> T.Optional[Sensor]:
+        return self._status.direct_eye_events_sensor()
 
     def get_calibration(self):
         async def _get_calibration():
@@ -188,8 +202,10 @@ class Device(DeviceBase):
     def send_event(
         self, event_name: str, event_timestamp_unix_ns: T.Optional[int] = None
     ) -> Event:
-        """
-        :raises pupil_labs.realtime_api.device.DeviceError: if sending the event fails
+        """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.send_event`
+
+        :raises pupil_labs.realtime_api.device.DeviceError:
+            if sending the event fails
         """
 
         async def _send_event():
@@ -199,8 +215,7 @@ class Device(DeviceBase):
         return asyncio.run(_send_event())
 
     def get_template(self) -> Template:
-        """
-        Wraps :py:meth:`pupil_labs.realtime_api.device.Device.get_template`
+        """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.get_template`
 
         Gets the template currently selected on device
 
@@ -215,8 +230,7 @@ class Device(DeviceBase):
         return asyncio.run(_get_template())
 
     def get_template_data(self, format: TemplateDataFormat = "simple"):
-        """
-        Wraps :py:meth:`pupil_labs.realtime_api.device.Device.get_template_data`
+        """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.get_template_data`
 
         Gets the template data entered on device
 
@@ -235,8 +249,7 @@ class Device(DeviceBase):
         return asyncio.run(_get_template_data())
 
     def post_template_data(self, template_data, format: TemplateDataFormat = "simple"):
-        """
-        Wraps :py:meth:`pupil_labs.realtime_api.device.Device.post_template_data`
+        """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.post_template_data`
 
         Sets the data for the currently selected template
 
@@ -275,6 +288,11 @@ class Device(DeviceBase):
     ) -> T.Optional[ImuPacket]:
         return self._receive_item(Sensor.Name.IMU.value, timeout_seconds)
 
+    def receive_eye_events(
+        self, timeout_seconds: T.Optional[float] = None
+    ) -> T.Optional[T.Union[FixationEventData, BlinkEventData, FixationOnsetEventData]]:
+        return self._receive_item(Sensor.Name.EYE_EVENTS.value, timeout_seconds)
+
     def receive_matched_scene_video_frame_and_gaze(
         self, timeout_seconds: T.Optional[float] = None
     ) -> T.Optional[MatchedItem]:
@@ -291,10 +309,12 @@ class Device(DeviceBase):
         if sensor == MATCHED_ITEM_LABEL:
             self.start_stream_if_needed(Sensor.Name.GAZE.value)
             self.start_stream_if_needed(Sensor.Name.WORLD.value)
+
         elif sensor == MATCHED_GAZE_EYES_LABEL:
             self.start_stream_if_needed(Sensor.Name.GAZE.value)
             self.start_stream_if_needed(Sensor.Name.EYES.value)
             self.start_stream_if_needed(Sensor.Name.WORLD.value)
+
         else:
             self.start_stream_if_needed(sensor)
 
@@ -324,16 +344,7 @@ class Device(DeviceBase):
                 self._streaming_trigger_action(event)
             return
 
-        event = None
-        if stream_name == Sensor.Name.GAZE.value:
-            event = self._EVENT.SHOULD_START_GAZE
-        elif stream_name == Sensor.Name.WORLD.value:
-            event = self._EVENT.SHOULD_START_WORLD
-        elif stream_name == Sensor.Name.EYES.value:
-            event = self._EVENT.SHOULD_START_EYES
-        elif stream_name == Sensor.Name.IMU.value:
-            event = self._EVENT.SHOULD_START_IMU
-
+        event = self.stream_name_event_map[stream_name]
         self._streaming_trigger_action(event)
 
     def streaming_stop(self, stream_name: str = None):
@@ -410,10 +421,12 @@ class Device(DeviceBase):
         SHOULD_START_WORLD = "should start world"
         SHOULD_START_EYES = "should start eyes"
         SHOULD_START_IMU = "should start imu"
+        SHOULD_START_EYE_EVENTS = "should start eye events"
         SHOULD_STOP_GAZE = "should stop gaze"
         SHOULD_STOP_WORLD = "should stop world"
         SHOULD_STOP_EYES = "should stop eyes"
         SHOULD_STOP_IMU = "should stop imu"
+        SHOULD_STOP_EYE_EVENTS = "should stop eye events"
 
     def _start_background_worker(self, start_streaming_by_default):
         self._event_manager = None
@@ -425,6 +438,7 @@ class Device(DeviceBase):
             Sensor.Name.WORLD.value,
             Sensor.Name.EYES.value,
             Sensor.Name.IMU.value,
+            Sensor.Name.EYE_EVENTS.value,
             MATCHED_ITEM_LABEL,
             MATCHED_GAZE_EYES_LABEL,
         ]
@@ -444,6 +458,7 @@ class Device(DeviceBase):
             Sensor.Name.WORLD.value: threading.Event(),
             Sensor.Name.EYES.value: threading.Event(),
             Sensor.Name.IMU.value: threading.Event(),
+            Sensor.Name.EYE_EVENTS.value: threading.Event(),
         }
         self._auto_update_thread = threading.Thread(
             target=self._auto_update,
@@ -500,6 +515,11 @@ class Device(DeviceBase):
                 RTSPImuStreamer,
                 should_be_streaming_by_default=start_streaming_by_default,
             ),
+            Sensor.Name.EYE_EVENTS.value: _StreamManager(
+                device_weakref,
+                RTSPEyeEventStreamer,
+                should_be_streaming_by_default=start_streaming_by_default,
+            ),
         }
 
         async def _process_status_changes(changed: Component):
@@ -541,6 +561,7 @@ class Device(DeviceBase):
                     start_stream(Sensor.Name.WORLD.value)
                     start_stream(Sensor.Name.EYES.value)
                     start_stream(Sensor.Name.IMU.value)
+                    start_stream(Sensor.Name.EYE_EVENTS)
 
                 while True:
                     logger.debug("Background worker waiting for event...")
@@ -575,10 +596,12 @@ class Device(DeviceBase):
             Device._EVENT.SHOULD_START_WORLD: start_stream,
             Device._EVENT.SHOULD_START_EYES: start_stream,
             Device._EVENT.SHOULD_START_IMU: start_stream,
+            Device._EVENT.SHOULD_START_EYE_EVENTS: start_stream,
             Device._EVENT.SHOULD_STOP_GAZE: stop_stream,
             Device._EVENT.SHOULD_STOP_WORLD: stop_stream,
             Device._EVENT.SHOULD_STOP_EYES: stop_stream,
             Device._EVENT.SHOULD_STOP_IMU: stop_stream,
+            Device._EVENT.SHOULD_STOP_EYE_EVENTS: stop_stream,
         }
 
         event_stream_map = {
@@ -586,10 +609,12 @@ class Device(DeviceBase):
             Device._EVENT.SHOULD_START_WORLD: Sensor.Name.WORLD,
             Device._EVENT.SHOULD_START_EYES: Sensor.Name.EYES,
             Device._EVENT.SHOULD_START_IMU: Sensor.Name.IMU,
+            Device._EVENT.SHOULD_START_EYE_EVENTS: Sensor.Name.EYE_EVENTS,
             Device._EVENT.SHOULD_STOP_GAZE: Sensor.Name.GAZE,
             Device._EVENT.SHOULD_STOP_WORLD: Sensor.Name.WORLD,
             Device._EVENT.SHOULD_STOP_EYES: Sensor.Name.EYES,
             Device._EVENT.SHOULD_STOP_IMU: Sensor.Name.IMU,
+            Device._EVENT.SHOULD_STOP_EYE_EVENTS: Sensor.Name.EYE_EVENTS,
         }
 
         return asyncio.run(_auto_update_until_closed())

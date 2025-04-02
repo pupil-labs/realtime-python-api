@@ -8,6 +8,7 @@ from dataclasses import field
 from datetime import datetime
 from functools import partial
 from textwrap import indent
+from typing import Annotated
 from uuid import UUID
 
 from pydantic import (
@@ -22,7 +23,7 @@ from pydantic import (
     create_model,
 )
 from pydantic.dataclasses import dataclass as dataclass_pydantic
-from typing_extensions import Annotated, Literal
+from typing_extensions import Literal
 
 logger = logging.getLogger(__name__)
 
@@ -179,7 +180,7 @@ TemplateDataFormat = T.Literal["api", "simple"]
 
 
 def _init_cls_with_annotated_fields_only(cls, d: T.Dict[str, T.Any]):
-    return cls(**{attr: d.get(attr, None) for attr in cls.__annotations__})
+    return cls(**{attr: d.get(attr) for attr in cls.__annotations__})
 
 
 class UnknownComponentError(ValueError):
@@ -305,7 +306,8 @@ class Status:
         return next(
             self.matching_sensors(Sensor.Name.EYE_EVENTS, Sensor.Connection.DIRECT),
             Sensor(
-                sensor=Sensor.Name.EYES.value, conn_type=Sensor.Connection.DIRECT.value
+                sensor=Sensor.Name.EYE_EVENTS.value,
+                conn_type=Sensor.Connection.DIRECT.value,
             ),
         )
 
@@ -390,7 +392,7 @@ class TemplateItem:
             answer_input_type = conlist(
                 answer_input_type,
                 min_length=1 if self.required else 0,
-                max_length=None if self.widget_type in {"CHECKBOX_LIST"} else 1,
+                max_length=None if self.widget_type == "CHECKBOX_LIST" else 1,
             )
         else:
             if self.required:
@@ -431,7 +433,7 @@ class TemplateItem:
         answer_input_type = conlist(
             answer_input_entry_type,
             min_length=1 if self.required else 0,
-            max_length=None if self.widget_type in {"CHECKBOX_LIST"} else 1,
+            max_length=None if self.widget_type == "CHECKBOX_LIST" else 1,
         )
         return (answer_input_type, field)
 
@@ -462,7 +464,7 @@ class Template:
             api_format[question_id] = value
         return api_format
 
-    def convert_from_api_to_simple_format(self, data: T.Dict[str, T.List[str]]):
+    def convert_from_api_to_simple_format(self, data: T.Dict[str, list[str]]):
         simple_format = {}
         for question_id, value in data.items():
             question = self.get_question_by_id(question_id)
@@ -598,9 +600,9 @@ class InvalidTemplateAnswersError(Exception):
             error_lines = []
             for error in self.errors:
                 error_msg = ""
-                error_msg += f'location: {error["loc"]}\n'
-                error_msg += f'  input: {error["input"]}\n'
-                error_msg += f'  message: {error["msg"]}\n'
+                error_msg += f"location: {error['loc']}\n"
+                error_msg += f"  input: {error['input']}\n"
+                error_msg += f"  message: {error['msg']}\n"
                 question = error.get("question")
                 if question:
                     error_msg += (
@@ -618,6 +620,6 @@ class InvalidTemplateAnswersError(Exception):
                 name = self.template.name
             elif isinstance(self.template, TemplateItem):
                 name = self.template.title
-            return f"{name} ({self.template.id}) validation errors:\n" f"{error_lines}"
+            return f"{name} ({self.template.id}) validation errors:\n{error_lines}"
         except Exception as e:
             return f"InvalidTemplateAnswersError.__str__ error: {e}"
