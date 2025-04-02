@@ -1,5 +1,6 @@
-1.4.1
+1.5.0
 ###########
+- Auto-start only necessary streams in Simple API
 - Adds error information
 
 1.4.0
