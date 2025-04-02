@@ -75,7 +75,7 @@ async def enqueue_sensor_data(sensor: T.AsyncIterator, queue: asyncio.Queue) -> 
 
 
 async def match_and_draw(queue_video, queue_eye_events):
-    fixation_history = deque(maxlen=5)
+    fixation_history = deque(maxlen=10)
     fixation_counter = 0
 
     blink = None
@@ -88,6 +88,9 @@ async def match_and_draw(queue_video, queue_eye_events):
         while not queue_eye_events.empty():
             _, eye_event = await queue_eye_events.get()
             if isinstance(eye_event, FixationEventData):
+                if eye_event.event_type == 0:
+                    continue
+
                 fixation_history.append(
                     {
                         "id": fixation_counter,

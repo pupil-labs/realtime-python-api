@@ -1,12 +1,17 @@
 import asyncio
 
 from pupil_labs.realtime_api import Device, Network, StatusUpdateNotifier
-from pupil_labs.realtime_api.models import Recording
+from pupil_labs.realtime_api.models import Recording, Sensor
 
 
-async def print_recording(component):
+async def on_status_update(component):
     if isinstance(component, Recording):
-        print(f"Update: {component.message}")
+        if component.action == "ERROR":
+            print(f"Error : {component.message}")
+
+    elif isinstance(component, Sensor):
+        if component.stream_error:
+            print(f"Stream error in sensor {component.sensor}")
 
 
 async def main():
@@ -18,7 +23,7 @@ async def main():
 
     async with Device.from_discovered_device(dev_info) as device:
         # get update when recording is fully started
-        notifier = StatusUpdateNotifier(device, callbacks=[print_recording])
+        notifier = StatusUpdateNotifier(device, callbacks=[on_status_update])
         await notifier.receive_updates_start()
         recording_id = await device.recording_start()
         print(f"Initiated recording with id {recording_id}")
