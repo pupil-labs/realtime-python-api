@@ -453,6 +453,11 @@ class Device(DeviceBase):
             elif isinstance(changed, Recording) and changed.action == "ERROR":
                 device_weakref()._errors.append(changed.message)
 
+            elif isinstance(changed, Sensor) and changed.stream_error:
+                error = f"Stream error in sensor {changed.sensor}"
+                if error not in device_weakref()._errors:
+                    device_weakref()._errors.append(error)
+
         async def _auto_update_until_closed():
             async with _DeviceAsync.convert_from(device_weakref()) as device:
                 event_manager = _AsyncEventManager(Device._EVENT)

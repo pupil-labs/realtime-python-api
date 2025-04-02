@@ -127,6 +127,7 @@ class Sensor(T.NamedTuple):
     params: T.Optional[str] = None
     port: T.Optional[int] = None
     protocol: str = "rtsp"
+    stream_error: bool = True
 
     @property
     def url(self) -> T.Optional[str]:
