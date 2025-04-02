@@ -545,25 +545,11 @@ class Device(DeviceBase):
                     if event is Device._EVENT.SHOULD_WORKER_CLOSE:
                         break
 
-                    elif event is Device._EVENT.SHOULD_START_GAZE:
-                        start_stream(Sensor.Name.GAZE.value)
-                    elif event is Device._EVENT.SHOULD_START_WORLD:
-                        start_stream(Sensor.Name.WORLD.value)
-                    elif event is Device._EVENT.SHOULD_START_EYES:
-                        start_stream(Sensor.Name.EYES.value)
-                    elif event is Device._EVENT.SHOULD_START_IMU:
-                        start_stream(Sensor.Name.IMU.value)
-
-                    elif event is Device._EVENT.SHOULD_STOP_GAZE:
-                        stop_stream(Sensor.Name.GAZE.value)
-                    elif event is Device._EVENT.SHOULD_STOP_WORLD:
-                        stop_stream(Sensor.Name.WORLD.value)
-                    elif event is Device._EVENT.SHOULD_STOP_EYES:
-                        stop_stream(Sensor.Name.EYES.value)
-                    elif event is Device._EVENT.SHOULD_STOP_IMU:
-                        stop_stream(Sensor.Name.IMU.value)
-
-                    else:
+                    try:
+                        func = event_func_map[event]
+                        stream = event_stream_map[event]
+                        func(stream.value)
+                    except KeyError:
                         raise RuntimeError(f"Unhandled {event!r}")
 
                 await notifier.receive_updates_stop()
@@ -578,5 +564,27 @@ class Device(DeviceBase):
             stream_managers[stream_name].should_be_streaming = False
             is_streaming_flags[stream_name].clear()
             logger.debug(f"Streaming stopped {stream_name}")
+
+        event_func_map = {
+            Device._EVENT.SHOULD_START_GAZE: start_stream,
+            Device._EVENT.SHOULD_START_WORLD: start_stream,
+            Device._EVENT.SHOULD_START_EYES: start_stream,
+            Device._EVENT.SHOULD_START_IMU: start_stream,
+            Device._EVENT.SHOULD_STOP_GAZE: stop_stream,
+            Device._EVENT.SHOULD_STOP_WORLD: stop_stream,
+            Device._EVENT.SHOULD_STOP_EYES: stop_stream,
+            Device._EVENT.SHOULD_STOP_IMU: stop_stream,
+        }
+
+        event_stream_map = {
+            Device._EVENT.SHOULD_START_GAZE: Sensor.Name.GAZE,
+            Device._EVENT.SHOULD_START_WORLD: Sensor.Name.WORLD,
+            Device._EVENT.SHOULD_START_EYES: Sensor.Name.EYES,
+            Device._EVENT.SHOULD_START_IMU: Sensor.Name.IMU,
+            Device._EVENT.SHOULD_STOP_GAZE: Sensor.Name.GAZE,
+            Device._EVENT.SHOULD_STOP_WORLD: Sensor.Name.WORLD,
+            Device._EVENT.SHOULD_STOP_EYES: Sensor.Name.EYES,
+            Device._EVENT.SHOULD_STOP_IMU: Sensor.Name.IMU,
+        }
 
         return asyncio.run(_auto_update_until_closed())
