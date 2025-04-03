@@ -200,8 +200,8 @@ def test_template_answer_api_format():
     # fmt: on
     validate_template_answers(good_template_answers)
 
-    for id, value in good_template_answers.items():
-        validate_question_answer(id)(value)
+    for q_id, value in good_template_answers.items():
+        validate_question_answer(q_id)(value)
 
     # fmt: off
     bad_number_answers = {
@@ -212,9 +212,9 @@ def test_template_answer_api_format():
     }
     # fmt: on
 
-    for id, value in bad_number_answers.items():
+    for q_id, value in bad_number_answers.items():
         with pytest.raises(InvalidTemplateAnswersError) as exc:
-            validate_question_answer(id)(value)
+            validate_question_answer(q_id)(value)
 
     with pytest.raises(InvalidTemplateAnswersError) as exc:
         validate_template_answers({**good_template_answers, **bad_number_answers})
@@ -233,9 +233,9 @@ def test_template_answer_api_format():
     }
     # fmt: on
 
-    for id, value in missing_choice_answers.items():
+    for q_id, value in missing_choice_answers.items():
         with pytest.raises(InvalidTemplateAnswersError) as exc:
-            validate_question_answer(id)(value)
+            validate_question_answer(q_id)(value)
 
     errors = validate_template_answers(
         {**good_template_answers, **missing_choice_answers}, raise_exception=False
@@ -245,7 +245,7 @@ def test_template_answer_api_format():
         assert "not a valid choice" in error["msg"]
 
     # fmt: off
-    too_many_answers =  {
+    too_many_answers = {
         "3b051efa-13a7-4cdb-a6bf-82a569fc9099": ["Yes", "No"],  # Required radio
         "22e2f30b-3cfb-44b1-83eb-dddef4ac6d9e": ["Yes", "No"],  # Optional radio
         "174bf92b-c1dd-49da-bf26-b47d1d409ddb": ["Option 1", "Option 1"],  # Required radio single choice
@@ -253,9 +253,9 @@ def test_template_answer_api_format():
     }
     # fmt: on
 
-    for id, value in too_many_answers.items():
+    for q_id, value in too_many_answers.items():
         with pytest.raises(InvalidTemplateAnswersError) as exc:
-            validate_question_answer(id)(value)
+            validate_question_answer(q_id)(value)
 
     errors = validate_template_answers(
         {**good_template_answers, **too_many_answers}, raise_exception=False
@@ -296,11 +296,11 @@ def test_template_answers_simple_format():
     # fmt: on
     validate_template_answers(good_template_answers)
 
-    for id, value in good_template_answers.items():
-        validate_question_answer(id)(value)
+    for q_id, value in good_template_answers.items():
+        validate_question_answer(q_id)(value)
 
     # fmt: off
-    bad_number_answers =  {
+    bad_number_answers = {
         "5c3c39d3-6180-45b8-841c-157e5af42507": "a1234",  # Required short whole number
         "7afa73a1-3315-42f7-afec-56f25eb3e33c": "a1234",  # Optional short whole number
         "5130bac2-c823-4d3c-bc5d-ab469602b16c": "a23.42",  # Required short number
@@ -308,9 +308,9 @@ def test_template_answers_simple_format():
     }
     # fmt: on
 
-    for id, value in bad_number_answers.items():
+    for q_id, value in bad_number_answers.items():
         with pytest.raises(InvalidTemplateAnswersError) as exc:
-            validate_question_answer(id)(value)
+            validate_question_answer(q_id)(value)
 
     with pytest.raises(InvalidTemplateAnswersError) as exc:
         validate_template_answers({**good_template_answers, **bad_number_answers})
@@ -329,9 +329,9 @@ def test_template_answers_simple_format():
     }
     # fmt: on
 
-    for id, value in missing_choice_answers.items():
+    for q_id, value in missing_choice_answers.items():
         with pytest.raises(InvalidTemplateAnswersError) as exc:
-            validate_question_answer(id)(value)
+            validate_question_answer(q_id)(value)
 
     errors = validate_template_answers(
         {**good_template_answers, **missing_choice_answers}, raise_exception=False
@@ -349,9 +349,9 @@ def test_template_answers_simple_format():
     }
     # fmt: on
 
-    for id, value in too_many_answers.items():
+    for q_id, value in too_many_answers.items():
         with pytest.raises(InvalidTemplateAnswersError) as exc:
-            validate_question_answer(id)(value)
+            validate_question_answer(q_id)(value)
 
     errors = validate_template_answers(
         {**good_template_answers, **too_many_answers}, raise_exception=False

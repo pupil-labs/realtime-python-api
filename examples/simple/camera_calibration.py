@@ -1,3 +1,9 @@
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#     "pupil-labs-realtime-api>=1.3.3",
+# ]
+# ///
 from pupil_labs.realtime_api.simple import discover_one_device
 
 # Look for devices. Returns as soon as it has found the first device.

@@ -10,13 +10,16 @@ import numpy as np
 cv2.imshow("cv/av bug", np.zeros(1))
 cv2.destroyAllWindows()
 
-from pupil_labs.realtime_api import (  # noqa
+from pupil_labs.realtime_api import (  # noqa: E402
     Device,
     Network,
     receive_eye_events_data,
     receive_video_frames,
 )
-from pupil_labs.realtime_api.streaming import BlinkEventData, FixationEventData  # noqa
+from pupil_labs.realtime_api.streaming import (  # noqa: E402
+    BlinkEventData,
+    FixationEventData,
+)
 
 
 async def main():
@@ -82,8 +85,8 @@ async def match_and_draw(queue_video, queue_eye_events):
     blink_counter = 0
 
     while True:
-        video_datetime, video_frame = await get_most_recent_item(queue_video)
-        bgr_buffer = video_frame.to_ndarray(format="bgr24")
+        _video_datetime, video_frame = await get_most_recent_item(queue_video)
+        bgr_buffer = video_frame.bgr
 
         while not queue_eye_events.empty():
             _, eye_event = await queue_eye_events.get()
@@ -91,12 +94,10 @@ async def match_and_draw(queue_video, queue_eye_events):
                 if eye_event.event_type == 0:
                     continue
 
-                fixation_history.append(
-                    {
-                        "id": fixation_counter,
-                        "fixation": eye_event,
-                    }
-                )
+                fixation_history.append({
+                    "id": fixation_counter,
+                    "fixation": eye_event,
+                })
                 fixation_counter += 1
 
             elif isinstance(eye_event, BlinkEventData):
@@ -113,7 +114,7 @@ async def match_and_draw(queue_video, queue_eye_events):
             overlay = bgr_buffer.copy()
             cv2.circle(
                 overlay,
-                (int(fixation.mean_gaze_x), int(fixation.mean_gaze_y)),
+                (int(fixation.mean_gaze.x), int(fixation.mean_gaze.y)),
                 radius=40 + int(duration * 10),
                 color=(255, 32, 32),
                 thickness=5,
@@ -121,7 +122,7 @@ async def match_and_draw(queue_video, queue_eye_events):
             cv2.putText(
                 overlay,
                 str(fixation_id),
-                (int(fixation.mean_gaze_x) - 10, int(fixation.mean_gaze_y) + 5),
+                (int(fixation.mean_gaze.x) - 10, int(fixation.mean_gaze.y) + 5),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 1,
                 (255, 255, 255),

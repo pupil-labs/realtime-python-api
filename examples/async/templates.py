@@ -59,7 +59,7 @@ async def main():  # noqa: C901
         # Fetch current template definition
         template = await device.get_template()
         # Fetch data filled on the template
-        data = await device.get_template_data(format="simple")
+        data = await device.get_template_data(data_format="simple")
 
         print(f"[{template.name}] Data pre-filled:")
         print(LINE)
@@ -75,8 +75,8 @@ async def main():  # noqa: C901
                     print(LINE)
                     print(
                         f"{'* ' if item.required else ''}"
-                        + f"ID: {item.id} - Title: {item.title} "
-                        + f"- Input Type: {item.input_type}"
+                        f"ID: {item.id} - Title: {item.title} "
+                        f"- Input Type: {item.input_type}"
                     )
                     current_value = data.get(str(item.id))
                     while True:
@@ -111,7 +111,7 @@ async def main():  # noqa: C901
             await device.post_template_data(questionnaire)
 
         # Fetch new data filled on the template
-        data = await device.get_template_data(format="api")
+        data = await device.get_template_data(data_format="api")
 
         # Iterate to check filled data
         print(f"[{template.name}] Data post:")

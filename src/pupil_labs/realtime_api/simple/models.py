@@ -1,26 +1,49 @@
 import datetime
-import typing as T
+from typing import NamedTuple, cast
 
-from ..streaming.gaze import DualMonocularGazeData, EyestateGazeData, GazeData
+from ..streaming.gaze import (
+    DualMonocularGazeData,
+    EyestateEyelidGazeData,
+    EyestateGazeData,
+    GazeData,
+)
 from ..streaming.video import BGRBuffer, VideoFrame
 
-GazeDataType = T.Union[GazeData, DualMonocularGazeData, EyestateGazeData]
+GazeDataType = (
+    GazeData | DualMonocularGazeData | EyestateGazeData | EyestateEyelidGazeData
+)
+"""Type alias for any type of gaze data.
+
+This includes basic gaze data, dual monocular gaze data, and gaze data with
+eye state and eyelid information.
+"""
 
 
-class SimpleVideoFrame(T.NamedTuple):
+class SimpleVideoFrame(NamedTuple):
+    """A simplified video frame representation.
+
+    This class provides a simplified representation of a video frame with
+    BGR pixel data and timestamp information.
+
+    Attributes:
+        bgr_pixels (BGRBuffer): BGR pixel data as a NumPy array.
+        timestamp_unix_seconds (float): Timestamp in seconds since Unix epoch.
+
+    """
+
     bgr_pixels: BGRBuffer
     timestamp_unix_seconds: float
 
     @classmethod
     def from_video_frame(cls, vf: VideoFrame) -> "SimpleVideoFrame":
-        return cls(vf.bgr_buffer(), vf.timestamp_unix_seconds)
+        return cls(cast(BGRBuffer, vf.bgr), vf.time)
 
     @property
-    def datetime(self):
+    def datetime(self) -> datetime.datetime:
         return datetime.datetime.fromtimestamp(self.timestamp_unix_seconds)
 
     @property
-    def timestamp_unix_ns(self):
+    def timestamp_unix_ns(self) -> int:
         return int(self.timestamp_unix_seconds * 1e9)
 
 
@@ -28,16 +51,46 @@ class SimpleVideoFrame(T.NamedTuple):
 # two streams (scene video and gaze) to match. When I added support for streaming eyes
 # video, I thought about giving it a more descriptive name. But since this is an output
 # class of the public API, I decided against it to avoid breaking possible imports.
-class MatchedItem(T.NamedTuple):
+class MatchedItem(NamedTuple):
+    """A matched pair of scene video frame and gaze data.
+
+    This class represents a scene video frame and gaze data point that
+    occurred at approximately the same time.
+
+    Note:
+        The name MatchedItem is maintained for backward compatibility.
+        It represents a matched pair of scene video frame and gaze data.
+
+    Attributes:
+        frame (SimpleVideoFrame): Scene video frame.
+        gaze (GazeDataType): Corresponding gaze data.
+
+    """
+
     frame: SimpleVideoFrame
     gaze: GazeDataType
 
 
-class MatchedGazeEyesSceneItem(T.NamedTuple):
+class MatchedGazeEyesSceneItem(NamedTuple):
+    """A matched triplet of scene video frame, eye video frame, and gaze data.
+
+    This class represents scene and eye video frames along with gaze data
+    that occurred at approximately the same time.
+
+    Attributes:
+        scene (SimpleVideoFrame): Scene video frame.
+        eyes (SimpleVideoFrame): Eye camera video frame.
+        gaze (GazeDataType): Corresponding gaze data.
+
+    """
+
     scene: SimpleVideoFrame
     eyes: SimpleVideoFrame
     gaze: GazeDataType
 
 
 MATCHED_ITEM_LABEL = "matched_gaze_and_scene_video"
+"""Label for matched gaze and scene video data."""
+
 MATCHED_GAZE_EYES_LABEL = "matched_gaze_eyes_and_scene_video"
+"""Label for matched gaze, eye video, and scene video data."""

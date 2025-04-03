@@ -1,3 +1,10 @@
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#     "pupil-labs-realtime-api>=1.1.2",
+#     "opencv-python>=4.7.0",
+# ]
+# ///
 import cv2
 import numpy as np
 
@@ -5,7 +12,7 @@ import numpy as np
 cv2.imshow("cv/av bug", np.zeros(1))
 cv2.destroyAllWindows()
 
-from pupil_labs.realtime_api.simple import discover_one_device  # noqa
+from pupil_labs.realtime_api.simple import discover_one_device  # noqa: E402
 
 
 def main():

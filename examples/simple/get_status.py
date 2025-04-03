@@ -19,7 +19,12 @@ print(f"Battery state: {device.battery_state}")
 print(f"Free storage: {device.memory_num_free_bytes / 1024**3}GB")
 print(f"Storage level: {device.memory_state}")
 
-print(f"Connected glasses: SN {device.serial_number_glasses}")
-print(f"Connected scene camera: SN {device.serial_number_scene_cam}")
+if device.version_glasses == "1.0":  # Pupil Invisible
+    print(f"Connected glasses: SN {device.serial_number_glasses}")
+    print(f"Connected scene camera: SN {device.serial_number_scene_cam}")
+elif device.version_glasses == "2.0":  # Neon
+    print(f"Connected module: SN {device.module_serial}")
+else:
+    print("No glasses connected.")
 
 device.close()  # explicitly stop auto-update

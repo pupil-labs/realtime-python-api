@@ -8,7 +8,7 @@ import numpy as np
 cv2.imshow("cv/av bug", np.zeros(1))
 cv2.destroyAllWindows()
 
-from pupil_labs.realtime_api import Device, Network, receive_video_frames  # noqa
+from pupil_labs.realtime_api import Device, Network, receive_video_frames  # noqa: E402
 
 
 async def main():
@@ -29,7 +29,7 @@ async def main():
         async for frame in receive_video_frames(
             sensor_world.url, run_loop=restart_on_disconnect
         ):
-            bgr_buffer = frame.bgr_buffer()
+            bgr_buffer = frame.bgr
             draw_time(bgr_buffer, frame.datetime)
             cv2.imshow("Scene Camera - Press ESC to quit", bgr_buffer)
             if cv2.waitKey(1) & 0xFF == 27:
