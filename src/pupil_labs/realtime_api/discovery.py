@@ -2,7 +2,7 @@ import asyncio
 import logging
 import time
 import types
-import typing as T
+from collections.abc import AsyncIterator
 
 from zeroconf import ServiceStateChange
 from zeroconf.asyncio import AsyncServiceBrowser, AsyncServiceInfo, AsyncZeroconf
@@ -14,15 +14,15 @@ logger = logging.getLogger(__name__)
 
 class Network:
     def __init__(self) -> None:
-        self._devices = {}
-        self._new_devices = asyncio.Queue()
-        self._aiozeroconf = AsyncZeroconf()
-        self._aiobrowser = AsyncServiceBrowser(
+        self._devices: dict | None = {}
+        self._new_devices: asyncio.Queue[DiscoveredDeviceInfo] = asyncio.Queue()
+        self._aiozeroconf: AsyncZeroconf | None = AsyncZeroconf()
+        self._aiobrowser: AsyncServiceBrowser | None = AsyncServiceBrowser(
             self._aiozeroconf.zeroconf,
             "_http._tcp.local.",
             handlers=[self._handle_service_change],
         )
-        self._open = True
+        self._open: bool = True
 
     async def close(self) -> None:
         if self._open:
@@ -49,7 +49,11 @@ class Network:
             return None
 
     def _handle_service_change(
-        self, zeroconf, service_type: str, name: str, state_change: ServiceStateChange
+        self,
+        zeroconf: AsyncZeroconf,
+        service_type: str,
+        name: str,
+        state_change: ServiceStateChange,
     ) -> None:
         logger.debug(f"{state_change} {name}")
         if is_valid_service_name(name) and state_change in (
@@ -69,8 +73,8 @@ class Network:
             del self._devices[name]
 
     async def _request_info_and_put_new_device(
-        self, zeroconf, service_type, name, timeout_ms
-    ):
+        self, zeroconf: AsyncZeroconf, service_type: str, name: str, timeout_ms: int
+    ) -> None:
         info = AsyncServiceInfo(service_type, name)
         if await info.async_request(zeroconf, timeout_ms):
             device = DiscoveredDeviceInfo(
@@ -90,13 +94,13 @@ class Network:
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
         exc_tb: types.TracebackType | None,
-    ):
+    ) -> None:
         await self.close()
 
 
 async def discover_devices(
     timeout_seconds: float | None = None,
-) -> T.AsyncIterator[DiscoveredDeviceInfo]:
+) -> AsyncIterator[DiscoveredDeviceInfo]:
     """Use Bonjour to find devices in the local network that serve the Realtime API.
 
     :param timeout_seconds: Stop after ``timeout_seconds``. If ``None``, run discovery

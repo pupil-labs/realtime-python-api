@@ -5,13 +5,11 @@ import json
 import logging
 import types
 from collections.abc import AsyncIterator, Awaitable, Callable
-from typing import Any
+from typing import Any, cast
 
 import aiohttp
-import numpy as np
 import websockets
 
-import pupil_labs
 from pupil_labs.neon_recording.calib import Calibration
 
 from .base import DeviceBase
@@ -28,12 +26,10 @@ from .models import (
 
 logger = logging.getLogger(__name__)
 
-UpdateCallbackSync = Callable[["pupil_labs.realtime_api.models.Component"], None]
+UpdateCallbackSync = Callable[[Component], None]
 """Type annotation for synchronous update callbacks"""
 
-UpdateCallbackAsync = Callable[
-    ["pupil_labs.realtime_api.models.Component"], Awaitable[None]
-]
+UpdateCallbackAsync = Callable[[Component], Awaitable[None]]
 """Type annotation for asynchronous update callbacks"""
 
 UpdateCallback = UpdateCallbackSync | UpdateCallbackAsync
@@ -45,10 +41,12 @@ class DeviceError(Exception):
 
 
 class Device(DeviceBase):
-    def __init__(self, *args, **kwargs) -> None:
+    session: aiohttp.ClientSession | None
+    template_definition: Template | None = None
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self._create_client_session()
-        self.template_definition: Template | None = None
 
     async def get_status(self) -> Status:
         """:raises pupil_labs.realtime_api.device.DeviceError: if the request fails"""
@@ -98,9 +96,9 @@ class Device(DeviceBase):
             logger.debug(f"[{self}.start_recording] Received response: {confirmation}")
             if response.status != 200:
                 raise DeviceError(response.status, confirmation["message"])
-            return confirmation["result"]["id"]
+            return cast(str, confirmation["result"]["id"])
 
-    async def recording_stop_and_save(self):
+    async def recording_stop_and_save(self) -> None:
         """:raises pupil_labs.realtime_api.device.DeviceError:
 
         if the recording could not be started
@@ -116,7 +114,7 @@ class Device(DeviceBase):
             if response.status != 200:
                 raise DeviceError(response.status, confirmation["message"])
 
-    async def recording_cancel(self):
+    async def recording_cancel(self) -> None:
         """:raises pupil_labs.realtime_api.device.DeviceError:
 
         if the recording could not be started
@@ -165,7 +163,9 @@ class Device(DeviceBase):
             self.template_definition = Template(**result)
             return self.template_definition
 
-    async def get_template_data(self, template_format: TemplateDataFormat = "simple"):
+    async def get_template_data(
+        self, template_format: TemplateDataFormat = "simple"
+    ) -> Any:
         """Gets the template data entered on device
 
         :param str template_format: "simple" | "api"
@@ -197,7 +197,7 @@ class Device(DeviceBase):
         self,
         template_answers: dict[str, list[str]],
         template_format: TemplateDataFormat = "simple",
-    ) -> None:
+    ) -> Any:
         """Sets the data for the currently selected template
 
         :param str template_format: "simple" | "api"
@@ -244,7 +244,7 @@ class Device(DeviceBase):
             logger.debug(f"[{self}.get_template_data] Send data's template: {result}")
             return result
 
-    async def close(self):
+    async def close(self) -> None:
         await self.session.close()
         self.session = None
 
@@ -261,17 +261,17 @@ class Device(DeviceBase):
     ) -> None:
         await self.close()
 
-    def _create_client_session(self):
+    def _create_client_session(self) -> None:
         self.session = aiohttp.ClientSession()
 
-    async def get_calibration(self) -> np.ndarray:
+    async def get_calibration(self) -> Calibration:
         """:raises pupil_labs.realtime_api.device.DeviceError: if the request fails"""
         async with self.session.get(self.api_url(APIPath.CALIBRATION)) as response:
             if response.status != 200:
                 raise DeviceError(response.status, "Failed to fetch calibration")
 
             raw_data = await response.read()
-            return Calibration.from_buffer(raw_data)
+            return cast(Calibration, Calibration.from_buffer(raw_data))
 
 
 class StatusUpdateNotifier:
@@ -286,7 +286,7 @@ class StatusUpdateNotifier:
             return
         self._auto_update_task = asyncio.create_task(self._auto_update())
 
-    async def receive_updates_stop(self):
+    async def receive_updates_stop(self) -> None:
         if self._auto_update_task is None:
             logger.debug("Auto-update is not running!")
             return
@@ -296,7 +296,7 @@ class StatusUpdateNotifier:
             await self._auto_update_task
         self._auto_update_task = None
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> None:
         await self.receive_updates_start()
 
     async def __aexit__(
@@ -304,7 +304,7 @@ class StatusUpdateNotifier:
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
         exc_tb: types.TracebackType | None,
-    ):
+    ) -> None:
         await self.receive_updates_stop()
 
     async def _auto_update(self) -> None:

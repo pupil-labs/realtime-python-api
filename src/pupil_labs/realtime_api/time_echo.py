@@ -110,7 +110,7 @@ class TimeEchoEstimates(NamedTuple):
     time_offset_ms: Estimate
 
 
-def time_ms():
+def time_ms() -> int:
     """Return milliseconds since `Unix epoch`_ (January 1, 1970, 00:00:00 UTC)"""
     return time_ns() // 1_000_000
 
@@ -197,4 +197,4 @@ class TimeOffsetEstimator:
             )
         server_ts_in_client_time_ms = round((before_ms + after_ms) / 2)
         offset_ms = server_ts_in_client_time_ms - server_ms
-        return (after_ms - before_ms, offset_ms)
+        return TimeEcho(after_ms - before_ms, offset_ms)

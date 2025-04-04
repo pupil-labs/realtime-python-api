@@ -2,14 +2,20 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import typing as T
 import weakref
 from collections import deque
 from collections.abc import Hashable, Iterable, Mapping
 from types import MappingProxyType
+from typing import Generic, TypeVar
 
 from ..models import Sensor
-from ..streaming import RTSPGazeStreamer, RTSPVideoFrameStreamer
+from ..streaming import (
+    RTSPEyeEventStreamer,
+    RTSPGazeStreamer,
+    RTSPImuStreamer,
+    RTSPRawStreamer,
+    RTSPVideoFrameStreamer,
+)
 from .models import (
     MATCHED_GAZE_EYES_LABEL,
     MATCHED_ITEM_LABEL,
@@ -25,10 +31,17 @@ logger_receive_data = logging.getLogger(logger_name + ".Device.receive_data")
 logger_receive_data.setLevel(logging.INFO)
 
 
-EventKey = T.TypeVar("EventKey", bound=Hashable, covariant=True)
+EventKey = TypeVar("EventKey", bound=Hashable, covariant=True)
+StreamerClassType = type[
+    RTSPVideoFrameStreamer
+    | RTSPGazeStreamer
+    | RTSPImuStreamer
+    | RTSPEyeEventStreamer
+    | RTSPRawStreamer
+]
 
 
-class _AsyncEventManager(T.Generic[EventKey]):
+class _AsyncEventManager(Generic[EventKey]):
     def __init__(
         self,
         names_to_register: Iterable[EventKey],
@@ -72,13 +85,13 @@ class _StreamManager:
     def __init__(
         self,
         device_weakref: weakref.ReferenceType,
-        streaming_cls: type[RTSPVideoFrameStreamer] | type[RTSPGazeStreamer],
+        streaming_cls: StreamerClassType,
         should_be_streaming_by_default: bool = False,
     ) -> None:
         self._device = device_weakref
         self._streaming_cls = streaming_cls
-        self._streaming_task = None
-        self._should_be_streaming = should_be_streaming_by_default
+        self._streaming_task: asyncio.Task | None = None
+        self._should_be_streaming: bool = should_be_streaming_by_default
         self._recent_sensor: Sensor | None = None
 
     @property
@@ -86,7 +99,7 @@ class _StreamManager:
         return self._should_be_streaming
 
     @should_be_streaming.setter
-    def should_be_streaming(self, should_stream: bool):
+    def should_be_streaming(self, should_stream: bool) -> None:
         if self._should_be_streaming == should_stream:
             return  # state is already set to desired value
         self._should_be_streaming = should_stream
@@ -95,19 +108,19 @@ class _StreamManager:
         elif not should_stream:
             self._stop_streaming_task_if_running()
 
-    async def handle_sensor_update(self, sensor: Sensor):
+    async def handle_sensor_update(self, sensor: Sensor) -> None:
         self._stop_streaming_task_if_running()
         self._start_streaming_task_if_intended(sensor)
         self._recent_sensor = sensor
 
-    def _start_streaming_task_if_intended(self, sensor):
+    def _start_streaming_task_if_intended(self, sensor: Sensor) -> None:
         if sensor.connected and self.should_be_streaming:
             logger_receive_data.info(f"Starting stream to {sensor}")
             self._streaming_task = asyncio.create_task(
                 self.append_data_from_sensor_to_queue(sensor)
             )
 
-    def _stop_streaming_task_if_running(self):
+    def _stop_streaming_task_if_running(self) -> None:
         if self._streaming_task is not None:
             logger_receive_data.info(
                 f"Cancelling prior streaming connection to {self._recent_sensor.sensor}"
@@ -115,7 +128,7 @@ class _StreamManager:
             self._streaming_task.cancel()
             self._streaming_task = None
 
-    async def append_data_from_sensor_to_queue(self, sensor: Sensor):  # noqa: C901 for now
+    async def append_data_from_sensor_to_queue(self, sensor: Sensor) -> None:  # noqa: C901 for now
         self._device()._cached_gaze_for_matching.clear()
         self._device()._cached_eyes_for_matching.clear()
         async with self._streaming_cls(
@@ -225,7 +238,9 @@ class _StreamManager:
                 del device  # remove Device reference
 
     @staticmethod
-    def _get_closest_item(cache: deque[GazeDataType], timestamp) -> GazeDataType:
+    def _get_closest_item(
+        cache: deque[tuple[float, GazeDataType]], timestamp: float
+    ) -> GazeDataType:
         item_ts, item = cache.popleft()
         # assumes monotonically increasing timestamps
         if item_ts > timestamp:

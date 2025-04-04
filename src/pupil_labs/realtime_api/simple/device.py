@@ -3,7 +3,9 @@ import collections
 import enum
 import threading
 import weakref
-from typing import Literal
+from typing import Any, Literal, cast
+
+from pupil_labs.neon_recording.calib import Calibration
 
 from ..base import DeviceBase
 from ..device import Device as _DeviceAsync
@@ -21,7 +23,7 @@ from ..streaming import (
     BlinkEventData,
     FixationEventData,
     FixationOnsetEventData,
-    ImuPacket,
+    IMUData,
     RTSPEyeEventStreamer,
     RTSPGazeStreamer,
     RTSPImuStreamer,
@@ -36,7 +38,15 @@ from .models import (
     MatchedGazeEyesSceneItem,
     MatchedItem,
     SimpleVideoFrame,
-    VideoFrame,
+)
+
+ReceivedItemType = (
+    SimpleVideoFrame
+    | GazeDataType
+    | IMUData
+    | MatchedItem
+    | MatchedGazeEyesSceneItem
+    | None
 )
 
 
@@ -147,7 +157,7 @@ class Device(DeviceBase):
     def eye_events_sensor(self) -> Sensor | None:
         return self._status.direct_eye_events_sensor()
 
-    def get_calibration(self):
+    def get_calibration(self) -> Calibration:
         async def _get_calibration():
             async with _DeviceAsync.convert_from(self) as control:
                 return await control.get_calibration()
@@ -168,13 +178,13 @@ class Device(DeviceBase):
             - Setup bottom sheets not completed
         """
 
-        async def _start_recording():
+        async def _start_recording() -> str:
             async with _DeviceAsync.convert_from(self) as control:
                 return await control.recording_start()
 
         return asyncio.run(_start_recording())
 
-    def recording_stop_and_save(self):
+    def recording_stop_and_save(self) -> None:
         """Wraps
 
         :py:meth:`pupil_labs.realtime_api.device.Device.recording_stop_and_save`
@@ -186,13 +196,13 @@ class Device(DeviceBase):
             - template has required fields
         """
 
-        async def _stop_and_save_recording():
+        async def _stop_and_save_recording() -> None:
             async with _DeviceAsync.convert_from(self) as control:
                 return await control.recording_stop_and_save()
 
         return asyncio.run(_stop_and_save_recording())
 
-    def recording_cancel(self):
+    def recording_cancel(self) -> None:
         """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.recording_cancel`
 
         :raises pupil_labs.realtime_api.device.DeviceError:
@@ -201,7 +211,7 @@ class Device(DeviceBase):
             - Recording not running
         """
 
-        async def _cancel_recording():
+        async def _cancel_recording() -> None:
             async with _DeviceAsync.convert_from(self) as control:
                 return await control.recording_cancel()
 
@@ -216,7 +226,7 @@ class Device(DeviceBase):
             if sending the event fails
         """
 
-        async def _send_event():
+        async def _send_event() -> Event:
             async with _DeviceAsync.convert_from(self) as control:
                 return await control.send_event(event_name, event_timestamp_unix_ns)
 
@@ -231,7 +241,7 @@ class Device(DeviceBase):
             if the template can't be fetched.
         """
 
-        async def _get_template():
+        async def _get_template() -> Template:
             async with _DeviceAsync.convert_from(self) as control:
                 return await control.get_template()
 
@@ -250,15 +260,17 @@ class Device(DeviceBase):
                 if the template's data could not be fetched
         """
 
-        async def _get_template_data():
+        async def _get_template_data() -> Any:
             async with _DeviceAsync.convert_from(self) as control:
                 return await control.get_template_data(template_format=template_format)
 
         return asyncio.run(_get_template_data())
 
     def post_template_data(
-        self, template_data, template_format: TemplateDataFormat = "simple"
-    ):
+        self,
+        template_data: dict[str, list[str]],
+        template_format: TemplateDataFormat = "simple",
+    ) -> Any:
         """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.post_template_data`
 
         Sets the data for the currently selected template
@@ -272,7 +284,7 @@ class Device(DeviceBase):
             ValueError: if invalid data type.
         """
 
-        async def _post_template_data():
+        async def _post_template_data() -> Any:
             async with _DeviceAsync.convert_from(self) as control:
                 return await control.post_template_data(
                     template_data, template_format=template_format
@@ -283,41 +295,55 @@ class Device(DeviceBase):
     def receive_scene_video_frame(
         self, timeout_seconds: float | None = None
     ) -> SimpleVideoFrame | None:
-        return self._receive_item(Sensor.Name.WORLD.value, timeout_seconds)
+        return cast(
+            SimpleVideoFrame,
+            self._receive_item(Sensor.Name.WORLD.value, timeout_seconds),
+        )
 
     def receive_gaze_datum(
         self, timeout_seconds: float | None = None
     ) -> GazeDataType | None:
-        return self._receive_item(Sensor.Name.GAZE.value, timeout_seconds)
+        return cast(
+            GazeDataType, self._receive_item(Sensor.Name.GAZE.value, timeout_seconds)
+        )
 
     def receive_eyes_video_frame(
         self, timeout_seconds: float | None = None
     ) -> SimpleVideoFrame | None:
-        return self._receive_item(Sensor.Name.EYES.value, timeout_seconds)
+        return cast(
+            SimpleVideoFrame,
+            self._receive_item(Sensor.Name.EYES.value, timeout_seconds),
+        )
 
-    def receive_imu_datum(
-        self, timeout_seconds: float | None = None
-    ) -> ImuPacket | None:
-        return self._receive_item(Sensor.Name.IMU.value, timeout_seconds)
+    def receive_imu_datum(self, timeout_seconds: float | None = None) -> IMUData | None:
+        return cast(IMUData, self._receive_item(Sensor.Name.IMU.value, timeout_seconds))
 
     def receive_eye_events(
         self, timeout_seconds: float | None = None
     ) -> FixationEventData | BlinkEventData | FixationOnsetEventData | None:
-        return self._receive_item(Sensor.Name.EYE_EVENTS.value, timeout_seconds)
+        return cast(
+            FixationEventData | BlinkEventData | FixationOnsetEventData,
+            self._receive_item(Sensor.Name.EYE_EVENTS.value, timeout_seconds),
+        )
 
     def receive_matched_scene_video_frame_and_gaze(
         self, timeout_seconds: float | None = None
     ) -> MatchedItem | None:
-        return self._receive_item(MATCHED_ITEM_LABEL, timeout_seconds)
+        return cast(
+            MatchedItem, self._receive_item(MATCHED_ITEM_LABEL, timeout_seconds)
+        )
 
     def receive_matched_scene_and_eyes_video_frames_and_gaze(
         self, timeout_seconds: float | None = None
     ) -> MatchedGazeEyesSceneItem | None:
-        return self._receive_item(MATCHED_GAZE_EYES_LABEL, timeout_seconds)
+        return cast(
+            MatchedGazeEyesSceneItem,
+            self._receive_item(MATCHED_GAZE_EYES_LABEL, timeout_seconds),
+        )
 
     def _receive_item(
         self, sensor: str, timeout_seconds: float | None = None
-    ) -> VideoFrame | GazeDataType | None:
+    ) -> ReceivedItemType:
         if sensor == MATCHED_ITEM_LABEL:
             self.start_stream_if_needed(Sensor.Name.GAZE.value)
             self.start_stream_if_needed(Sensor.Name.WORLD.value)
@@ -340,12 +366,12 @@ class Device(DeviceBase):
                 return self._most_recent_item[sensor].popleft()
             return None
 
-    def start_stream_if_needed(self, sensor: str):
+    def start_stream_if_needed(self, sensor: str) -> None:
         if not self._is_streaming_flags[sensor].is_set():
             logger.debug("receive_* called without being streaming")
             self.streaming_start(sensor)
 
-    def streaming_start(self, stream_name: str):
+    def streaming_start(self, stream_name: str) -> None:
         if stream_name is None:
             for event in (
                 self._EVENT.SHOULD_START_GAZE,
@@ -360,7 +386,7 @@ class Device(DeviceBase):
         event = self.stream_name_start_event_map[stream_name]
         self._streaming_trigger_action(event)
 
-    def streaming_stop(self, stream_name: str | None = None):
+    def streaming_stop(self, stream_name: str | None = None) -> None:
         if stream_name is None:
             for event in (
                 self._EVENT.SHOULD_STOP_GAZE,
@@ -375,7 +401,7 @@ class Device(DeviceBase):
         event = self.stream_name_stop_event_map[stream_name]
         self._streaming_trigger_action(event)
 
-    def _streaming_trigger_action(self, action):
+    def _streaming_trigger_action(self, action) -> None:
         if self._event_manager and self._background_loop:
             logger.debug(f"Sending {action.name} trigger")
             self._event_manager.trigger_threadsafe(action)
@@ -417,7 +443,7 @@ class Device(DeviceBase):
             self._event_manager.trigger_threadsafe(self._EVENT.SHOULD_WORKER_CLOSE)
             self._auto_update_thread.join()
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.close()
 
     class _EVENT(enum.Enum):
@@ -433,7 +459,7 @@ class Device(DeviceBase):
         SHOULD_STOP_IMU = "should stop imu"
         SHOULD_STOP_EYE_EVENTS = "should stop eye events"
 
-    def _start_background_worker(self, start_streaming_by_default):
+    def _start_background_worker(self, start_streaming_by_default: bool) -> None:
         self._event_manager = None
         self._background_loop = None
 
@@ -486,7 +512,7 @@ class Device(DeviceBase):
         :raises pupil_labs.realtime_api.device.DeviceError: if the request fails
         """
 
-        async def _get_status():
+        async def _get_status() -> Status:
             async with _DeviceAsync.convert_from(self) as control:
                 return await control.get_status()
 
@@ -527,7 +553,7 @@ class Device(DeviceBase):
             ),
         }
 
-        async def _process_status_changes(changed: Component):
+        async def _process_status_changes(changed: Component) -> None:
             if (
                 isinstance(changed, Sensor)
                 and changed.conn_type == Sensor.Connection.DIRECT.value
@@ -545,7 +571,7 @@ class Device(DeviceBase):
                 if error not in device_weakref()._errors:
                     device_weakref()._errors.append(error)
 
-        async def _auto_update_until_closed():
+        async def _auto_update_until_closed() -> None:
             async with _DeviceAsync.convert_from(device_weakref()) as device:
                 event_manager = _AsyncEventManager(Device._EVENT)
                 device_weakref()._event_manager = event_manager
@@ -586,12 +612,12 @@ class Device(DeviceBase):
                 await notifier.receive_updates_stop()
                 device_weakref()._event_manager = None
 
-        def start_stream(stream_name):
+        def start_stream(stream_name) -> None:
             is_streaming_flags[stream_name].set()
             stream_managers[stream_name].should_be_streaming = True
             logger.debug(f"Streaming started {stream_name}")
 
-        def stop_stream(stream_name):
+        def stop_stream(stream_name) -> None:
             stream_managers[stream_name].should_be_streaming = False
             is_streaming_flags[stream_name].clear()
             logger.debug(f"Streaming stopped {stream_name}")

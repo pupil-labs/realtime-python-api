@@ -1,8 +1,8 @@
 import struct
-import typing as T
+from collections.abc import ByteString
 
 
-def extract_payload_from_nal_unit(unit: T.ByteString) -> T.ByteString:
+def extract_payload_from_nal_unit(unit: ByteString) -> ByteString:
     """- prepend NAL unit start code to payload if necessary
 
     - handle fragmented units (of type FU-A)

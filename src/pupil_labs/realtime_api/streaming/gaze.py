@@ -1,19 +1,20 @@
 import datetime
 import logging
 import struct
-import typing as T
+from collections.abc import AsyncIterator
+from typing import Any, NamedTuple
 
 from .base import RTSPData, RTSPRawStreamer
 
 logger = logging.getLogger(__name__)
 
 
-class Point(T.NamedTuple):
+class Point(NamedTuple):
     x: float
     y: float
 
 
-class GazeData(T.NamedTuple):
+class GazeData(NamedTuple):
     x: float
     y: float
     worn: bool
@@ -25,15 +26,15 @@ class GazeData(T.NamedTuple):
         return cls(x, y, worn == 255, data.timestamp_unix_seconds)
 
     @property
-    def datetime(self):
+    def datetime(self) -> datetime.datetime:
         return datetime.datetime.fromtimestamp(self.timestamp_unix_seconds)
 
     @property
-    def timestamp_unix_ns(self):
+    def timestamp_unix_ns(self) -> int:
         return int(self.timestamp_unix_seconds * 1e9)
 
 
-class DualMonocularGazeData(T.NamedTuple):
+class DualMonocularGazeData(NamedTuple):
     """EXPERIMENTAL CLASS"""
 
     left: Point
@@ -49,15 +50,15 @@ class DualMonocularGazeData(T.NamedTuple):
         )
 
     @property
-    def datetime(self):
+    def datetime(self) -> datetime.datetime:
         return datetime.datetime.fromtimestamp(self.timestamp_unix_seconds)
 
     @property
-    def timestamp_unix_ns(self):
+    def timestamp_unix_ns(self) -> int:
         return int(self.timestamp_unix_seconds * 1e9)
 
 
-class EyestateGazeData(T.NamedTuple):
+class EyestateGazeData(NamedTuple):
     x: float
     y: float
     worn: bool
@@ -120,15 +121,15 @@ class EyestateGazeData(T.NamedTuple):
         )
 
     @property
-    def datetime(self):
+    def datetime(self) -> datetime.datetime:
         return datetime.datetime.fromtimestamp(self.timestamp_unix_seconds)
 
     @property
-    def timestamp_unix_ns(self):
+    def timestamp_unix_ns(self) -> int:
         return int(self.timestamp_unix_seconds * 1e9)
 
 
-class EyestateEyelidGazeData(T.NamedTuple):
+class EyestateEyelidGazeData(NamedTuple):
     x: float
     y: float
     worn: bool
@@ -209,17 +210,19 @@ class EyestateEyelidGazeData(T.NamedTuple):
         )
 
     @property
-    def datetime(self):
+    def datetime(self) -> datetime.datetime:
         return datetime.datetime.fromtimestamp(self.timestamp_unix_seconds)
 
     @property
-    def timestamp_unix_ns(self):
+    def timestamp_unix_ns(self) -> int:
         return int(self.timestamp_unix_seconds * 1e9)
 
 
 async def receive_gaze_data(
-    url, *args, **kwargs
-) -> T.AsyncIterator[GazeData | DualMonocularGazeData | EyestateGazeData]:
+    url: str, *args: Any, **kwargs: Any
+) -> AsyncIterator[
+    GazeData | DualMonocularGazeData | EyestateGazeData | EyestateEyelidGazeData
+]:
     async with RTSPGazeStreamer(url, *args, **kwargs) as streamer:
         async for datum in streamer.receive():
             yield datum
@@ -228,7 +231,9 @@ async def receive_gaze_data(
 class RTSPGazeStreamer(RTSPRawStreamer):
     async def receive(
         self,
-    ) -> T.AsyncIterator[GazeData | DualMonocularGazeData | EyestateGazeData]:
+    ) -> AsyncIterator[
+        GazeData | DualMonocularGazeData | EyestateGazeData | EyestateEyelidGazeData
+    ]:
         data_class_by_raw_len = {
             9: GazeData,
             17: DualMonocularGazeData,

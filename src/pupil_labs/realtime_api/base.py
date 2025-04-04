@@ -1,14 +1,15 @@
 import abc
 import logging
-import typing as T
+from typing import TypeVar
 
 from .models import APIPath, DiscoveredDeviceInfo
 
-DeviceType = T.TypeVar("DeviceType", bound="DeviceBase")
+DeviceType = TypeVar("DeviceType", bound="DeviceBase")
 """
 Type annotation for concrete sub-classes of :py:class:`DeviceBase
 <pupil_labs.realtime_api.base.DeviceBase>`.
 """
+T = TypeVar("T", bound="DeviceBase")
 
 
 class DeviceBase(abc.ABC):  # noqa: B024
@@ -57,7 +58,7 @@ class DeviceBase(abc.ABC):  # noqa: B024
         )
 
     @classmethod
-    def convert_from(cls: type[DeviceType], other: DeviceType) -> DeviceType:
+    def convert_from(cls: type[DeviceType], other: T) -> DeviceType:
         return cls(
             other.address,
             other.port,

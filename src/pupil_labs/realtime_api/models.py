@@ -1,6 +1,7 @@
 import enum
 import json
 import logging
+from collections.abc import Iterator
 from dataclasses import asdict, field
 from dataclasses import dataclass as dataclass_python
 from datetime import datetime
@@ -21,6 +22,8 @@ from pydantic import (
     create_model,
 )
 from pydantic.dataclasses import dataclass as dataclass_pydantic
+from pydantic.fields import FieldInfo
+from pydantic_core import ErrorDetails
 
 logger = logging.getLogger(__name__)
 
@@ -176,7 +179,9 @@ _model_class_map: dict[str, type[Component]] = {
 TemplateDataFormat = Literal["api", "simple"]
 
 
-def _init_cls_with_annotated_fields_only(cls, d: dict[str, Any]):
+def _init_cls_with_annotated_fields_only(
+    cls: type[Component], d: dict[str, Any]
+) -> Component:
     return cls(**{attr: d.get(attr) for attr in cls.__annotations__})
 
 
@@ -257,7 +262,9 @@ class Status:
                     self.sensors[idx] = component
                     break
 
-    def matching_sensors(self, name: Sensor.Name, connection: Sensor.Connection):
+    def matching_sensors(
+        self, name: Sensor.Name, connection: Sensor.Connection
+    ) -> Iterator[Sensor]:
         for sensor in self.sensors:
             if name is not Sensor.Name.ANY and sensor.sensor != name.value:
                 continue
@@ -330,8 +337,8 @@ class TemplateItem:
         self,
         answer: Any,
         template_format: TemplateDataFormat = "simple",
-        raise_exception=True,
-    ):
+        raise_exception: bool = True,
+    ) -> list[ErrorDetails]:
         answers = {
             str(self.id): self._pydantic_validator(template_format=template_format)
         }
@@ -352,7 +359,9 @@ class TemplateItem:
             raise InvalidTemplateAnswersError(self, answers, errors)
         return errors
 
-    def _pydantic_validator(self, template_format: TemplateDataFormat):
+    def _pydantic_validator(
+        self, template_format: TemplateDataFormat
+    ) -> tuple[type, FieldInfo] | None:
         if self.widget_type in ("SECTION_HEADER", "PAGE_BREAK"):
             return None
         if self.widget_type not in (
@@ -371,14 +380,14 @@ class TemplateItem:
             raise ValueError(f"unknown format, must be one of: {TemplateDataFormat}")
 
     @property
-    def _value_type(self):
+    def _value_type(self) -> type:
         if self.input_type == "integer":
             return int
         if self.input_type == "float":
             return float
         return str
 
-    def _simple_model_validator(self):
+    def _simple_model_validator(self) -> tuple[type, FieldInfo]:
         field = Field(title=self.title, description=self.help_text)
         answer_input_type = self._value_type
         if self.widget_type in {"RADIO_LIST", "CHECKBOX_LIST"}:
@@ -406,7 +415,7 @@ class TemplateItem:
 
         return (answer_input_type, field)
 
-    def _api_model_validator(self):
+    def _api_model_validator(self) -> tuple[type, FieldInfo]:
         field = Field(title=self.title, description=self.help_text)
         answer_input_entry_type = self._value_type
 
@@ -453,7 +462,9 @@ class Template:
     published_at: datetime | None = None
     archived_at: datetime | None = None
 
-    def convert_from_simple_to_api_format(self, data: dict[str, Any]):
+    def convert_from_simple_to_api_format(
+        self, data: dict[str, Any]
+    ) -> dict[str, list[Any]]:
         api_format = {}
         for question_id, value in data.items():
             if value is None:
@@ -464,7 +475,9 @@ class Template:
             api_format[question_id] = value
         return api_format
 
-    def convert_from_api_to_simple_format(self, data: dict[str, list[str]]):
+    def convert_from_api_to_simple_format(
+        self, data: dict[str, list[str]]
+    ) -> dict[str, Any]:
         simple_format = {}
         for question_id, value in data.items():
             question = self.get_question_by_id(question_id)
@@ -482,13 +495,15 @@ class Template:
             simple_format[question_id] = value
         return simple_format
 
-    def get_question_by_id(self, question_id: str | UUID):
+    def get_question_by_id(self, question_id: str | UUID) -> TemplateItem | None:
         for item in self.items:
             if str(item.id) == str(question_id):
                 return item
         return None
 
-    def _create_answer_model(self, template_format: TemplateDataFormat):
+    def _create_answer_model(
+        self, template_format: TemplateDataFormat
+    ) -> type[BaseModel]:
         answer_types = {}
         for question in self.items:
             validator = question._pydantic_validator(template_format=template_format)
@@ -507,9 +522,9 @@ class Template:
     def validate_answers(
         self,
         answers: dict[str, list[str]],
-        raise_exception=True,
+        raise_exception: bool = True,
         template_format=TemplateDataFormat,
-    ):
+    ) -> list[ErrorDetails]:
         AnswerModel = self._create_answer_model(template_format=template_format)
         errors = []
         try:
@@ -528,33 +543,33 @@ class Template:
         return errors
 
 
-def not_empty(v: str):
+def not_empty(v: str) -> str:
     if not len(v) > 0:
         raise ValueError("value is required")
     return v
 
 
-def allow_empty(v: str):
+def allow_empty(v: str) -> str | None:
     if v == "":
         return None
     return v
 
 
-def option_in_allowed_values(value, allowed):
+def option_in_allowed_values(value: Any, allowed: list[Any]) -> Any:
     if value not in allowed:
         raise ValueError(f"{value!r} is not a valid choice from: {allowed}")
     return value
 
 
-def make_template_answer_model_base(template_: Template):
+def make_template_answer_model_base(template_: Template) -> type[BaseModel]:
     class TemplateAnswerModelBase(BaseModel):
         template: ClassVar[Template] = template_
         model_config = ConfigDict(extra="forbid")
 
-        def get(self, item_id):
+        def get(self, item_id: str) -> Any | None:
             return self.__dict__.get(item_id)
 
-        def __repr__(self):
+        def __repr__(self) -> str:
             args = []
             for item_id, _validator in self.model_fields.items():
                 question = self.template.get_question_by_id(item_id)
@@ -586,12 +601,12 @@ class InvalidTemplateAnswersError(Exception):
         template: Template | TemplateItem,
         answers: dict[str, list[str]],
         errors: list[dict],
-    ):
+    ) -> None:
         self.template = template
         self.errors = errors
         self.answers = answers
 
-    def __str__(self):
+    def __str__(self) -> str:
         try:
             error_lines = []
             for error in self.errors:

@@ -1,14 +1,15 @@
 import datetime
 import logging
 import struct
-import typing as T
+from collections.abc import AsyncIterator
+from typing import Any, NamedTuple
 
 from .base import RTSPData, RTSPRawStreamer
 
 logger = logging.getLogger(__name__)
 
 
-class BlinkEventData(T.NamedTuple):
+class BlinkEventData(NamedTuple):
     event_type: int
     start_time_ns: int
     end_time_ns: int
@@ -24,15 +25,15 @@ class BlinkEventData(T.NamedTuple):
         return cls(event_type, start_time_ns, end_time_ns, data.timestamp_unix_seconds)
 
     @property
-    def datetime(self):
+    def datetime(self) -> datetime.datetime:
         return datetime.datetime.fromtimestamp(self.rtp_ts_unix_seconds)
 
     @property
-    def timestamp_unix_ns(self):
+    def timestamp_unix_ns(self) -> int:
         return int(self.rtp_ts_unix_seconds * 1e9)
 
 
-class FixationEventData(T.NamedTuple):
+class FixationEventData(NamedTuple):
     event_type: int  # 0: Saccade, 1: Fixation
     start_time_ns: int
     end_time_ns: int
@@ -83,15 +84,15 @@ class FixationEventData(T.NamedTuple):
         )
 
     @property
-    def datetime(self):
+    def datetime(self) -> datetime.datetime:
         return datetime.datetime.fromtimestamp(self.rtp_ts_unix_seconds)
 
     @property
-    def timestamp_unix_ns(self):
+    def timestamp_unix_ns(self) -> int:
         return int(self.rtp_ts_unix_seconds * 1e9)
 
 
-class FixationOnsetEventData(T.NamedTuple):
+class FixationOnsetEventData(NamedTuple):
     event_type: int  # 0: Saccade, 1: Fixation
     start_time_ns: int
     rtp_ts_unix_seconds: float
@@ -105,17 +106,17 @@ class FixationOnsetEventData(T.NamedTuple):
         return cls(event_type, start_time_ns, data.timestamp_unix_seconds)
 
     @property
-    def datetime(self):
+    def datetime(self) -> datetime.datetime:
         return datetime.datetime.fromtimestamp(self.rtp_ts_unix_seconds)
 
     @property
-    def timestamp_unix_ns(self):
+    def timestamp_unix_ns(self) -> int:
         return int(self.rtp_ts_unix_seconds * 1e9)
 
 
 async def receive_eye_events_data(
-    url, *args, **kwargs
-) -> T.AsyncIterator[FixationEventData]:
+    url: str, *args: Any, **kwargs: Any
+) -> AsyncIterator[FixationEventData | FixationOnsetEventData | BlinkEventData]:
     async with RTSPEyeEventStreamer(url, *args, **kwargs) as streamer:
         async for datum in streamer.receive():
             yield datum
@@ -124,7 +125,7 @@ async def receive_eye_events_data(
 class RTSPEyeEventStreamer(RTSPRawStreamer):
     async def receive(
         self,
-    ) -> T.AsyncIterator[FixationEventData | BlinkEventData]:
+    ) -> AsyncIterator[FixationEventData | FixationOnsetEventData | BlinkEventData]:
         data_class_by_type = {
             0: FixationEventData,
             1: FixationEventData,

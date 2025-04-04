@@ -1,6 +1,7 @@
 import asyncio
 import logging
 
+from ..discovery import DiscoveredDeviceInfo
 from ..discovery import Network as AsyncNetwork
 from .device import Device
 
@@ -15,7 +16,7 @@ def discover_devices(search_duration_seconds: float) -> list[Device]:
         :py:func:`pupil_labs.realtime_api.discovery.discover_devices`
     """
 
-    async def _discover():
+    async def _discover() -> tuple[DiscoveredDeviceInfo, ...]:
         async with AsyncNetwork() as network:
             await asyncio.sleep(search_duration_seconds)
             return network.devices
@@ -33,7 +34,7 @@ def discover_one_device(
         :py:func:`pupil_labs.realtime_api.discovery.Network.wait_for_new_device`
     """
 
-    async def _discover():
+    async def _discover() -> DiscoveredDeviceInfo | None:
         async with AsyncNetwork() as network:
             return await network.wait_for_new_device(max_search_duration_seconds)
 

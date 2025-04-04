@@ -1,6 +1,7 @@
 import datetime
 import logging
-import typing as T
+from collections.abc import AsyncIterator
+from typing import Any, NamedTuple
 
 from pupil_labs.neon_recording.stream.imu.imu_pb2 import ImuPacket
 
@@ -9,36 +10,36 @@ from .base import RTSPRawStreamer
 logger = logging.getLogger(__name__)
 
 
-class Data3D(T.NamedTuple):
+class Data3D(NamedTuple):
     x: float
     y: float
     z: float
 
 
-class Quaternion(T.NamedTuple):
+class Quaternion(NamedTuple):
     x: float
     y: float
     z: float
     w: float
 
 
-class IMUData(T.NamedTuple):
+class IMUData(NamedTuple):
     gyro_data: Data3D
     accel_data: Data3D
     quaternion: Quaternion
     timestamp_unix_seconds: float
 
     @property
-    def datetime(self):
+    def datetime(self) -> datetime.datetime:
         return datetime.datetime.fromtimestamp(self.timestamp_unix_seconds)
 
     @property
-    def timestamp_unix_ns(self):
+    def timestamp_unix_ns(self) -> int:
         return int(self.timestamp_unix_seconds * 1e9)
 
     # For backward compatibility
     @property
-    def timestamp_unix_nanoseconds(self):
+    def timestamp_unix_nanoseconds(self) -> int:
         return self.timestamp_unix_ns
 
 
@@ -68,7 +69,9 @@ def IMUPacket_to_IMUData(imu_packet: ImuPacket) -> IMUData:
     return imu_data
 
 
-async def receive_imu_data(url, *args, **kwargs) -> T.AsyncIterator[IMUData]:
+async def receive_imu_data(
+    url: str, *args: Any, **kwargs: Any
+) -> AsyncIterator[IMUData]:
     async with RTSPImuStreamer(url, *args, **kwargs) as streamer:
         async for datum in streamer.receive():
             yield datum
@@ -77,7 +80,7 @@ async def receive_imu_data(url, *args, **kwargs) -> T.AsyncIterator[IMUData]:
 class RTSPImuStreamer(RTSPRawStreamer):
     async def receive(
         self,
-    ) -> T.AsyncIterator[IMUData]:
+    ) -> AsyncIterator[IMUData]:
         async for data in super().receive():
             try:
                 imu_packet = ImuPacket()

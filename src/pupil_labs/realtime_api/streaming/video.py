@@ -1,7 +1,8 @@
 import base64
 import datetime
 import logging
-import typing as T
+from collections.abc import AsyncIterator, ByteString
+from typing import Any, NamedTuple
 
 import av
 import numpy as np
@@ -16,37 +17,39 @@ BGRBuffer = npt.NDArray[np.uint8]
 """Type annotation for raw BGR image buffers of the scene camera"""
 
 
-class VideoFrame(T.NamedTuple):
+class VideoFrame(NamedTuple):
     av_frame: av.VideoFrame
     timestamp_unix_seconds: float
 
     @property
-    def datetime(self):
+    def datetime(self) -> datetime.datetime:
         return datetime.datetime.fromtimestamp(self.timestamp_unix_seconds)
 
     @property
-    def timestamp_unix_ns(self):
+    def timestamp_unix_ns(self) -> int:
         return int(self.timestamp_unix_seconds * 1e9)
 
-    def to_ndarray(self, *args, **kwargs):
+    def to_ndarray(self, *args: Any, **kwargs: Any) -> npt.NDArray:
         return self.av_frame.to_ndarray(*args, **kwargs)
 
     def bgr_buffer(self) -> BGRBuffer:
         return self.to_ndarray(format="bgr24")
 
 
-async def receive_video_frames(url, *args, **kwargs) -> T.AsyncIterator[VideoFrame]:
+async def receive_video_frames(
+    url: str, *args: Any, **kwargs: Any
+) -> AsyncIterator[VideoFrame]:
     async with RTSPVideoFrameStreamer(url, *args, **kwargs) as streamer:
         async for datum in streamer.receive():
             yield datum
 
 
 class RTSPVideoFrameStreamer(RTSPRawStreamer):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self._sprop_parameter_set_payloads = None
 
-    async def receive(self) -> T.AsyncIterator[VideoFrame]:
+    async def receive(self) -> AsyncIterator[VideoFrame]:
         codec = None
         frame_timestamp = None
 
@@ -77,7 +80,7 @@ class RTSPVideoFrameStreamer(RTSPRawStreamer):
             frame_timestamp = data.timestamp_unix_seconds
 
     @property
-    def sprop_parameter_set_payloads(self) -> list[T.ByteString] | None:
+    def sprop_parameter_set_payloads(self) -> list[ByteString] | None:
         """:raises pupil_labs.realtime_api.streaming.base.SDPDataNotAvailableError:"""
         if self._sprop_parameter_set_payloads is None:
             try:
