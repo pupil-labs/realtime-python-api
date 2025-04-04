@@ -219,7 +219,7 @@ class EyestateEyelidGazeData(T.NamedTuple):
 
 async def receive_gaze_data(
     url, *args, **kwargs
-) -> T.AsyncIterator[T.Union[GazeData, DualMonocularGazeData, EyestateGazeData]]:
+) -> T.AsyncIterator[GazeData | DualMonocularGazeData | EyestateGazeData]:
     async with RTSPGazeStreamer(url, *args, **kwargs) as streamer:
         async for datum in streamer.receive():
             yield datum
@@ -228,7 +228,7 @@ async def receive_gaze_data(
 class RTSPGazeStreamer(RTSPRawStreamer):
     async def receive(
         self,
-    ) -> T.AsyncIterator[T.Union[GazeData, DualMonocularGazeData, EyestateGazeData]]:
+    ) -> T.AsyncIterator[GazeData | DualMonocularGazeData | EyestateGazeData]:
         data_class_by_raw_len = {
             9: GazeData,
             17: DualMonocularGazeData,

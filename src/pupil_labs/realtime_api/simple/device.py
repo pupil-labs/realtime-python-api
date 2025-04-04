@@ -2,10 +2,8 @@ import asyncio
 import collections
 import enum
 import threading
-import typing as T
 import weakref
-
-from typing_extensions import Literal
+from typing import Literal
 
 from ..base import DeviceBase
 from ..device import Device as _DeviceAsync
@@ -44,6 +42,7 @@ from .models import (
 
 class Device(DeviceBase):
     """.. hint::
+
     Use :py:func:`pupil_labs.realtime_api.simple.discover_devices` instead of
     initializing the class manually. See the :ref:`simple_discovery_example`
     example.
@@ -53,8 +52,8 @@ class Device(DeviceBase):
         self,
         address: str,
         port: int,
-        full_name: T.Optional[str] = None,
-        dns_name: T.Optional[str] = None,
+        full_name: str | None = None,
+        dns_name: str | None = None,
         start_streaming_by_default: bool = False,
         suppress_decoding_warnings: bool = True,
     ) -> None:
@@ -68,7 +67,7 @@ class Device(DeviceBase):
         self._status = self._get_status()
         self._start_background_worker(start_streaming_by_default)
 
-        self._errors: T.List[str] = []
+        self._errors: list[str] = []
 
         self.stream_name_start_event_map = {
             Sensor.Name.GAZE.value: self._EVENT.SHOULD_START_GAZE,
@@ -119,33 +118,33 @@ class Device(DeviceBase):
         return self._status.hardware.version
 
     @property
-    def module_serial(self) -> T.Union[str, Literal["default"], None]:
+    def module_serial(self) -> str | Literal["default"] | None:
         """Returns ``None`` or ``"default"`` if no glasses are connected"""
         return self._status.hardware.module_serial
 
     @property
-    def serial_number_glasses(self) -> T.Union[str, Literal["default"], None]:
+    def serial_number_glasses(self) -> str | Literal["default"] | None:
         """Returns ``None`` or ``"default"`` if no glasses are connected"""
         return self._status.hardware.glasses_serial
 
     @property
-    def serial_number_scene_cam(self) -> T.Optional[str]:
+    def serial_number_scene_cam(self) -> str | None:
         """Returns ``None`` if no scene camera is connected"""
         return self._status.hardware.world_camera_serial
 
-    def get_errors(self) -> T.List[str]:
+    def get_errors(self) -> list[str]:
         errors = self._errors.copy()
         self._errors.clear()
 
         return errors
 
-    def world_sensor(self) -> T.Optional[Sensor]:
+    def world_sensor(self) -> Sensor | None:
         return self._status.direct_world_sensor()
 
-    def gaze_sensor(self) -> T.Optional[Sensor]:
+    def gaze_sensor(self) -> Sensor | None:
         return self._status.direct_gaze_sensor()
 
-    def eye_events_sensor(self) -> T.Optional[Sensor]:
+    def eye_events_sensor(self) -> Sensor | None:
         return self._status.direct_eye_events_sensor()
 
     def get_calibration(self):
@@ -177,6 +176,7 @@ class Device(DeviceBase):
 
     def recording_stop_and_save(self):
         """Wraps
+
         :py:meth:`pupil_labs.realtime_api.device.Device.recording_stop_and_save`
 
         :raises pupil_labs.realtime_api.device.DeviceError:
@@ -208,7 +208,7 @@ class Device(DeviceBase):
         return asyncio.run(_cancel_recording())
 
     def send_event(
-        self, event_name: str, event_timestamp_unix_ns: T.Optional[int] = None
+        self, event_name: str, event_timestamp_unix_ns: int | None = None
     ) -> Event:
         """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.send_event`
 
@@ -237,12 +237,12 @@ class Device(DeviceBase):
 
         return asyncio.run(_get_template())
 
-    def get_template_data(self, format: TemplateDataFormat = "simple"):
+    def get_template_data(self, template_format: TemplateDataFormat = "simple"):
         """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.get_template_data`
 
         Gets the template data entered on device
 
-        :param str format: "simple" | "api"
+        :param str template_format: "simple" | "api"
             "api" returns the data as is from the api eg. {"item_uuid": ["42"]}
             "simple" returns the data parsed eg. {"item_uuid": 42}
 
@@ -252,16 +252,18 @@ class Device(DeviceBase):
 
         async def _get_template_data():
             async with _DeviceAsync.convert_from(self) as control:
-                return await control.get_template_data(format=format)
+                return await control.get_template_data(template_format=template_format)
 
         return asyncio.run(_get_template_data())
 
-    def post_template_data(self, template_data, format: TemplateDataFormat = "simple"):
+    def post_template_data(
+        self, template_data, template_format: TemplateDataFormat = "simple"
+    ):
         """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.post_template_data`
 
         Sets the data for the currently selected template
 
-        :param str format: "simple" | "api"
+        :param str template_format: "simple" | "api"
             "api" accepts the data as in realtime api format eg. {"item_uuid": ["42"]}
             "simple" accepts the data in parsed format eg. {"item_uuid": 42}
 
@@ -272,48 +274,50 @@ class Device(DeviceBase):
 
         async def _post_template_data():
             async with _DeviceAsync.convert_from(self) as control:
-                return await control.post_template_data(template_data, format=format)
+                return await control.post_template_data(
+                    template_data, template_format=template_format
+                )
 
         return asyncio.run(_post_template_data())
 
     def receive_scene_video_frame(
-        self, timeout_seconds: T.Optional[float] = None
-    ) -> T.Optional[SimpleVideoFrame]:
+        self, timeout_seconds: float | None = None
+    ) -> SimpleVideoFrame | None:
         return self._receive_item(Sensor.Name.WORLD.value, timeout_seconds)
 
     def receive_gaze_datum(
-        self, timeout_seconds: T.Optional[float] = None
-    ) -> T.Optional[GazeDataType]:
+        self, timeout_seconds: float | None = None
+    ) -> GazeDataType | None:
         return self._receive_item(Sensor.Name.GAZE.value, timeout_seconds)
 
     def receive_eyes_video_frame(
-        self, timeout_seconds: T.Optional[float] = None
-    ) -> T.Optional[SimpleVideoFrame]:
+        self, timeout_seconds: float | None = None
+    ) -> SimpleVideoFrame | None:
         return self._receive_item(Sensor.Name.EYES.value, timeout_seconds)
 
     def receive_imu_datum(
-        self, timeout_seconds: T.Optional[float] = None
-    ) -> T.Optional[ImuPacket]:
+        self, timeout_seconds: float | None = None
+    ) -> ImuPacket | None:
         return self._receive_item(Sensor.Name.IMU.value, timeout_seconds)
 
     def receive_eye_events(
-        self, timeout_seconds: T.Optional[float] = None
-    ) -> T.Optional[T.Union[FixationEventData, BlinkEventData, FixationOnsetEventData]]:
+        self, timeout_seconds: float | None = None
+    ) -> FixationEventData | BlinkEventData | FixationOnsetEventData | None:
         return self._receive_item(Sensor.Name.EYE_EVENTS.value, timeout_seconds)
 
     def receive_matched_scene_video_frame_and_gaze(
-        self, timeout_seconds: T.Optional[float] = None
-    ) -> T.Optional[MatchedItem]:
+        self, timeout_seconds: float | None = None
+    ) -> MatchedItem | None:
         return self._receive_item(MATCHED_ITEM_LABEL, timeout_seconds)
 
     def receive_matched_scene_and_eyes_video_frames_and_gaze(
-        self, timeout_seconds: T.Optional[float] = None
-    ) -> T.Optional[MatchedGazeEyesSceneItem]:
+        self, timeout_seconds: float | None = None
+    ) -> MatchedGazeEyesSceneItem | None:
         return self._receive_item(MATCHED_GAZE_EYES_LABEL, timeout_seconds)
 
     def _receive_item(
-        self, sensor: str, timeout_seconds: T.Optional[float] = None
-    ) -> T.Optional[T.Union[VideoFrame, GazeDataType]]:
+        self, sensor: str, timeout_seconds: float | None = None
+    ) -> VideoFrame | GazeDataType | None:
         if sensor == MATCHED_ITEM_LABEL:
             self.start_stream_if_needed(Sensor.Name.GAZE.value)
             self.start_stream_if_needed(Sensor.Name.WORLD.value)
@@ -356,7 +360,7 @@ class Device(DeviceBase):
         event = self.stream_name_start_event_map[stream_name]
         self._streaming_trigger_action(event)
 
-    def streaming_stop(self, stream_name: str = None):
+    def streaming_stop(self, stream_name: str | None = None):
         if stream_name is None:
             for event in (
                 self._EVENT.SHOULD_STOP_GAZE,
@@ -385,8 +389,8 @@ class Device(DeviceBase):
     def estimate_time_offset(
         self,
         number_of_measurements: int = 100,
-        sleep_between_measurements_seconds: T.Optional[float] = None,
-    ) -> T.Optional[TimeEchoEstimates]:
+        sleep_between_measurements_seconds: float | None = None,
+    ) -> TimeEchoEstimates | None:
         """Estimate the time offset between the host device and the client.
 
         See :py:mod:`pupil_labs.realtime_api.time_echo` for details.
@@ -448,8 +452,8 @@ class Device(DeviceBase):
         }
         self._event_new_item = {name: threading.Event() for name in sensor_names}
         # only cache 3-4 seconds worth of gaze data in case no scene camera is connected
-        GazeCacheType = T.Deque[T.Tuple[float, GazeDataType]]
-        EyesCacheType = T.Deque[T.Tuple[float, SimpleVideoFrame]]
+        GazeCacheType = collections.deque[tuple[float, GazeDataType]]
+        EyesCacheType = collections.deque[tuple[float, SimpleVideoFrame]]
         self._cached_gaze_for_matching: GazeCacheType = collections.deque(maxlen=200)
         self._cached_eyes_for_matching: EyesCacheType = collections.deque(maxlen=200)
 
@@ -463,12 +467,12 @@ class Device(DeviceBase):
         }
         self._auto_update_thread = threading.Thread(
             target=self._auto_update,
-            kwargs=dict(
-                device_weakref=weakref.ref(self),  # weak ref to avoid cycling ref
-                auto_update_started_flag=event_auto_update_started,
-                is_streaming_flags=self._is_streaming_flags,
-                start_streaming_by_default=start_streaming_by_default,
-            ),
+            kwargs={
+                "device_weakref": weakref.ref(self),  # weak ref to avoid cycling ref
+                "auto_update_started_flag": event_auto_update_started,
+                "is_streaming_flags": self._is_streaming_flags,
+                "start_streaming_by_default": start_streaming_by_default,
+            },
             name=f"{self} auto-update thread",
         )
         self._auto_update_thread.start()
@@ -489,10 +493,10 @@ class Device(DeviceBase):
         return asyncio.run(_get_status())
 
     @staticmethod
-    def _auto_update(
+    def _auto_update(  # noqa: C901 for now
         device_weakref: weakref.ReferenceType,
         auto_update_started_flag: threading.Event,
-        is_streaming_flags: T.Dict[str, threading.Event],
+        is_streaming_flags: dict[str, threading.Event],
         start_streaming_by_default: bool = False,
     ):
         stream_managers = {
@@ -577,7 +581,7 @@ class Device(DeviceBase):
                         stream = event_stream_map[event]
                         func(stream.value)
                     except KeyError:
-                        raise RuntimeError(f"Unhandled {event!r}")
+                        raise RuntimeError(f"Unhandled {event!r}") from None
 
                 await notifier.receive_updates_stop()
                 device_weakref()._event_manager = None

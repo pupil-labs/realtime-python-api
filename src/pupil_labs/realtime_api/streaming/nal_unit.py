@@ -3,8 +3,8 @@ import typing as T
 
 
 def extract_payload_from_nal_unit(unit: T.ByteString) -> T.ByteString:
-    """
-    - prepend NAL unit start code to payload if necessary
+    """- prepend NAL unit start code to payload if necessary
+
     - handle fragmented units (of type FU-A)
 
     Inspired by

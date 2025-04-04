@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import typing as T
 
 from ..discovery import Network as AsyncNetwork
 from .device import Device
@@ -8,7 +7,7 @@ from .device import Device
 logger = logging.getLogger(__name__)
 
 
-def discover_devices(search_duration_seconds: float) -> T.List[Device]:
+def discover_devices(search_duration_seconds: float) -> list[Device]:
     """Return all devices that could be found in the given search duration.
 
     .. seealso::
@@ -25,8 +24,8 @@ def discover_devices(search_duration_seconds: float) -> T.List[Device]:
 
 
 def discover_one_device(
-    max_search_duration_seconds: T.Optional[float] = 10.0,
-) -> T.Optional[Device]:
+    max_search_duration_seconds: float | None = 10.0,
+) -> Device | None:
     """Return the first device that could be found in the given search duration.
 
     .. seealso::

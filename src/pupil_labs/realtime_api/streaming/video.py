@@ -61,9 +61,9 @@ class RTSPVideoFrameStreamer(RTSPRawStreamer):
                         f"Session description protocol data not available yet: {err}"
                     )
                     continue
-                except av.codec.UnknownCodecError as e:
-                    logger.error(
-                        f"Unknown codec error: {e}. "
+                except av.codec.UnknownCodecError:
+                    logger.exception(
+                        "Unknown codec error: "
                         "Please try clearing the app's storage and cache."
                     )
                     raise
@@ -77,7 +77,7 @@ class RTSPVideoFrameStreamer(RTSPRawStreamer):
             frame_timestamp = data.timestamp_unix_seconds
 
     @property
-    def sprop_parameter_set_payloads(self) -> T.Optional[T.List[T.ByteString]]:
+    def sprop_parameter_set_payloads(self) -> list[T.ByteString] | None:
         """:raises pupil_labs.realtime_api.streaming.base.SDPDataNotAvailableError:"""
         if self._sprop_parameter_set_payloads is None:
             try:

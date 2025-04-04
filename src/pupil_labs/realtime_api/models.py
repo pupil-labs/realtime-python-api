@@ -1,14 +1,12 @@
 import enum
 import json
 import logging
-import typing as T
-from dataclasses import asdict
+from dataclasses import asdict, field
 from dataclasses import dataclass as dataclass_python
-from dataclasses import field
 from datetime import datetime
 from functools import partial
 from textwrap import indent
-from typing import Annotated
+from typing import Annotated, Any, ClassVar, Literal, NamedTuple
 from uuid import UUID
 
 from pydantic import (
@@ -23,7 +21,6 @@ from pydantic import (
     create_model,
 )
 from pydantic.dataclasses import dataclass as dataclass_pydantic
-from typing_extensions import Literal
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +41,7 @@ class APIPath(enum.Enum):
         return f"{protocol}://{address}:{port}" + prefix + self.value
 
 
-class DiscoveredDeviceInfo(T.NamedTuple):
+class DiscoveredDeviceInfo(NamedTuple):
     name: str
     """Full mDNS service name.
     Follows ``'PI monitor:<phone name>:<hardware id>._http._tcp.local.'`` naming pattern
@@ -53,17 +50,17 @@ class DiscoveredDeviceInfo(T.NamedTuple):
     "e.g. ``'pi.local.'``"
     port: int
     "e.g. `8080`"
-    addresses: T.List[str]
+    addresses: list[str]
     "e.g. ``['192.168.0.2']``"
 
 
-class Event(T.NamedTuple):
-    name: T.Optional[str]
-    recording_id: T.Optional[str]
+class Event(NamedTuple):
+    name: str | None
+    recording_id: str | None
     timestamp: int  # unix epoch, in nanoseconds
 
     @classmethod
-    def from_dict(cls, dct: T.Dict[str, T.Any]) -> "Event":
+    def from_dict(cls, dct: dict[str, Any]) -> "Event":
         return cls(
             name=dct.get("name"),
             recording_id=dct.get("recording_id"),
@@ -83,7 +80,7 @@ class Event(T.NamedTuple):
         )
 
 
-class Phone(T.NamedTuple):
+class Phone(NamedTuple):
     battery_level: int
     battery_state: Literal["OK", "LOW", "CRITICAL"]
     device_id: str
@@ -91,17 +88,17 @@ class Phone(T.NamedTuple):
     ip: str
     memory: int
     memory_state: Literal["OK", "LOW", "CRITICAL"]
-    time_echo_port: T.Optional[int] = None
+    time_echo_port: int | None = None
 
 
-class Hardware(T.NamedTuple):
+class Hardware(NamedTuple):
     version: str = "unknown"
     glasses_serial: str = "unknown"
     world_camera_serial: str = "unknown"
     module_serial: str = "unknown"
 
 
-class NetworkDevice(T.NamedTuple):
+class NetworkDevice(NamedTuple):
     """Information about devices discovered by the host device, not the client.
 
     .. note::
@@ -120,18 +117,18 @@ class NetworkDevice(T.NamedTuple):
     connected: bool
 
 
-class Sensor(T.NamedTuple):
+class Sensor(NamedTuple):
     sensor: str
     conn_type: str
     connected: bool = False
-    ip: T.Optional[str] = None
-    params: T.Optional[str] = None
-    port: T.Optional[int] = None
+    ip: str | None = None
+    params: str | None = None
+    port: int | None = None
     protocol: str = "rtsp"
     stream_error: bool = True
 
     @property
-    def url(self) -> T.Optional[str]:
+    def url(self) -> str | None:
         if self.connected:
             return f"{self.protocol}://{self.ip}:{self.port}/?{self.params}"
         return None
@@ -150,7 +147,7 @@ class Sensor(T.NamedTuple):
         DIRECT = "DIRECT"
 
 
-class Recording(T.NamedTuple):
+class Recording(NamedTuple):
     action: str
     id: str
     message: str
@@ -161,13 +158,13 @@ class Recording(T.NamedTuple):
         return self.rec_duration_ns / 1e9
 
 
-Component = T.Union[Phone, Hardware, Sensor, Recording, NetworkDevice]
+Component = Phone | Hardware | Sensor | Recording | NetworkDevice | Event
 """Type annotation for :py:class:`Status <.Status>` components."""
 
-ComponentRaw = T.Dict[str, T.Any]
+ComponentRaw = dict[str, Any]
 """Type annotation for json-parsed responses from the REST and Websocket API."""
 
-_model_class_map: T.Dict[str, T.Type[Component]] = {
+_model_class_map: dict[str, type[Component]] = {
     "Phone": Phone,
     "Hardware": Hardware,
     "Sensor": Sensor,
@@ -176,10 +173,10 @@ _model_class_map: T.Dict[str, T.Type[Component]] = {
     "NetworkDevice": NetworkDevice,
 }
 
-TemplateDataFormat = T.Literal["api", "simple"]
+TemplateDataFormat = Literal["api", "simple"]
 
 
-def _init_cls_with_annotated_fields_only(cls, d: T.Dict[str, T.Any]):
+def _init_cls_with_annotated_fields_only(cls, d: dict[str, Any]):
     return cls(**{attr: d.get(attr) for attr in cls.__annotations__})
 
 
@@ -189,6 +186,7 @@ class UnknownComponentError(ValueError):
 
 def parse_component(raw: ComponentRaw) -> Component:
     """Initialize an explicitly modelled representation
+
     (:py:obj:`pupil_labs.realtime_api.models.Component`) from the json-parsed dictionary
     (:py:obj:`pupil_labs.realtime_api.models.ComponentRaw`) received from the API.
 
@@ -213,11 +211,11 @@ class Status:
 
     phone: Phone
     hardware: Hardware
-    sensors: T.List[Sensor]
-    recording: T.Optional[Recording]
+    sensors: list[Sensor]
+    recording: Recording | None
 
     @classmethod
-    def from_dict(cls, status_json_result: T.List[ComponentRaw]) -> "Status":
+    def from_dict(cls, status_json_result: list[ComponentRaw]) -> "Status":
         phone = None  # always present
         recording = None  # might not be present
         hardware = Hardware()  # won't be present if glasses are not connected
@@ -270,7 +268,7 @@ class Status:
                 continue
             yield sensor
 
-    def direct_world_sensor(self) -> T.Optional[Sensor]:
+    def direct_world_sensor(self) -> Sensor | None:
         return next(
             self.matching_sensors(Sensor.Name.WORLD, Sensor.Connection.DIRECT),
             Sensor(
@@ -278,7 +276,7 @@ class Status:
             ),
         )
 
-    def direct_gaze_sensor(self) -> T.Optional[Sensor]:
+    def direct_gaze_sensor(self) -> Sensor | None:
         return next(
             self.matching_sensors(Sensor.Name.GAZE, Sensor.Connection.DIRECT),
             Sensor(
@@ -286,7 +284,7 @@ class Status:
             ),
         )
 
-    def direct_imu_sensor(self) -> T.Optional[Sensor]:
+    def direct_imu_sensor(self) -> Sensor | None:
         return next(
             self.matching_sensors(Sensor.Name.IMU, Sensor.Connection.DIRECT),
             Sensor(
@@ -294,7 +292,7 @@ class Status:
             ),
         )
 
-    def direct_eyes_sensor(self) -> T.Optional[Sensor]:
+    def direct_eyes_sensor(self) -> Sensor | None:
         return next(
             self.matching_sensors(Sensor.Name.EYES, Sensor.Connection.DIRECT),
             Sensor(
@@ -302,7 +300,7 @@ class Status:
             ),
         )
 
-    def direct_eye_events_sensor(self) -> T.Optional[Sensor]:
+    def direct_eye_events_sensor(self) -> Sensor | None:
         return next(
             self.matching_sensors(Sensor.Name.EYE_EVENTS, Sensor.Connection.DIRECT),
             Sensor(
@@ -315,7 +313,7 @@ class Status:
 TemplateItemWidgetType = Literal[
     "TEXT", "PARAGRAPH", "RADIO_LIST", "CHECKBOX_LIST", "SECTION_HEADER", "PAGE_BREAK"
 ]
-TemplateItemInputType = T.Literal["any", "integer", "float"]
+TemplateItemInputType = Literal["any", "integer", "float"]
 
 
 @dataclass_pydantic(kw_only=True)
@@ -324,17 +322,19 @@ class TemplateItem:
     title: str
     widget_type: TemplateItemWidgetType
     input_type: TemplateItemInputType
-    choices: T.Optional[T.List[str]]
-    help_text: T.Optional[str]
+    choices: list[str] | None
+    help_text: str | None
     required: bool
 
     def validate_answer(
         self,
-        answer: T.Any,
-        format: TemplateDataFormat = "simple",
+        answer: Any,
+        template_format: TemplateDataFormat = "simple",
         raise_exception=True,
     ):
-        answers = {str(self.id): self._pydantic_validator(format=format)}
+        answers = {
+            str(self.id): self._pydantic_validator(template_format=template_format)
+        }
         model = create_model(
             f"TemplateItem_{self.id}_Answer",
             **answers,
@@ -352,7 +352,7 @@ class TemplateItem:
             raise InvalidTemplateAnswersError(self, answers, errors)
         return errors
 
-    def _pydantic_validator(self, format: TemplateDataFormat):
+    def _pydantic_validator(self, template_format: TemplateDataFormat):
         if self.widget_type in ("SECTION_HEADER", "PAGE_BREAK"):
             return None
         if self.widget_type not in (
@@ -363,9 +363,9 @@ class TemplateItem:
         ):
             raise ValueError("unknown widget type")
 
-        if format == "simple":
+        if template_format == "simple":
             return self._simple_model_validator()
-        elif format == "api":
+        elif template_format == "api":
             return self._api_model_validator()
         else:
             raise ValueError(f"unknown format, must be one of: {TemplateDataFormat}")
@@ -401,7 +401,7 @@ class TemplateItem:
                         answer_input_type, StringConstraints(min_length=1)
                     ]
             else:
-                answer_input_type = T.Optional[answer_input_type]
+                answer_input_type = [answer_input_type] | None
                 field.default = None
 
         return (answer_input_type, field)
@@ -423,7 +423,7 @@ class TemplateItem:
             else:
                 if answer_input_entry_type in (int, float):
                     answer_input_entry_type = Annotated[
-                        T.Optional[answer_input_entry_type],
+                        answer_input_entry_type | None,
                         BeforeValidator(allow_empty),
                     ]
 
@@ -444,16 +444,16 @@ class Template:
     id: UUID
     name: str
     updated_at: datetime
-    recording_name_format: T.List[str]
-    items: T.List[TemplateItem] = field(default_factory=list)
-    label_ids: T.List[UUID] = field(default_factory=list, metadata={"readonly": True})
+    recording_name_format: list[str]
+    items: list[TemplateItem] = field(default_factory=list)
+    label_ids: list[UUID] = field(default_factory=list, metadata={"readonly": True})
     is_default_template: bool = True
-    description: T.Optional[str] = None
-    recording_ids: T.Optional[T.List[UUID]] = None
-    published_at: T.Optional[datetime] = None
-    archived_at: T.Optional[datetime] = None
+    description: str | None = None
+    recording_ids: list[UUID] | None = None
+    published_at: datetime | None = None
+    archived_at: datetime | None = None
 
-    def convert_from_simple_to_api_format(self, data: T.Dict[str, T.Any]):
+    def convert_from_simple_to_api_format(self, data: dict[str, Any]):
         api_format = {}
         for question_id, value in data.items():
             if value is None:
@@ -464,7 +464,7 @@ class Template:
             api_format[question_id] = value
         return api_format
 
-    def convert_from_api_to_simple_format(self, data: T.Dict[str, list[str]]):
+    def convert_from_api_to_simple_format(self, data: dict[str, list[str]]):
         simple_format = {}
         for question_id, value in data.items():
             question = self.get_question_by_id(question_id)
@@ -477,24 +477,21 @@ class Template:
 
                 value = value[0]
                 if question.input_type != "any":
-                    if value == "":
-                        value = None
-                    else:
-                        value = question._value_type(value)
+                    value = None if value == "" else question._value_type(value)
 
             simple_format[question_id] = value
         return simple_format
 
-    def get_question_by_id(self, question_id: T.Union[str, UUID]):
+    def get_question_by_id(self, question_id: str | UUID):
         for item in self.items:
             if str(item.id) == str(question_id):
                 return item
         return None
 
-    def _create_answer_model(self, format: TemplateDataFormat):
+    def _create_answer_model(self, template_format: TemplateDataFormat):
         answer_types = {}
         for question in self.items:
-            validator = question._pydantic_validator(format=format)
+            validator = question._pydantic_validator(template_format=template_format)
             if validator is None:
                 continue
             answer_types[f"{question.id}"] = validator
@@ -509,11 +506,11 @@ class Template:
 
     def validate_answers(
         self,
-        answers: T.Dict[str, T.List[str]],
+        answers: dict[str, list[str]],
         raise_exception=True,
-        format=TemplateDataFormat,
+        template_format=TemplateDataFormat,
     ):
-        AnswerModel = self._create_answer_model(format=format)
+        AnswerModel = self._create_answer_model(template_format=template_format)
         errors = []
         try:
             AnswerModel(**answers)
@@ -551,7 +548,7 @@ def option_in_allowed_values(value, allowed):
 
 def make_template_answer_model_base(template_: Template):
     class TemplateAnswerModelBase(BaseModel):
-        template: T.ClassVar[Template] = template_
+        template: ClassVar[Template] = template_
         model_config = ConfigDict(extra="forbid")
 
         def get(self, item_id):
@@ -559,7 +556,7 @@ def make_template_answer_model_base(template_: Template):
 
         def __repr__(self):
             args = []
-            for item_id, validator in self.model_fields.items():
+            for item_id, _validator in self.model_fields.items():
                 question = self.template.get_question_by_id(item_id)
                 infos = map(
                     str,
@@ -571,8 +568,7 @@ def make_template_answer_model_base(template_: Template):
                     ],
                 )
                 line = (
-                    f"    {item_id}={self.__dict__[item_id]!r}, "
-                    + f"# {' - '.join(infos)}"
+                    f"    {item_id}={self.__dict__[item_id]!r}, # {' - '.join(infos)}"
                 )
                 args.append(line)
             args = "\n".join(args)
@@ -587,9 +583,9 @@ def make_template_answer_model_base(template_: Template):
 class InvalidTemplateAnswersError(Exception):
     def __init__(
         self,
-        template: T.Union[Template, TemplateItem],
-        answers: T.Dict[str, T.List[str]],
-        errors: T.List[T.Dict],
+        template: Template | TemplateItem,
+        answers: dict[str, list[str]],
+        errors: list[dict],
     ):
         self.template = template
         self.errors = errors
@@ -620,6 +616,8 @@ class InvalidTemplateAnswersError(Exception):
                 name = self.template.name
             elif isinstance(self.template, TemplateItem):
                 name = self.template.title
-            return f"{name} ({self.template.id}) validation errors:\n{error_lines}"
+
         except Exception as e:
             return f"InvalidTemplateAnswersError.__str__ error: {e}"
+        else:
+            return f"{name} ({self.template.id}) validation errors:\n{error_lines}"

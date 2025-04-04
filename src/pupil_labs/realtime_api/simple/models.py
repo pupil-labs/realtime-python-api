@@ -1,5 +1,5 @@
 import datetime
-import typing as T
+from typing import NamedTuple
 
 from ..streaming.gaze import (
     DualMonocularGazeData,
@@ -9,12 +9,12 @@ from ..streaming.gaze import (
 )
 from ..streaming.video import BGRBuffer, VideoFrame
 
-GazeDataType = T.Union[
-    GazeData, DualMonocularGazeData, EyestateGazeData, EyestateEyelidGazeData
-]
+GazeDataType = (
+    GazeData | DualMonocularGazeData | EyestateGazeData | EyestateEyelidGazeData
+)
 
 
-class SimpleVideoFrame(T.NamedTuple):
+class SimpleVideoFrame(NamedTuple):
     bgr_pixels: BGRBuffer
     timestamp_unix_seconds: float
 
@@ -35,12 +35,12 @@ class SimpleVideoFrame(T.NamedTuple):
 # two streams (scene video and gaze) to match. When I added support for streaming eyes
 # video, I thought about giving it a more descriptive name. But since this is an output
 # class of the public API, I decided against it to avoid breaking possible imports.
-class MatchedItem(T.NamedTuple):
+class MatchedItem(NamedTuple):
     frame: SimpleVideoFrame
     gaze: GazeDataType
 
 
-class MatchedGazeEyesSceneItem(T.NamedTuple):
+class MatchedGazeEyesSceneItem(NamedTuple):
     scene: SimpleVideoFrame
     eyes: SimpleVideoFrame
     gaze: GazeDataType

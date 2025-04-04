@@ -11,24 +11,24 @@ Type annotation for concrete sub-classes of :py:class:`DeviceBase
 """
 
 
-class DeviceBase(abc.ABC):
+class DeviceBase(abc.ABC):  # noqa: B024
     """Abstract base class representing Realtime API host devices"""
 
     def __init__(
         self,
         address: str,
         port: int,
-        full_name: T.Optional[str] = None,
-        dns_name: T.Optional[str] = None,
+        full_name: str | None = None,
+        dns_name: str | None = None,
         suppress_decoding_warnings: bool = True,
     ):
         self.address: str = address
         """REST API server address"""
         self.port: int = port
         """REST API server port"""
-        self.full_name: T.Optional[str] = full_name
+        self.full_name: str | None = full_name
         """Full service discovery name"""
-        self.dns_name: T.Optional[str] = dns_name
+        self.dns_name: str | None = dns_name
         """REST API server DNS name, e.g. ``pi.local.``"""
         if suppress_decoding_warnings:
             # suppress decoding warnings due to incomplete data transmissions
@@ -47,7 +47,7 @@ class DeviceBase(abc.ABC):
 
     @classmethod
     def from_discovered_device(
-        cls: T.Type[DeviceType], device: DiscoveredDeviceInfo
+        cls: type[DeviceType], device: DiscoveredDeviceInfo
     ) -> DeviceType:
         return cls(
             device.addresses[0],
@@ -57,7 +57,7 @@ class DeviceBase(abc.ABC):
         )
 
     @classmethod
-    def convert_from(cls: T.Type[DeviceType], other: DeviceType) -> DeviceType:
+    def convert_from(cls: type[DeviceType], other: DeviceType) -> DeviceType:
         return cls(
             other.address,
             other.port,

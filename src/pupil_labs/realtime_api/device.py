@@ -1,16 +1,18 @@
 import asyncio
+import contextlib
 import inspect
 import json
 import logging
 import types
-import typing as T
+from collections.abc import AsyncIterator, Awaitable, Callable
+from typing import Any
 
 import aiohttp
 import numpy as np
 import websockets
-from pupil_labs.neon_recording.calib import Calibration
 
-import pupil_labs  # noqa: F401
+import pupil_labs
+from pupil_labs.neon_recording.calib import Calibration
 
 from .base import DeviceBase
 from .models import (
@@ -26,15 +28,15 @@ from .models import (
 
 logger = logging.getLogger(__name__)
 
-UpdateCallbackSync = T.Callable[["pupil_labs.realtime_api.models.Component"], None]
+UpdateCallbackSync = Callable[["pupil_labs.realtime_api.models.Component"], None]
 """Type annotation for synchronous update callbacks"""
 
-UpdateCallbackAsync = T.Callable[
-    ["pupil_labs.realtime_api.models.Component"], T.Awaitable[None]
+UpdateCallbackAsync = Callable[
+    ["pupil_labs.realtime_api.models.Component"], Awaitable[None]
 ]
 """Type annotation for asynchronous update callbacks"""
 
-UpdateCallback = T.Union[UpdateCallbackSync, UpdateCallbackAsync]
+UpdateCallback = UpdateCallbackSync | UpdateCallbackAsync
 """Type annotation for synchronous and asynchronous callbacks"""
 
 
@@ -46,12 +48,10 @@ class Device(DeviceBase):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._create_client_session()
-        self.template_definition: T.Optional[Template] = None
+        self.template_definition: Template | None = None
 
     async def get_status(self) -> Status:
-        """
-        :raises pupil_labs.realtime_api.device.DeviceError: if the request fails
-        """
+        """:raises pupil_labs.realtime_api.device.DeviceError: if the request fails"""
         async with self.session.get(self.api_url(APIPath.STATUS)) as response:
             confirmation = await response.json()
             if response.status != 200:
@@ -60,7 +60,7 @@ class Device(DeviceBase):
             logger.debug(f"[{self}.get_status] Received status: {result}")
             return Status.from_dict(result)
 
-    async def status_updates(self) -> T.AsyncIterator[Component]:
+    async def status_updates(self) -> AsyncIterator[Component]:
         # Auto-reconnect, see
         # https://websockets.readthedocs.io/en/stable/reference/client.html#websockets.client.connect
         websocket_status_endpoint = self.api_url(APIPath.STATUS, protocol="ws")
@@ -82,16 +82,16 @@ class Device(DeviceBase):
                 break
 
     async def recording_start(self) -> str:
-        """
-        :raises pupil_labs.realtime_api.device.DeviceError:
-            if the recording could not be started. Possible reasons include
-            - Recording already running
-            - Template has required fields
-            - Low battery
-            - Low storage
-            - No wearer selected
-            - No workspace selected
-            - Setup bottom sheets not completed
+        """:raises pupil_labs.realtime_api.device.DeviceError:
+
+        if the recording could not be started. Possible reasons include
+        - Recording already running
+        - Template has required fields
+        - Low battery
+        - Low storage
+        - No wearer selected
+        - No workspace selected
+        - Setup bottom sheets not completed
         """
         async with self.session.post(self.api_url(APIPath.RECORDING_START)) as response:
             confirmation = await response.json()
@@ -101,12 +101,12 @@ class Device(DeviceBase):
             return confirmation["result"]["id"]
 
     async def recording_stop_and_save(self):
-        """
-        :raises pupil_labs.realtime_api.device.DeviceError:
-            if the recording could not be started
-            Possible reasons include
-            - Recording not running
-            - template has required fields
+        """:raises pupil_labs.realtime_api.device.DeviceError:
+
+        if the recording could not be started
+        Possible reasons include
+        - Recording not running
+        - template has required fields
         """
         async with self.session.post(
             self.api_url(APIPath.RECORDING_STOP_AND_SAVE)
@@ -117,11 +117,11 @@ class Device(DeviceBase):
                 raise DeviceError(response.status, confirmation["message"])
 
     async def recording_cancel(self):
-        """
-        :raises pupil_labs.realtime_api.device.DeviceError:
-            if the recording could not be started
-            Possible reasons include
-            - Recording not running
+        """:raises pupil_labs.realtime_api.device.DeviceError:
+
+        if the recording could not be started
+        Possible reasons include
+        - Recording not running
         """
         async with self.session.post(
             self.api_url(APIPath.RECORDING_CANCEL)
@@ -132,12 +132,10 @@ class Device(DeviceBase):
                 raise DeviceError(response.status, confirmation["message"])
 
     async def send_event(
-        self, event_name: str, event_timestamp_unix_ns: T.Optional[int] = None
+        self, event_name: str, event_timestamp_unix_ns: int | None = None
     ) -> Event:
-        """
-        :raises pupil_labs.realtime_api.device.DeviceError: if sending the event fails
-        """
-        event: T.Dict[str, T.Any] = {"name": event_name}
+        """:raises DeviceError: if sending the event fails"""
+        event: dict[str, Any] = {"name": event_name}
         if event_timestamp_unix_ns is not None:
             event["timestamp"] = event_timestamp_unix_ns
 
@@ -151,8 +149,7 @@ class Device(DeviceBase):
             return Event.from_dict(confirmation["result"])
 
     async def get_template(self) -> Template:
-        """
-        Gets the template currently selected on device
+        """Gets the template currently selected on device
 
         :raises pupil_labs.realtime_api.device.DeviceError:
             if the template can't be fetched.
@@ -168,20 +165,19 @@ class Device(DeviceBase):
             self.template_definition = Template(**result)
             return self.template_definition
 
-    async def get_template_data(self, format: TemplateDataFormat = "simple"):
-        """
-        Gets the template data entered on device
+    async def get_template_data(self, template_format: TemplateDataFormat = "simple"):
+        """Gets the template data entered on device
 
-        :param str format: "simple" | "api"
+        :param str template_format: "simple" | "api"
             "api" returns the data as is from the api eg. {"item_uuid": ["42"]}
             "simple" returns the data parsed eg. {"item_uuid": 42}
 
         :raises pupil_labs.realtime_api.device.DeviceError:
             if the template's data could not be fetched
         """
-        assert (
-            format in TemplateDataFormat.__args__
-        ), f"format should be one of {TemplateDataFormat}"
+        assert template_format in TemplateDataFormat.__args__, (
+            f"format should be one of {TemplateDataFormat}"
+        )
 
         async with self.session.get(self.api_url(APIPath.TEMPLATE_DATA)) as response:
             confirmation = await response.json()
@@ -191,21 +187,20 @@ class Device(DeviceBase):
             logger.debug(
                 f"[{self}.get_template_data] Received data's template: {result}"
             )
-            if format == "api":
+            if template_format == "api":
                 return result
-            elif format == "simple":
+            elif template_format == "simple":
                 template = await self.get_template()
                 return template.convert_from_api_to_simple_format(result)
 
     async def post_template_data(
         self,
-        template_answers: T.Dict[str, T.List[str]],
-        format: TemplateDataFormat = "simple",
+        template_answers: dict[str, list[str]],
+        template_format: TemplateDataFormat = "simple",
     ) -> None:
-        """
-        Sets the data for the currently selected template
+        """Sets the data for the currently selected template
 
-        :param str format: "simple" | "api"
+        :param str template_format: "simple" | "api"
             "api" accepts the data as in realtime api format eg. {"item_uuid": ["42"]}
             "simple" accepts the data in parsed format eg. {"item_uuid": 42}
 
@@ -213,22 +208,22 @@ class Device(DeviceBase):
             if the data can not be sent.
             ValueError: if invalid data type.
         """
-        assert (
-            format in TemplateDataFormat.__args__
-        ), f"format should be one of {TemplateDataFormat}"
+        assert template_format in TemplateDataFormat.__args__, (
+            f"format should be one of {TemplateDataFormat}"
+        )
 
         self.template_definition = await self.get_template()
 
-        if format == "simple":
+        if template_format == "simple":
             template_answers = (
                 self.template_definition.convert_from_simple_to_api_format(
                     template_answers
                 )
             )
 
-        pre_populated_data = await self.get_template_data(format="api")
+        pre_populated_data = await self.get_template_data(template_format="api")
         errors = self.template_definition.validate_answers(
-            pre_populated_data | template_answers, format="api"
+            pre_populated_data | template_answers, template_format="api"
         )
         if errors:
             raise ValueError(errors=errors)
@@ -236,7 +231,7 @@ class Device(DeviceBase):
         # workaround for issue with api as it fails when passing in an empty list
         # ie. it wants [""] instead of []
         template_answers = {
-            key: value if value else [""] for key, value in template_answers.items()
+            key: value or [""] for key, value in template_answers.items()
         }
 
         async with self.session.post(
@@ -260,9 +255,9 @@ class Device(DeviceBase):
 
     async def __aexit__(
         self,
-        exc_type: T.Optional[T.Type[BaseException]],
-        exc_val: T.Optional[BaseException],
-        exc_tb: T.Optional[types.TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: types.TracebackType | None,
     ) -> None:
         await self.close()
 
@@ -270,9 +265,7 @@ class Device(DeviceBase):
         self.session = aiohttp.ClientSession()
 
     async def get_calibration(self) -> np.ndarray:
-        """
-        :raises pupil_labs.realtime_api.device.DeviceError: if the request fails
-        """
+        """:raises pupil_labs.realtime_api.device.DeviceError: if the request fails"""
         async with self.session.get(self.api_url(APIPath.CALIBRATION)) as response:
             if response.status != 200:
                 raise DeviceError(response.status, "Failed to fetch calibration")
@@ -282,8 +275,8 @@ class Device(DeviceBase):
 
 
 class StatusUpdateNotifier:
-    def __init__(self, device: Device, callbacks: T.List[UpdateCallback]) -> None:
-        self._auto_update_task: T.Optional[asyncio.Task] = None
+    def __init__(self, device: Device, callbacks: list[UpdateCallback]) -> None:
+        self._auto_update_task: asyncio.Task | None = None
         self._device = device
         self._callbacks = callbacks
 
@@ -298,11 +291,9 @@ class StatusUpdateNotifier:
             logger.debug("Auto-update is not running!")
             return
         self._auto_update_task.cancel()
-        try:
+        with contextlib.suppress(asyncio.CancelledError):
             # wait for the task to be cancelled
             await self._auto_update_task
-        except asyncio.CancelledError:
-            pass  # task has been successfully cancelled
         self._auto_update_task = None
 
     async def __aenter__(self):
@@ -310,9 +301,9 @@ class StatusUpdateNotifier:
 
     async def __aexit__(
         self,
-        exc_type: T.Optional[T.Type[BaseException]],
-        exc_val: T.Optional[BaseException],
-        exc_tb: T.Optional[types.TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: types.TracebackType | None,
     ):
         await self.receive_updates_stop()
 

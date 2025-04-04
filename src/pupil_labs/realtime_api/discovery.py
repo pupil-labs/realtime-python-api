@@ -37,12 +37,12 @@ class Network:
             self._open = False
 
     @property
-    def devices(self) -> T.Tuple[DiscoveredDeviceInfo, ...]:
+    def devices(self) -> tuple[DiscoveredDeviceInfo, ...]:
         return tuple(self._devices.values())
 
     async def wait_for_new_device(
-        self, timeout_seconds: T.Optional[float] = None
-    ) -> T.Optional[DiscoveredDeviceInfo]:
+        self, timeout_seconds: float | None = None
+    ) -> DiscoveredDeviceInfo | None:
         try:
             return await asyncio.wait_for(self._new_devices.get(), timeout_seconds)
         except asyncio.TimeoutError:
@@ -56,11 +56,15 @@ class Network:
             ServiceStateChange.Added,
             ServiceStateChange.Updated,
         ):
-            asyncio.create_task(
+            task = asyncio.create_task(
                 self._request_info_and_put_new_device(
                     zeroconf, service_type, name, timeout_ms=3000
                 )
+            )  # RUF006
+            task.add_done_callback(
+                lambda t: logger.debug(f"Task completed: {t.result()}")
             )
+
         elif name in self._devices:
             del self._devices[name]
 
@@ -83,15 +87,15 @@ class Network:
 
     async def __aexit__(
         self,
-        exc_type: T.Optional[T.Type[BaseException]],
-        exc_val: T.Optional[BaseException],
-        exc_tb: T.Optional[types.TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: types.TracebackType | None,
     ):
         await self.close()
 
 
 async def discover_devices(
-    timeout_seconds: T.Optional[float] = None,
+    timeout_seconds: float | None = None,
 ) -> T.AsyncIterator[DiscoveredDeviceInfo]:
     """Use Bonjour to find devices in the local network that serve the Realtime API.
 

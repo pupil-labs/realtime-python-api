@@ -33,6 +33,7 @@ async def receive_raw_rtsp_data(url, *args, **kwargs) -> T.AsyncIterator[RTSPDat
 
 class RTSPRawStreamer:
     """Forwards all arguments to
+
     `aiortsp.rtsp.reader.RTSPReader
     <https://github.com/marss/aiortsp/blob/master/aiortsp/rtsp/reader.py#L31-L32>`_
     """
@@ -106,7 +107,7 @@ class _WallclockRTSPReader(RTSPReader):
             raise _UnknownClockoffsetError(
                 "Clock offset between relative and NTP clock is still unknown. "
                 "Waiting for first RTCP SR packet..."
-            )
+            ) from None
 
     def relative_timestamp_from_packet(self, packet):
         rtpmap = self.get_rtpmap()

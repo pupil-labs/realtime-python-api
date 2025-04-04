@@ -53,8 +53,9 @@ import collections
 import logging
 import statistics
 import struct
+from collections.abc import Callable, Iterable
 from time import time_ns
-from typing import Callable, Iterable, NamedTuple, Optional
+from typing import NamedTuple
 
 logger = logging.getLogger(__name__)
 
@@ -122,9 +123,9 @@ class TimeOffsetEstimator:
     async def estimate(
         self,
         number_of_measurements: int = 100,
-        sleep_between_measurements_seconds: Optional[float] = None,
+        sleep_between_measurements_seconds: float | None = None,
         time_fn_ms: TimeFunction = time_ms,
-    ) -> Optional[TimeEchoEstimates]:
+    ) -> TimeEchoEstimates | None:
         measurements = collections.defaultdict(list)
 
         try:
@@ -173,9 +174,7 @@ class TimeOffsetEstimator:
         reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,
     ) -> TimeEcho:
-        """Request a time echo, measure the roundtrip time, and estimate the time
-        offset
-        """
+        """Request a time echo, measure the roundtrip time, and estimate offset"""
         before_ms = time_fn_ms()
         before_ms_bytes = struct.pack("!Q", before_ms)
         writer.write(before_ms_bytes)

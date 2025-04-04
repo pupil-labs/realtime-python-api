@@ -115,7 +115,7 @@ class FixationOnsetEventData(T.NamedTuple):
 
 async def receive_eye_events_data(
     url, *args, **kwargs
-) -> T.AsyncIterator[T.Union[FixationEventData]]:
+) -> T.AsyncIterator[FixationEventData]:
     async with RTSPEyeEventStreamer(url, *args, **kwargs) as streamer:
         async for datum in streamer.receive():
             yield datum
@@ -124,7 +124,7 @@ async def receive_eye_events_data(
 class RTSPEyeEventStreamer(RTSPRawStreamer):
     async def receive(
         self,
-    ) -> T.AsyncIterator[T.Union[FixationEventData, BlinkEventData]]:
+    ) -> T.AsyncIterator[FixationEventData | BlinkEventData]:
         data_class_by_type = {
             0: FixationEventData,
             1: FixationEventData,
