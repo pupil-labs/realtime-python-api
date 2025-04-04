@@ -9,7 +9,7 @@ import numpy as np
 cv2.imshow("cv/av bug", np.zeros(1))
 cv2.destroyAllWindows()
 
-from pupil_labs.realtime_api import Device, Network, receive_video_frames  # noqa
+from pupil_labs.realtime_api import Device, Network, receive_video_frames  # noqa: E402
 
 
 async def main(preview_frame_rate=30):
@@ -27,7 +27,7 @@ async def main(preview_frame_rate=30):
             return
 
         restart_on_disconnect = True
-        _last_update = time.perf_counter()
+        last_update = time.perf_counter()
         async for frame in receive_video_frames(
             sensor_eyes.url, run_loop=restart_on_disconnect
         ):
@@ -35,11 +35,11 @@ async def main(preview_frame_rate=30):
             draw_time(bgr_buffer, frame.datetime)
             cv2.imshow("Eye Cameras - Press ESC to quit", bgr_buffer)
 
-            time_since_last_update = time.perf_counter() - _last_update
+            time_since_last_update = time.perf_counter() - last_update
             if time_since_last_update > 1 / preview_frame_rate:
                 if cv2.waitKey(1) & 0xFF == 27:
                     return
-                _last_update = time.perf_counter()
+                last_update = time.perf_counter()
 
 
 def draw_time(frame, time):

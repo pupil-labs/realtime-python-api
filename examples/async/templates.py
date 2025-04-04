@@ -75,8 +75,8 @@ async def main():  # noqa: C901
                     print(LINE)
                     print(
                         f"{'* ' if item.required else ''}"
-                        + f"ID: {item.id} - Title: {item.title} "
-                        + f"- Input Type: {item.input_type}"
+                        f"ID: {item.id} - Title: {item.title} "
+                        f"- Input Type: {item.input_type}"
                     )
                     current_value = data.get(str(item.id))
                     while True:
