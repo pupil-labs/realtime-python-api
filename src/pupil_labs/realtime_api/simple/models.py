@@ -12,9 +12,24 @@ from ..streaming.video import BGRBuffer, VideoFrame
 GazeDataType = (
     GazeData | DualMonocularGazeData | EyestateGazeData | EyestateEyelidGazeData
 )
+"""Type alias for any type of gaze data.
+
+This includes basic gaze data, dual monocular gaze data, and gaze data with
+eye state and eyelid information.
+"""
 
 
 class SimpleVideoFrame(NamedTuple):
+    """A simplified video frame representation.
+
+    This class provides a simplified representation of a video frame with
+    BGR pixel data and timestamp information.
+
+    Attributes:
+        bgr_pixels (BGRBuffer): BGR pixel data as a NumPy array.
+        timestamp_unix_seconds (float): Timestamp in seconds since Unix epoch.
+    """
+
     bgr_pixels: BGRBuffer
     timestamp_unix_seconds: float
 
@@ -36,11 +51,36 @@ class SimpleVideoFrame(NamedTuple):
 # video, I thought about giving it a more descriptive name. But since this is an output
 # class of the public API, I decided against it to avoid breaking possible imports.
 class MatchedItem(NamedTuple):
+    """A matched pair of scene video frame and gaze data.
+
+    This class represents a scene video frame and gaze data point that
+    occurred at approximately the same time.
+
+    Note:
+        The name MatchedItem is maintained for backward compatibility.
+        It represents a matched pair of scene video frame and gaze data.
+
+    Attributes:
+        frame (SimpleVideoFrame): Scene video frame.
+        gaze (GazeDataType): Corresponding gaze data.
+    """
+
     frame: SimpleVideoFrame
     gaze: GazeDataType
 
 
 class MatchedGazeEyesSceneItem(NamedTuple):
+    """A matched triplet of scene video frame, eye video frame, and gaze data.
+
+    This class represents scene and eye video frames along with gaze data
+    that occurred at approximately the same time.
+
+    Attributes:
+        scene (SimpleVideoFrame): Scene video frame.
+        eyes (SimpleVideoFrame): Eye camera video frame.
+        gaze (GazeDataType): Corresponding gaze data.
+    """
+
     scene: SimpleVideoFrame
     eyes: SimpleVideoFrame
     gaze: GazeDataType

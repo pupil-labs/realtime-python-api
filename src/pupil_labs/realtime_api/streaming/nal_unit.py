@@ -3,13 +3,28 @@ from collections.abc import ByteString
 
 
 def extract_payload_from_nal_unit(unit: ByteString) -> ByteString:
-    """- prepend NAL unit start code to payload if necessary
+    """Extract and process payload from a Network Abstraction Layer (NAL) unit.
 
-    - handle fragmented units (of type FU-A)
+    This function extracts the payload from a NAL unit, handling various formats:
+    - Prepends NAL unit start code to payload if necessary
+    - Handles fragmented units (of type FU-A)
 
-    Inspired by
-    https://github.com/runtheops/rtsp-rtp/blob/master/transport/primitives/nal_unit.py
-    Rewritten due to license incompatibility.
+    The implementation follows RFC 3984 specifications for H.264 NAL units.
+
+    Args:
+        unit: The NAL unit as a ByteString.
+
+    Returns:
+        ByteString: The processed payload, potentially with start code prepended.
+
+    Raises:
+        ValueError: If the first bit is not zero (forbidden_zero_bit).
+
+    References:
+        Inspired by https://github.com/runtheops/rtsp-rtp/blob/master/transport/primitives/nal_unit.py
+        Rewritten due to license incompatibility.
+        See RFC 3984 (https://www.ietf.org/rfc/rfc3984.txt) for detailed NAL unit
+        specifications.
     """
     start_code = b"\x00\x00\x00\x01"
     offset = 0

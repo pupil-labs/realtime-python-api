@@ -51,11 +51,32 @@ ReceivedItemType = (
 
 
 class Device(DeviceBase):
-    """.. hint::
+    """Simple synchronous API for interacting with Pupil Labs devices.
 
-    Use :py:func:`pupil_labs.realtime_api.simple.discover_devices` instead of
-    initializing the class manually. See the :ref:`simple_discovery_example`
-    example.
+    This class provides a simplified, synchronous interface to Pupil Labs devices,
+    wrapping the asynchronous API with a more user-friendly interface.
+
+    Note:
+        Use :func:`pupil_labs.realtime_api.simple.discover_devices` instead of
+        initializing the class manually. See the :ref:`simple_discovery_example`
+        example.
+
+    Attributes:
+        phone_name (str): Name of the connected phone.
+        phone_id (str): Unique identifier of the connected phone.
+        phone_ip (str): IP address of the connected phone.
+        battery_level_percent (int): Battery level in percentage.
+        battery_state (str): Battery state ("OK", "LOW", or "CRITICAL").
+        memory_num_free_bytes (int): Available memory in bytes.
+        memory_state (str): Memory state ("OK", "LOW", or "CRITICAL").
+        version_glasses (str): Version of the connected glasses.
+        module_serial (str | None): Serial number of the module, None if no glasses
+        connected.
+        serial_number_glasses (str | None): Serial number of the glasses, None if no
+        glasses connected.
+        serial_number_scene_cam (str | None): Serial number of the scene camera, None
+        if not connected.
+        is_currently_streaming (bool): Whether data streaming is currently active.
     """
 
     def __init__(
@@ -67,6 +88,16 @@ class Device(DeviceBase):
         start_streaming_by_default: bool = False,
         suppress_decoding_warnings: bool = True,
     ) -> None:
+        """Initialize a Device instance.
+
+        Args:
+            address: IP address of the device.
+            port: Port number of the device.
+            full_name: Full service discovery name.
+            dns_name: DNS name of the device.
+            start_streaming_by_default: Whether to start streaming automatically.
+            suppress_decoding_warnings: Whether to suppress decoding warnings.
+        """
         super().__init__(
             address,
             port,
@@ -165,17 +196,23 @@ class Device(DeviceBase):
         return asyncio.run(_get_calibration())
 
     def recording_start(self) -> str:
-        """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.recording_start`
+        """Start a recording on the device.
 
-        :raises pupil_labs.realtime_api.device.DeviceError:
-            if the recording could not be started. Possible reasons include
-            - Recording already running
-            - Template has required fields
-            - Low battery
-            - Low storage
-            - No wearer selected
-            - No workspace selected
-            - Setup bottom sheets not completed
+        Wraps :meth:`pupil_labs.realtime_api.device.Device.recording_start`
+
+        Returns:
+            str: ID of the started recording.
+
+        Raises:
+            DeviceError: If the recording could not be started. Possible reasons
+            include:
+                - Recording already running
+                - Template has required fields
+                - Low battery
+                - Low storage
+                - No wearer selected
+                - No workspace selected
+                - Setup bottom sheets not completed
         """
 
         async def _start_recording() -> str:
@@ -185,15 +222,15 @@ class Device(DeviceBase):
         return asyncio.run(_start_recording())
 
     def recording_stop_and_save(self) -> None:
-        """Wraps
+        """Stop and save the current recording.
 
-        :py:meth:`pupil_labs.realtime_api.device.Device.recording_stop_and_save`
+        Wraps :meth:`pupil_labs.realtime_api.device.Device.recording_stop_and_save`
 
-        :raises pupil_labs.realtime_api.device.DeviceError:
-            if the recording could not be started
-            Possible reasons include
-            - Recording not running
-            - template has required fields
+        Raises:
+            DeviceError: If the recording could not be stopped. Possible reasons
+            include:
+                - Recording not running
+                - Template has required fields
         """
 
         async def _stop_and_save_recording() -> None:
@@ -203,12 +240,14 @@ class Device(DeviceBase):
         return asyncio.run(_stop_and_save_recording())
 
     def recording_cancel(self) -> None:
-        """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.recording_cancel`
+        """Cancel the current recording without saving it.
 
-        :raises pupil_labs.realtime_api.device.DeviceError:
-            if the recording could not be started
-            Possible reasons include
-            - Recording not running
+        Wraps :meth:`pupil_labs.realtime_api.device.Device.recording_cancel`
+
+        Raises:
+            DeviceError: If the recording could not be cancelled. Possible reasons
+            include:
+                - Recording not running
         """
 
         async def _cancel_recording() -> None:
@@ -220,10 +259,18 @@ class Device(DeviceBase):
     def send_event(
         self, event_name: str, event_timestamp_unix_ns: int | None = None
     ) -> Event:
-        """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.send_event`
+        """Send an event to the device.
 
-        :raises pupil_labs.realtime_api.device.DeviceError:
-            if sending the event fails
+        Args:
+            event_name: Name of the event.
+            event_timestamp_unix_ns: Optional timestamp in unix nanoseconds.
+                If None, the current time will be used.
+
+        Returns:
+            Event: The created event.
+
+        Raises:
+            DeviceError: If sending the event fails.
         """
 
         async def _send_event() -> Event:
@@ -233,12 +280,15 @@ class Device(DeviceBase):
         return asyncio.run(_send_event())
 
     def get_template(self) -> Template:
-        """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.get_template`
+        """Get the template currently selected on the device.
 
-        Gets the template currently selected on device
+        Wraps :meth:`pupil_labs.realtime_api.device.Device.get_template`
 
-        :raises pupil_labs.realtime_api.device.DeviceError:
-            if the template can't be fetched.
+        Returns:
+            Template: The currently selected template.
+
+        Raises:
+            DeviceError: If the template can't be fetched.
         """
 
         async def _get_template() -> Template:
@@ -247,17 +297,22 @@ class Device(DeviceBase):
 
         return asyncio.run(_get_template())
 
-    def get_template_data(self, template_format: TemplateDataFormat = "simple"):
-        """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.get_template_data`
+    def get_template_data(self, template_format: TemplateDataFormat = "simple") -> Any:
+        """Get the template data entered on the device.
 
-        Gets the template data entered on device
+        Wraps :meth:`pupil_labs.realtime_api.device.Device.get_template_data`
 
-        :param str template_format: "simple" | "api"
-            "api" returns the data as is from the api eg. {"item_uuid": ["42"]}
-            "simple" returns the data parsed eg. {"item_uuid": 42}
+        Args:
+            template_format: Format of the returned data.
+                "api" returns the data as is from the api e.g., {"item_uuid": ["42"]}
+                "simple" returns the data parsed e.g., {"item_uuid": 42}
 
-        :raises pupil_labs.realtime_api.device.DeviceError:
-                if the template's data could not be fetched
+        Returns:
+            The result from the GET request.
+
+        Raises:
+            DeviceError: If the template's data could not be fetched.
+
         """
 
         async def _get_template_data() -> Any:
@@ -271,17 +326,24 @@ class Device(DeviceBase):
         template_data: dict[str, list[str]],
         template_format: TemplateDataFormat = "simple",
     ) -> Any:
-        """Wraps :py:meth:`pupil_labs.realtime_api.device.Device.post_template_data`
+        """Send the data to the currently selected template.
 
-        Sets the data for the currently selected template
+        Wraps :meth:`pupil_labs.realtime_api.device.Device.post_template_data`
 
-        :param str template_format: "simple" | "api"
-            "api" accepts the data as in realtime api format eg. {"item_uuid": ["42"]}
-            "simple" accepts the data in parsed format eg. {"item_uuid": 42}
+        Args:
+            template_data: The template data to send.
+            template_format: Format of the input data.
+                "api" accepts the data as in realtime api format e.g.,
+                {"item_uuid": ["42"]}
+                "simple" accepts the data in parsed format e.g., {"item_uuid": 42}
 
-        :raises pupil_labs.realtime_api.device.DeviceError:
-            if the data can not be sent.
-            ValueError: if invalid data type.
+        Returns:
+            The result from the POST request.
+
+        Raises:
+            DeviceError: If the data can not be sent.
+            ValueError: If invalid data type.
+
         """
 
         async def _post_template_data() -> Any:
@@ -295,6 +357,16 @@ class Device(DeviceBase):
     def receive_scene_video_frame(
         self, timeout_seconds: float | None = None
     ) -> SimpleVideoFrame | None:
+        """Receive a scene (world) video frame.
+
+        Args:
+            timeout_seconds: Maximum time to wait for a new frame.
+                If None, wait indefinitely.
+
+        Returns:
+            SimpleVideoFrame or None: The received video frame, or None if timeout was
+            reached.
+        """
         return cast(
             SimpleVideoFrame,
             self._receive_item(Sensor.Name.WORLD.value, timeout_seconds),
@@ -303,6 +375,16 @@ class Device(DeviceBase):
     def receive_gaze_datum(
         self, timeout_seconds: float | None = None
     ) -> GazeDataType | None:
+        """Receive a gaze data point.
+
+        Args:
+            timeout_seconds: Maximum time to wait for a new gaze datum.
+                If None, wait indefinitely.
+
+        Returns:
+            GazeDataType or None: The received gaze data, or None if timeout was
+            reached.
+        """
         return cast(
             GazeDataType, self._receive_item(Sensor.Name.GAZE.value, timeout_seconds)
         )
@@ -310,17 +392,46 @@ class Device(DeviceBase):
     def receive_eyes_video_frame(
         self, timeout_seconds: float | None = None
     ) -> SimpleVideoFrame | None:
+        """Receive an eye camera video frame.
+
+        Args:
+            timeout_seconds: Maximum time to wait for a new frame.
+                If None, wait indefinitely.
+
+        Returns:
+            SimpleVideoFrame or None: The received video frame, or None if timeout
+            was reached.
+        """
         return cast(
             SimpleVideoFrame,
             self._receive_item(Sensor.Name.EYES.value, timeout_seconds),
         )
 
     def receive_imu_datum(self, timeout_seconds: float | None = None) -> IMUData | None:
+        """Receive an IMU data point.
+
+        Args:
+            timeout_seconds: Maximum time to wait for a new IMU datum.
+                If None, wait indefinitely.
+
+        Returns:
+            IMUData or None: The received IMU data, or None if timeout was reached.
+        """
         return cast(IMUData, self._receive_item(Sensor.Name.IMU.value, timeout_seconds))
 
     def receive_eye_events(
         self, timeout_seconds: float | None = None
     ) -> FixationEventData | BlinkEventData | FixationOnsetEventData | None:
+        """Receive an eye event.
+
+        Args:
+            timeout_seconds: Maximum time to wait for a new eye event.
+                If None, wait indefinitely.
+
+        Returns:
+            FixationEventData | BlinkEventData | FixationOnsetEventData or None:
+            The received eye event, or None if timeout was reached.
+        """
         return cast(
             FixationEventData | BlinkEventData | FixationOnsetEventData,
             self._receive_item(Sensor.Name.EYE_EVENTS.value, timeout_seconds),
@@ -329,6 +440,15 @@ class Device(DeviceBase):
     def receive_matched_scene_video_frame_and_gaze(
         self, timeout_seconds: float | None = None
     ) -> MatchedItem | None:
+        """Receive a matched pair of scene video frame and gaze data.
+
+        Args:
+            timeout_seconds: Maximum time to wait for a matched pair.
+                If None, wait indefinitely.
+
+        Returns:
+            MatchedItem or None: The matched pair, or None if timeout was reached.
+        """
         return cast(
             MatchedItem, self._receive_item(MATCHED_ITEM_LABEL, timeout_seconds)
         )
@@ -336,6 +456,16 @@ class Device(DeviceBase):
     def receive_matched_scene_and_eyes_video_frames_and_gaze(
         self, timeout_seconds: float | None = None
     ) -> MatchedGazeEyesSceneItem | None:
+        """Receive a matched triplet of scene video frame, eye video frame, and gaze.
+
+        Args:
+            timeout_seconds: Maximum time to wait for a matched triplet.
+                If None, wait indefinitely.
+
+        Returns:
+            MatchedGazeEyesSceneItem or None: The matched triplet, or None if timeout
+            was reached.
+        """
         return cast(
             MatchedGazeEyesSceneItem,
             self._receive_item(MATCHED_GAZE_EYES_LABEL, timeout_seconds),
@@ -344,6 +474,15 @@ class Device(DeviceBase):
     def _receive_item(
         self, sensor: str, timeout_seconds: float | None = None
     ) -> ReceivedItemType:
+        """Receive an item from the specified sensor.
+
+        Args:
+            sensor: Sensor name to receive from.
+            timeout_seconds: Maximum time to wait for an item.
+
+        Returns:
+            The received item, or None if timeout was reached.
+        """
         if sensor == MATCHED_ITEM_LABEL:
             self.start_stream_if_needed(Sensor.Name.GAZE.value)
             self.start_stream_if_needed(Sensor.Name.WORLD.value)
@@ -367,11 +506,25 @@ class Device(DeviceBase):
             return None
 
     def start_stream_if_needed(self, sensor: str) -> None:
+        """Start streaming if not already streaming.
+
+        Args:
+            sensor: Sensor name to check.
+        """
         if not self._is_streaming_flags[sensor].is_set():
             logger.debug("receive_* called without being streaming")
             self.streaming_start(sensor)
 
     def streaming_start(self, stream_name: str) -> None:
+        """Start streaming data from the specified sensor.
+
+        Args:
+            stream_name: Name of the sensor to start streaming from. It can be one of
+            :py:attr:`Sensor.Name` values or None, which will start all streams.
+
+        Raises:
+            ValueError: If the stream name is not recognized.
+        """
         if stream_name is None:
             for event in (
                 self._EVENT.SHOULD_START_GAZE,
@@ -387,6 +540,15 @@ class Device(DeviceBase):
         self._streaming_trigger_action(event)
 
     def streaming_stop(self, stream_name: str | None = None) -> None:
+        """Stop streaming data from the specified sensor.
+
+        Args:
+            stream_name: Name of the sensor to start streaming from. It can be one of
+            :py:attr:`Sensor.Name` values or None, which will stop all streams.
+
+        Raises:
+            ValueError: If the stream name is not recognized.
+        """
         if stream_name is None:
             for event in (
                 self._EVENT.SHOULD_STOP_GAZE,
@@ -402,6 +564,7 @@ class Device(DeviceBase):
         self._streaming_trigger_action(event)
 
     def _streaming_trigger_action(self, action) -> None:
+        """Trigger the specified action."""
         if self._event_manager and self._background_loop:
             logger.debug(f"Sending {action.name} trigger")
             self._event_manager.trigger_threadsafe(action)
@@ -410,6 +573,11 @@ class Device(DeviceBase):
 
     @property
     def is_currently_streaming(self) -> bool:
+        """Check if data streaming is currently active.
+
+        Returns:
+            bool: True if streaming is active, False otherwise.
+        """
         return any(flag.is_set() for flag in self._is_streaming_flags.values())
 
     def estimate_time_offset(
@@ -419,7 +587,20 @@ class Device(DeviceBase):
     ) -> TimeEchoEstimates | None:
         """Estimate the time offset between the host device and the client.
 
-        See :py:mod:`pupil_labs.realtime_api.time_echo` for details.
+        This uses the Time Echo protocol to estimate the clock offset between
+        the device and the client.
+
+        Args:
+            number_of_measurements: Number of measurements to take.
+            sleep_between_measurements_seconds: Optional sleep time between
+            measurements.
+
+        Returns:
+            TimeEchoEstimates: Statistics for roundtrip durations and time offsets,
+                or None if estimation failed or device doesn't support the protocol.
+
+        See Also:
+            :mod:`pupil_labs.realtime_api.time_echo` for more details.
         """
         if self._status.phone.time_echo_port is None:
             logger.warning(
@@ -437,6 +618,11 @@ class Device(DeviceBase):
         )
 
     def close(self) -> None:
+        """Close the device connection and stop all background threads.
+
+        This method should be called when the device is no longer needed
+        to free up resources.
+        """
         if self._event_manager:
             if self.is_currently_streaming:
                 self.streaming_stop()
@@ -444,9 +630,12 @@ class Device(DeviceBase):
             self._auto_update_thread.join()
 
     def __del__(self) -> None:
+        """Clean up resources when the object is destroyed."""
         self.close()
 
     class _EVENT(enum.Enum):
+        """Internal events for the background worker."""
+
         SHOULD_WORKER_CLOSE = "should worker close"
         SHOULD_START_GAZE = "should start gaze"
         SHOULD_START_WORLD = "should start world"
@@ -460,6 +649,11 @@ class Device(DeviceBase):
         SHOULD_STOP_EYE_EVENTS = "should stop eye events"
 
     def _start_background_worker(self, start_streaming_by_default: bool) -> None:
+        """Start the background worker thread.
+
+        Args:
+            start_streaming_by_default: Whether to start streaming automatically.
+        """
         self._event_manager = None
         self._background_loop = None
 
@@ -507,9 +701,13 @@ class Device(DeviceBase):
     def _get_status(self) -> Status:
         """Request the device's current status.
 
-        Wraps :py:meth:`pupil_labs.realtime_api.device.Device.get_status`
+        Wraps :meth:`pupil_labs.realtime_api.device.Device.get_status`
 
-        :raises pupil_labs.realtime_api.device.DeviceError: if the request fails
+        Returns:
+            Status: The current device status.
+
+        Raises:
+            DeviceError: If the request fails.
         """
 
         async def _get_status() -> Status:
@@ -525,6 +723,15 @@ class Device(DeviceBase):
         is_streaming_flags: dict[str, threading.Event],
         start_streaming_by_default: bool = False,
     ):
+        """Background thread for auto-updating device status and handling streams.
+
+        Args:
+            device_weakref: Weak reference to the device instance.
+            auto_update_started_flag: Event to signal when the update thread has
+            started.
+            is_streaming_flag: Event to signal streaming state.
+            start_streaming_by_default: Whether to start streaming automatically.
+        """
         stream_managers = {
             Sensor.Name.GAZE.value: _StreamManager(
                 device_weakref,
@@ -554,6 +761,7 @@ class Device(DeviceBase):
         }
 
         async def _process_status_changes(changed: Component) -> None:
+            """Process status changes from the device."""
             if (
                 isinstance(changed, Sensor)
                 and changed.conn_type == Sensor.Connection.DIRECT.value
@@ -572,6 +780,7 @@ class Device(DeviceBase):
                     device_weakref()._errors.append(error)
 
         async def _auto_update_until_closed() -> None:
+            """Run the auto-update loop until closed."""
             async with _DeviceAsync.convert_from(device_weakref()) as device:
                 event_manager = _AsyncEventManager(Device._EVENT)
                 device_weakref()._event_manager = event_manager
@@ -613,11 +822,21 @@ class Device(DeviceBase):
                 device_weakref()._event_manager = None
 
         def start_stream(stream_name) -> None:
+            """Start streaming data from the specified sensor.
+
+            Args:
+                stream_name: Name of the sensor to start streaming from.
+            """
             is_streaming_flags[stream_name].set()
             stream_managers[stream_name].should_be_streaming = True
             logger.debug(f"Streaming started {stream_name}")
 
         def stop_stream(stream_name) -> None:
+            """Stop streaming data from the specified sensor.
+
+            Args:
+                stream_name: Name of the sensor to start streaming from.
+            """
             stream_managers[stream_name].should_be_streaming = False
             is_streaming_flags[stream_name].clear()
             logger.debug(f"Streaming stopped {stream_name}")

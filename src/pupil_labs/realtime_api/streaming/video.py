@@ -18,38 +18,83 @@ BGRBuffer = npt.NDArray[np.uint8]
 
 
 class VideoFrame(NamedTuple):
+    """A video frame with timestamp information.
+
+    This class represents a video frame from the scene camera with associated
+    timestamp information. The Class inherits VideoFrame from py.av library.
+
+    Attributes:
+        av_frame (av.VideoFrame): The video frame.
+        timestamp_unix_seconds (float): Timestamp in seconds since Unix epoch.
+    """
+
     av_frame: av.VideoFrame
     timestamp_unix_seconds: float
 
     @property
     def datetime(self) -> datetime.datetime:
+        """Get timestamp as a datetime object."""
         return datetime.datetime.fromtimestamp(self.timestamp_unix_seconds)
 
     @property
     def timestamp_unix_ns(self) -> int:
+        """Get timestamp in nanoseconds since Unix epoch."""
         return int(self.timestamp_unix_seconds * 1e9)
 
     def to_ndarray(self, *args: Any, **kwargs: Any) -> npt.NDArray:
+        """Convert the video frame to a NumPy array."""
         return self.av_frame.to_ndarray(*args, **kwargs)
 
     def bgr_buffer(self) -> BGRBuffer:
+        """Convert the video frame to a BGR buffer.
+
+        This method converts the video frame to a BGR buffer, which is a
+        NumPy array with the shape (height, width, 3) and dtype uint8.
+        The BGR format is commonly used in computer vision applications.
+
+        Returns:
+            BGRBuffer: The BGR buffer as a NumPy array.
+        """
         return self.to_ndarray(format="bgr24")
 
 
 async def receive_video_frames(
     url: str, *args: Any, **kwargs: Any
 ) -> AsyncIterator[VideoFrame]:
+    """Receive video frames from an RTSP stream.
+
+    This is a convenience function that creates an RTSPVideoFrameStreamer and yields
+    video frames.
+
+    Args:
+        url: RTSP URL to connect to.
+        *args: Additional positional arguments passed to RTSPVideoFrameStreamer.
+        **kwargs: Additional keyword arguments passed to RTSPVideoFrameStreamer.
+
+    Yields:
+        VideoFrame: Parsed video frames.
+    """
     async with RTSPVideoFrameStreamer(url, *args, **kwargs) as streamer:
         async for datum in streamer.receive():
             yield datum
 
 
 class RTSPVideoFrameStreamer(RTSPRawStreamer):
+    """Stream and decode video frames from an RTSP source.
+
+    This class extends RTSPRawStreamer to parse raw RTSP data into video frames
+    using the pupil_labs.video and pyav library for decoding.
+
+    Attributes:
+        _sprop_parameter_set_payloads: Cached SPS/PPS parameters for the H.264 codec.
+    """
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self._sprop_parameter_set_payloads = None
 
     async def receive(self) -> AsyncIterator[VideoFrame]:
+        """Receive and decode video frames from the RTSP stream."""
         codec = None
         frame_timestamp = None
 
@@ -81,7 +126,17 @@ class RTSPVideoFrameStreamer(RTSPRawStreamer):
 
     @property
     def sprop_parameter_set_payloads(self) -> list[ByteString] | None:
-        """:raises pupil_labs.realtime_api.streaming.base.SDPDataNotAvailableError:"""
+        """Get the SPS/PPS parameter set payloads for the H.264 codec.
+
+        These parameters are extracted from the SDP data and are required
+        for initializing the H.264 decoder.
+
+        Returns:
+            list[ByteString]: List of parameter set payloads.
+
+        Raises:
+            SDPDataNotAvailableError: If SDP data is missing required fields.
+        """
         if self._sprop_parameter_set_payloads is None:
             try:
                 attributes = self.reader.get_primary_media()["attributes"]

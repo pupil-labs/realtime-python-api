@@ -10,6 +10,17 @@ logger = logging.getLogger(__name__)
 
 
 class BlinkEventData(NamedTuple):
+    """Data for a blink event.
+
+    Represents a detected blink event with timing information.
+
+    Attributes:
+        event_type (int): Type of event (4 -> blink events).
+        start_time_ns (int): Start time of the blink in nanoseconds.
+        end_time_ns (int): End time of the blink in nanoseconds.
+        rtp_ts_unix_seconds (float): RTP timestamp in seconds since Unix epoch.
+    """
+
     event_type: int
     start_time_ns: int
     end_time_ns: int
@@ -17,6 +28,7 @@ class BlinkEventData(NamedTuple):
 
     @classmethod
     def from_raw(cls, data: RTSPData) -> "BlinkEventData":
+        """Create a BlinkEventData instance from raw RTSP data."""
         (
             event_type,
             start_time_ns,
@@ -26,14 +38,41 @@ class BlinkEventData(NamedTuple):
 
     @property
     def datetime(self) -> datetime.datetime:
+        """Get the timestamp as a datetime object."""
         return datetime.datetime.fromtimestamp(self.rtp_ts_unix_seconds)
 
     @property
     def timestamp_unix_ns(self) -> int:
+        """Get the timestamp in nanoseconds since the Unix epoch."""
         return int(self.rtp_ts_unix_seconds * 1e9)
 
 
 class FixationEventData(NamedTuple):
+    """Data for a fixation or saccade event.
+
+    Represents a completed fixation or saccade event with detailed information.
+
+    Attributes:
+        event_type (int): Type of event (0 for saccade, 1 for fixation).
+        start_time_ns (int): Start time in nanoseconds.
+        end_time_ns (int): End time in nanoseconds.
+        ---
+        Only for fixation events:
+        start_gaze_x (float): Start gaze x-coordinate in pixels.
+        start_gaze_y (float): Start gaze y-coordinate in pixels.
+        end_gaze_x (float): End gaze x-coordinate in pixels.
+        end_gaze_y (float): End gaze y-coordinate in pixels.
+        mean_gaze_x (float): Mean gaze x-coordinate in pixels.
+        mean_gaze_y (float): Mean gaze y-coordinate in pixels.
+        ---
+        Only for saccade events:
+        amplitude_pixels (float): Amplitude in pixels.
+        amplitude_angle_deg (float): Amplitude in degrees.
+        mean_velocity (float): Mean velocity pixels per degree.
+        max_velocity (float): Maximum velocity pixels per degree.
+        rtp_ts_unix_seconds (float): RTP timestamp in seconds since Unix epoch.
+    """
+
     event_type: int  # 0: Saccade, 1: Fixation
     start_time_ns: int
     end_time_ns: int
@@ -51,6 +90,7 @@ class FixationEventData(NamedTuple):
 
     @classmethod
     def from_raw(cls, data: RTSPData) -> "FixationEventData":
+        """Create a FixationEventData instance from raw RTSP data."""
         (
             event_type,
             start_time_ns,
@@ -85,14 +125,26 @@ class FixationEventData(NamedTuple):
 
     @property
     def datetime(self) -> datetime.datetime:
+        """Get the timestamp as a datetime object."""
         return datetime.datetime.fromtimestamp(self.rtp_ts_unix_seconds)
 
     @property
     def timestamp_unix_ns(self) -> int:
+        """Get the timestamp in nanoseconds since the Unix epoch."""
         return int(self.rtp_ts_unix_seconds * 1e9)
 
 
 class FixationOnsetEventData(NamedTuple):
+    """Data for a fixation or saccade onset event.
+
+    Represents the beginning of a fixation or saccade event.
+
+    Attributes:
+        event_type (int): Type of event (2 for saccade onset, 3 for fixation onset). TODO: check
+        start_time_ns (int): Start time in nanoseconds.
+        rtp_ts_unix_seconds (float): RTP timestamp in seconds since Unix epoch.
+    """
+
     event_type: int  # 0: Saccade, 1: Fixation
     start_time_ns: int
     rtp_ts_unix_seconds: float
@@ -103,29 +155,61 @@ class FixationOnsetEventData(NamedTuple):
             event_type,
             start_time_ns,
         ) = struct.unpack("!iq", data.raw)
+        """Create a FixationOnsetEventData instance from raw RTSP data."""
         return cls(event_type, start_time_ns, data.timestamp_unix_seconds)
 
     @property
     def datetime(self) -> datetime.datetime:
+        """Get the timestamp as a datetime object."""
         return datetime.datetime.fromtimestamp(self.rtp_ts_unix_seconds)
 
     @property
     def timestamp_unix_ns(self) -> int:
+        """Get the timestamp in nanoseconds since the Unix epoch."""
         return int(self.rtp_ts_unix_seconds * 1e9)
 
 
 async def receive_eye_events_data(
     url: str, *args: Any, **kwargs: Any
 ) -> AsyncIterator[FixationEventData | FixationOnsetEventData | BlinkEventData]:
+    """Receive eye events data from an RTSP stream.
+
+    This is a convenience function that creates an RTSPEyeEventStreamer and yields
+    parsed eye event data.
+
+    Args:
+        url: RTSP URL to connect to.
+        *args: Additional positional arguments passed to RTSPEyeEventStreamer.
+        **kwargs: Additional keyword arguments passed to RTSPEyeEventStreamer.
+
+    Yields:
+        FixationEventData: Parsed fixation event data.
+    """
     async with RTSPEyeEventStreamer(url, *args, **kwargs) as streamer:
         async for datum in streamer.receive():
             yield datum
 
 
 class RTSPEyeEventStreamer(RTSPRawStreamer):
+    """Stream and parse eye events from an RTSP source.
+
+    This class extends RTSPRawStreamer to parse raw RTSP data into structured
+    eye event data objects.
+    """
+
     async def receive(
         self,
     ) -> AsyncIterator[FixationEventData | FixationOnsetEventData | BlinkEventData]:
+        """Receive and parse eye events from the RTSP stream.
+
+        Yields:
+            FixationEventData | FixationOnsetEventData | BlinkEventData: Parsed eye
+                event data.
+
+        Raises:
+            KeyError: If the event type is not recognized.
+            Exception: If there is an error parsing the event data.
+        """
         data_class_by_type = {
             0: FixationEventData,
             1: FixationEventData,

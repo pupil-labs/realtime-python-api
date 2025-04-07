@@ -64,16 +64,31 @@ TimeFunction = Callable[[], int]
 
 
 class TimeEcho(NamedTuple):
-    """Measurement of a single time echo"""
+    """Measurement of a single time echo.
+
+    Attributes:
+        roundtrip_duration_ms (int): Round trip duration of the time echo, in
+            milliseconds.
+        time_offset_ms (int): Time offset between host and client, in milliseconds.
+
+    """
 
     roundtrip_duration_ms: int
-    "Round trip duration of the time echo, in milliseconds"
     time_offset_ms: int
-    "Time offset between host and client, in milliseconds"
 
 
 class Estimate:
-    """Provides easy access to statistics over a collection of measurements"""
+    """Provides easy access to statistics over a collection of measurements.
+
+    This class calculates descriptive statistics (mean, standard deviation, median)
+    over a collection of measurements.
+
+    Attributes:
+        measurements (tuple[int]): The raw measurements.
+        mean (float): Mean value of the measurements.
+        std (float): Standard deviation of the measurements.
+        median (float): Median value of the measurements.
+    """
 
     def __init__(self, measurements: Iterable[int]) -> None:
         self.measurements = tuple(measurements)
@@ -83,14 +98,17 @@ class Estimate:
 
     @property
     def mean(self) -> float:
+        """Mean value of the measurements."""
         return self._mean
 
     @property
     def std(self) -> float:
+        """Standard deviation of the measurements."""
         return self._std
 
     @property
     def median(self) -> float:
+        """Median value of the measurements."""
         return self._median
 
     def __repr__(self) -> str:
@@ -104,7 +122,12 @@ class Estimate:
 
 
 class TimeEchoEstimates(NamedTuple):
-    """Provides estimates for the roundtrip duration and time offsets"""
+    """Provides estimates for the roundtrip duration and time offsets.
+
+    Attributes:
+        roundtrip_duration_ms (Estimate): Statistics for roundtrip durations.
+        time_offset_ms (Estimate): Statistics for time offsets.
+    """
 
     roundtrip_duration_ms: Estimate
     time_offset_ms: Estimate
@@ -116,6 +139,16 @@ def time_ms() -> int:
 
 
 class TimeOffsetEstimator:
+    """Estimates the time offset between PC and Companion using the Time Echo protocol.
+
+    This class implements the Time Echo protocol to estimate the time offset
+    between the client and host clocks.
+
+    Attributes:
+        address (str): Host address.
+        port (int): Host port for the Time Echo protocol.
+    """
+
     def __init__(self, address: str, port: int) -> None:
         self.address = address
         self.port = port
@@ -126,6 +159,18 @@ class TimeOffsetEstimator:
         sleep_between_measurements_seconds: float | None = None,
         time_fn_ms: TimeFunction = time_ms,
     ) -> TimeEchoEstimates | None:
+        """Estimate the time offset between client and host.
+
+        Args:
+            number_of_measurements: Number of measurements to take.
+            sleep_between_measurements_seconds: Optional sleep time between
+                measurements.
+            time_fn_ms: Function that returns the current time in milliseconds.
+
+        Returns:
+            TimeEchoEstimates: Statistics for roundtrip durations and time offsets,
+                or None if estimation failed.
+        """
         measurements = collections.defaultdict(list)
 
         try:
@@ -174,7 +219,19 @@ class TimeOffsetEstimator:
         reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,
     ) -> TimeEcho:
-        """Request a time echo, measure the roundtrip time, and estimate offset"""
+        """Request a time echo, measure the roundtrip time and estimate the time offset.
+
+        Args:
+            time_fn_ms: Function that returns the current time in milliseconds.
+            reader: Stream reader for receiving responses.
+            writer: Stream writer for sending requests.
+
+        Returns:
+            TimeEcho: Roundtrip duration and time offset.
+
+        Raises:
+            ValueError: If the response is invalid.
+        """
         before_ms = time_fn_ms()
         before_ms_bytes = struct.pack("!Q", before_ms)
         writer.write(before_ms_bytes)

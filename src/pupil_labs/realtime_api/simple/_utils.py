@@ -39,9 +39,23 @@ StreamerClassType = type[
     | RTSPEyeEventStreamer
     | RTSPRawStreamer
 ]
+"""Type of streamer classes used for streaming data from sensors."""
 
 
 class _AsyncEventManager(Generic[EventKey]):
+    """Manages a collection of named asyncio events.
+
+    Provides mechanisms to trigger events (including thread-safe triggering)
+    and wait for the first event among the managed collection to be set.
+
+    Designed for internal use within asynchronous contexts.
+
+    Attributes:
+        events: A read-only mapping of registered event keys to their
+                corresponding asyncio.Event objects.
+        name_to_register: An iterable of event keys to register.
+    """
+
     def __init__(
         self,
         names_to_register: Iterable[EventKey],
@@ -53,18 +67,49 @@ class _AsyncEventManager(Generic[EventKey]):
 
     @property
     def events(self) -> Mapping[EventKey, asyncio.Event]:
+        """Provides read-only access to the managed events dictionary."""
         return MappingProxyType(self._events)
 
     def trigger(self, name: EventKey) -> None:
+        """Set the event associated with the given name.
+
+        Args:
+            name: The key of the event to trigger (set).
+
+        Raises:
+            KeyError: If `name` is not a registered event key.
+        """
         self._events[name].set()
 
     def trigger_threadsafe(
         self, name: EventKey, loop: asyncio.AbstractEventLoop | None = None
     ) -> None:
+        """Set the event associated with the given name in a thread-safe manner.
+
+        Schedules the event's `set()` method to be called within the specified
+        event loop (or the loop the manager was created in).
+
+        Args:
+            name: The key of the event to trigger.
+            loop: The asyncio event loop to run the trigger in. Defaults to the
+                loop the manager was initialized with.
+
+        Raises:
+            KeyError: If `name` is not a registered event key.
+        """
         loop = loop or self._loop
         loop.call_soon_threadsafe(self.trigger, name)
 
     async def wait_for_first_event(self) -> EventKey:
+        """Wait until any one of the managed events is set.
+
+        Once an event is set, this method returns the key associated with that
+        event. It also clears the triggered event and cancels the waits for
+        any other pending events within this specific call.
+
+        Returns:
+            The key of the first event that was triggered.
+        """
         tasks = {
             asyncio.create_task(event.wait()): name
             for name, event in self._events.items()
@@ -81,6 +126,26 @@ class _AsyncEventManager(Generic[EventKey]):
 
 
 class _StreamManager:
+    """Manages a single RTSP stream connection and data processing.
+
+    Handles starting and stopping the stream based on sensor connectivity
+    and an externally controlled 'should_be_streaming' flag. It also
+    performs timestamp-based matching between world camera frames, gaze data,
+    and eye camera frames when processing world camera streams.
+
+    Designed for internal use, associated with a `Device` instance.
+
+    Args:
+        device_weakref: A weak reference to the parent `Device` object. Used
+            to access shared data queues and caches without creating circular
+            references.
+        streaming_cls: The specific RTSP streamer class (either for video frames
+            or gaze data) to be used for this stream.
+        should_be_streaming_by_default: The initial intended state of the
+            stream (whether it should attempt to stream immediately if a
+            sensor is available).
+    """
+
     # TODO: Refactor matching logic to be more flexible
     def __init__(
         self,
@@ -96,10 +161,20 @@ class _StreamManager:
 
     @property
     def should_be_streaming(self) -> bool:
+        """Indicates whether the stream is intended to be active."""
         return self._should_be_streaming
 
     @should_be_streaming.setter
     def should_be_streaming(self, should_stream: bool) -> None:
+        """Set the intended streaming state and starts/stops the stream task.
+
+        If the state changes and `should_stream` is True, it attempts to start
+        streaming using the most recent sensor information (if available and
+        connected). If `should_stream` is False, it stops any active streaming task.
+
+        Args:
+            should_stream: The desired streaming state (True to stream, False to stop).
+        """
         if self._should_be_streaming == should_stream:
             return  # state is already set to desired value
         self._should_be_streaming = should_stream
@@ -109,11 +184,29 @@ class _StreamManager:
             self._stop_streaming_task_if_running()
 
     async def handle_sensor_update(self, sensor: Sensor) -> None:
+        """Update the manager with new sensor information and adjusts streaming.
+
+        Stops any currently running stream associated with the previous sensor state.
+        Then, if streaming is intended (`should_be_streaming` is True) and the
+        new sensor is connected, it starts a new streaming task.
+
+        Args:
+            sensor: The updated Sensor information.
+        """
         self._stop_streaming_task_if_running()
         self._start_streaming_task_if_intended(sensor)
         self._recent_sensor = sensor
 
     def _start_streaming_task_if_intended(self, sensor: Sensor) -> None:
+        """Start the streaming task if streaming is intended and sensor is connected.
+
+        Checks if `should_be_streaming` is True and the provided `sensor` is
+        connected. If both conditions are met and no task is currently running,
+        it creates and starts the `append_data_from_sensor_to_queue` task.
+
+        Args:
+            sensor: The Sensor information used to establish the stream.
+        """
         if sensor.connected and self.should_be_streaming:
             logger_receive_data.info(f"Starting stream to {sensor}")
             self._streaming_task = asyncio.create_task(
@@ -121,6 +214,7 @@ class _StreamManager:
             )
 
     def _stop_streaming_task_if_running(self) -> None:
+        """Cancel and clears the current streaming task if it exists."""
         if self._streaming_task is not None:
             logger_receive_data.info(
                 f"Cancelling prior streaming connection to {self._recent_sensor.sensor}"
@@ -129,6 +223,23 @@ class _StreamManager:
             self._streaming_task = None
 
     async def append_data_from_sensor_to_queue(self, sensor: Sensor) -> None:  # noqa: C901 for now
+        """Connect to the sensor's RTSP stream and processes incoming data.
+
+        Establishes a connection using the provided `sensor` URL and the
+        manager's `_streaming_cls`. It receives items (e.g. gaze data or video frames),
+        converts video frames if necessary, appends them to the appropriate queue
+        in the parent `Device` (via weakref), performs timestamp-based matching
+        for world camera frames with gaze and eyes data, and triggers events
+        on the parent `Device` upon receiving new or matched items.
+
+        Args:
+            sensor: The Sensor whose stream should be processed.
+
+        Raises:
+            Various exceptions from the underlying streaming class (`_streaming_cls`)
+            if connection or data reception fails.
+            AttributeError: If the parent Device accessed via weakref no longer exists.
+        """
         self._device()._cached_gaze_for_matching.clear()
         self._device()._cached_eyes_for_matching.clear()
         async with self._streaming_cls(
@@ -241,6 +352,7 @@ class _StreamManager:
     def _get_closest_item(
         cache: deque[tuple[float, GazeDataType]], timestamp: float
     ) -> GazeDataType:
+        """Get the closest item in the cache to the given timestamp."""
         item_ts, item = cache.popleft()
         # assumes monotonically increasing timestamps
         if item_ts > timestamp:

@@ -29,6 +29,12 @@ logger = logging.getLogger(__name__)
 
 
 class APIPath(enum.Enum):
+    """API endpoint paths for the Realtime API.
+
+    This enum defines the various API endpoints that can be accessed
+    through the Realtime API.
+    """
+
     STATUS = "/status"
     RECORDING_START = "/recording:start"
     RECORDING_STOP_AND_SAVE = "/recording:stop_and_save"
@@ -41,40 +47,72 @@ class APIPath(enum.Enum):
     def full_address(
         self, address: str, port: int, protocol: str = "http", prefix: str = "/api"
     ) -> str:
+        """Construct a full URL for this API endpoint."""
         return f"{protocol}://{address}:{port}" + prefix + self.value
 
 
 class DiscoveredDeviceInfo(NamedTuple):
-    name: str
-    """Full mDNS service name.
-    Follows ``'PI monitor:<phone name>:<hardware id>._http._tcp.local.'`` naming pattern
+    """Information about a discovered device on the network.
+
+    Attributes:
+        name (str): Full mDNS service name. Follows
+            ``'PI monitor:<phone name>:<hardware id>._http._tcp.local.'`` naming
+            pattern.
+        server (str): DNS name, e.g. ``'neon.local.' or 'pi.local.'``.
+        port (int): Port number, e.g. ``8080``.
+        addresses (list[str]): IP addresses, e.g. ``['192.168.0.2']``.
     """
+
+    name: str
     server: str
-    "e.g. ``'pi.local.'``"
     port: int
-    "e.g. `8080`"
     addresses: list[str]
-    "e.g. ``['192.168.0.2']``"
 
 
 class Event(NamedTuple):
+    """Event information from the device.
+
+    Attributes:
+        name (str | None): Name of the event.
+        recording_id (str | None): ID of the recording this event belongs to.
+        timestamp (int): Unix epoch timestamp in nanoseconds.
+    """
+
     name: str | None
     recording_id: str | None
-    timestamp: int  # unix epoch, in nanoseconds
+    timestamp: int
 
     @classmethod
-    def from_dict(cls, dct: dict[str, Any]) -> "Event":
+    def from_dict(cls, event_dict: dict[str, Any]) -> "Event":
+        """Create an Event from a dictionary.
+
+        Args:
+            event_dict: Dictionary containing event data.
+
+        Returns:
+            Event: New Event instance.
+        """
         return cls(
-            name=dct.get("name"),
-            recording_id=dct.get("recording_id"),
-            timestamp=dct["timestamp"],
+            name=event_dict.get("name"),
+            recording_id=event_dict.get("recording_id"),
+            timestamp=event_dict["timestamp"],
         )
 
     @property
     def datetime(self) -> datetime:
+        """Get the event time as a datetime object.
+
+        Returns:
+            datetime: Event time as a Python datetime.
+        """
         return datetime.fromtimestamp(self.timestamp / 1e9)
 
     def __repr__(self) -> str:
+        """Get string representation of the event.
+
+        Returns:
+            str: String representation of the event.
+        """
         return (
             f"Event(name={self.name} "
             f"recording_id={self.recording_id} "
@@ -84,6 +122,19 @@ class Event(NamedTuple):
 
 
 class Phone(NamedTuple):
+    """Information relative to the Companion Device.
+
+    Attributes:
+        battery_level (int): Battery percentage.
+        battery_state (Literal["OK", "LOW", "CRITICAL"]): Battery state.
+        device_id (str): Unique device identifier.
+        device_name (str): Human-readable device name.
+        ip (str): IP address of the phone.
+        memory (int): Available memory.
+        memory_state (Literal["OK", "LOW", "CRITICAL"]): Memory state.
+        time_echo_port (int | None): Port for time synchronization.
+    """
+
     battery_level: int
     battery_state: Literal["OK", "LOW", "CRITICAL"]
     device_id: str
@@ -95,6 +146,18 @@ class Phone(NamedTuple):
 
 
 class Hardware(NamedTuple):
+    """Information about the Hardware connected (eye tracker)
+
+    Attributes:
+        version (str): Hardware version.
+            1-> Pupil Invisible
+            2-> Neon
+        glasses_serial (str): Serial number of the glasses. For Pupil Invisible devices.
+        world_camera_serial (str): Serial number of the world camera.
+        For Pupil Invisible devices.
+        module_serial (str): Serial number of the module. For Neon devices.
+    """
+
     version: str = "unknown"
     glasses_serial: str = "unknown"
     world_camera_serial: str = "unknown"
@@ -104,14 +167,20 @@ class Hardware(NamedTuple):
 class NetworkDevice(NamedTuple):
     """Information about devices discovered by the host device, not the client.
 
-    .. note::
-        This class represents device information made available via the websocket update
-        connection by the host device (exposed via
-        :py:meth:`pupil_labs.realtime_api.device.Device.status_updates`). Devices
-        discovered directly by this library are represented as
-        :py:class:`.DiscoveredDeviceInfo` and returned by
-        :py:func:`pupil_labs.realtime_api.discovery.discover_devices` and
-        :py:class:`pupil_labs.realtime_api.discovery.Network`.
+    This class represents device information made available via the websocket update
+    connection by the host device (exposed via
+    :meth:`~pupil_labs.realtime_api.device.Device.status_updates`). Devices
+    discovered directly by this library are represented as
+    :class:`~.DiscoveredDeviceInfo` and returned by
+    :func:`~pupil_labs.realtime_api.discovery.discover_devices` and
+    :class:`~pupil_labs.realtime_api.discovery.Network`.
+
+    Attributes:
+        ip (str): IP address of the device.
+        device_id (str): Unique device identifier.
+        device_name (str): Human-readable device name (can be modified by the user in
+        the Companion App settings).
+        connected (bool): Whether the device is connected.
     """
 
     ip: str
@@ -121,6 +190,18 @@ class NetworkDevice(NamedTuple):
 
 
 class Sensor(NamedTuple):
+    """Information about a sensor on the device.
+
+    Attributes:
+        sensor (str): Sensor type (see :attr:`Sensor.Name`).
+        conn_type (str): Connection type (see :attr:`Sensor.Connection`).
+        connected (bool): Whether the sensor is connected.
+        ip (str | None): IP address of the sensor.
+        params (str | None): Additional parameters.
+        port (int | None): Port number.
+        protocol (str): Protocol used for the connection.
+    """
+
     sensor: str
     conn_type: str
     connected: bool = False
@@ -132,6 +213,11 @@ class Sensor(NamedTuple):
 
     @property
     def url(self) -> str | None:
+        """Get the URL for accessing this sensor's data stream.
+
+        Returns:
+            str | None: URL if connected, None otherwise.
+        """
         if self.connected:
             return f"{self.protocol}://{self.ip}:{self.port}/?{self.params}"
         return None
@@ -151,6 +237,15 @@ class Sensor(NamedTuple):
 
 
 class Recording(NamedTuple):
+    """Information about a recording.
+
+    Attributes:
+        action (str): Current recording action.
+        id (str): Unique recording identifier.
+        message (str): Status message.
+        rec_duration_ns (int): Recording duration in nanoseconds.
+    """
+
     action: str
     id: str
     message: str
@@ -158,11 +253,12 @@ class Recording(NamedTuple):
 
     @property
     def rec_duration_seconds(self) -> float:
+        """Get the recording duration in seconds."""
         return self.rec_duration_ns / 1e9
 
 
 Component = Phone | Hardware | Sensor | Recording | NetworkDevice | Event
-"""Type annotation for :py:class:`Status <.Status>` components."""
+"""Type annotation for :class:`Status` components."""
 
 ComponentRaw = dict[str, Any]
 """Type annotation for json-parsed responses from the REST and Websocket API."""
@@ -177,25 +273,44 @@ _model_class_map: dict[str, type[Component]] = {
 }
 
 TemplateDataFormat = Literal["api", "simple"]
+"""Format specification for template data."""
 
 
 def _init_cls_with_annotated_fields_only(
     cls: type[Component], d: dict[str, Any]
 ) -> Component:
+    """Initialize a class with only the fields that are annotated.
+
+    Args:
+        cls: Class to initialize.
+        d: Dictionary of field values.
+
+    Returns:
+        Instance of cls with annotated fields from d.
+    """
     return cls(**{attr: d.get(attr) for attr in cls.__annotations__})
 
 
 class UnknownComponentError(ValueError):
+    """Exception raised when a component cannot be parsed."""
+
     pass
 
 
 def parse_component(raw: ComponentRaw) -> Component:
     """Initialize an explicitly modelled representation
 
-    (:py:obj:`pupil_labs.realtime_api.models.Component`) from the json-parsed dictionary
-    (:py:obj:`pupil_labs.realtime_api.models.ComponentRaw`) received from the API.
+    (:obj:`pupil_labs.realtime_api.models.Component`) from the json-parsed dictionary
+    (:obj:`pupil_labs.realtime_api.models.ComponentRaw`) received from the API.
 
-    :raises UnknownComponentError: if the component name cannot be mapped to an
+    Args:
+        raw (ComponentRaw): Dictionary containing component data.
+
+    Returns:
+        Component: Parsed component instance.
+
+    Raises:
+        UnknownComponentError: If the component name cannot be mapped to an
         explicitly modelled class or the contained data does not fit the modelled
         fields.
     """
@@ -212,7 +327,15 @@ def parse_component(raw: ComponentRaw) -> Component:
 
 @dataclass_python
 class Status:
-    "Represents the Companion's full status"
+    """Represents the Companion's Device full status
+
+    Attributes:
+        phone (Phone): Information about the connected phone. Always present.
+        hardware (Hardware): Information about glasses connected, won't be present if
+            they are not connected
+        sensors (list[Sensor]): List of sensor information.
+        recording (Recording | None): Current recording, if any.
+    """
 
     phone: Phone
     hardware: Hardware
@@ -221,9 +344,17 @@ class Status:
 
     @classmethod
     def from_dict(cls, status_json_result: list[ComponentRaw]) -> "Status":
-        phone = None  # always present
-        recording = None  # might not be present
-        hardware = Hardware()  # won't be present if glasses are not connected
+        """Create a Status from a list of raw components.
+
+        Args:
+            status_json_result: List of raw component dictionaries.
+
+        Returns:
+            Status: New Status instance.
+        """
+        phone = None
+        recording = None
+        hardware = Hardware()
         sensors = []
         for dct in status_json_result:
             try:
@@ -247,6 +378,11 @@ class Status:
         return cls(phone, hardware, sensors, recording)
 
     def update(self, component: Component) -> None:
+        """Update Component.
+
+        Args:
+            component: Component to update.
+        """
         if isinstance(component, Phone):
             self.phone = component
         elif isinstance(component, Hardware):
@@ -265,6 +401,15 @@ class Status:
     def matching_sensors(
         self, name: Sensor.Name, connection: Sensor.Connection
     ) -> Iterator[Sensor]:
+        """Find sensors matching specified criteria.
+
+        Args:
+            name: Sensor name to match, or ANY to match any name.
+            connection: Connection type to match, or ANY to match any type.
+
+        Yields:
+            Sensor: Sensors matching the criteria.
+        """
         for sensor in self.sensors:
             if name is not Sensor.Name.ANY and sensor.sensor != name.value:
                 continue
@@ -276,6 +421,11 @@ class Status:
             yield sensor
 
     def direct_world_sensor(self) -> Sensor | None:
+        """Get the scene camera sensor with direct connection.
+
+        Note:
+            Pupil Invisible devices, the world camera can be detached
+        """
         return next(
             self.matching_sensors(Sensor.Name.WORLD, Sensor.Connection.DIRECT),
             Sensor(
@@ -284,6 +434,7 @@ class Status:
         )
 
     def direct_gaze_sensor(self) -> Sensor | None:
+        """Get the gaze sensor with direct connection."""
         return next(
             self.matching_sensors(Sensor.Name.GAZE, Sensor.Connection.DIRECT),
             Sensor(
@@ -292,6 +443,7 @@ class Status:
         )
 
     def direct_imu_sensor(self) -> Sensor | None:
+        """Get the IMU sensor with direct connection."""
         return next(
             self.matching_sensors(Sensor.Name.IMU, Sensor.Connection.DIRECT),
             Sensor(
@@ -300,6 +452,7 @@ class Status:
         )
 
     def direct_eyes_sensor(self) -> Sensor | None:
+        """Get the eye camera sensor with direct connection. Only available on Neon."""
         return next(
             self.matching_sensors(Sensor.Name.EYES, Sensor.Connection.DIRECT),
             Sensor(
@@ -308,6 +461,10 @@ class Status:
         )
 
     def direct_eye_events_sensor(self) -> Sensor | None:
+        """Get blinks, fixations _sensor_.
+
+        Only available on Neon with Companion App version 2.9 or newer.
+        """
         return next(
             self.matching_sensors(Sensor.Name.EYE_EVENTS, Sensor.Connection.DIRECT),
             Sensor(
@@ -320,11 +477,26 @@ class Status:
 TemplateItemWidgetType = Literal[
     "TEXT", "PARAGRAPH", "RADIO_LIST", "CHECKBOX_LIST", "SECTION_HEADER", "PAGE_BREAK"
 ]
+"""Type of widget to display for a template item."""
+
 TemplateItemInputType = Literal["any", "integer", "float"]
+"""Type of input data for a template item."""
 
 
 @dataclass_pydantic(kw_only=True)
 class TemplateItem:
+    """Individual item/ question in a Template.
+
+    Attributes:
+        id (UUID): Unique identifier.
+        title (str): The question or title of the item.
+        widget_type (TemplateItemWidgetType): Type of widget to display.
+        input_type (TemplateItemInputType): Type of input data.
+        choices (list[str] | None): Available choices for selection items.
+        help_text (str | None): Help / description text for the item.
+        required (bool): Whether the item is required.
+    """
+
     id: UUID
     title: str
     widget_type: TemplateItemWidgetType
@@ -339,6 +511,20 @@ class TemplateItem:
         template_format: TemplateDataFormat = "simple",
         raise_exception: bool = True,
     ) -> list[ErrorDetails]:
+        """Validate an answer for this template item.
+
+        Args:
+            answer: Answer to validate.
+            template_format: Format of the template ("simple" or "api").
+            raise_exception: Whether to raise an exception on validation failure.
+
+        Returns:
+            list: List of validation errors, or empty list if validation succeeded.
+
+        Raises:
+            InvalidTemplateAnswersError: If validation fails and raise_exception is
+            True.
+        """
         answers = {
             str(self.id): self._pydantic_validator(template_format=template_format)
         }
@@ -362,6 +548,17 @@ class TemplateItem:
     def _pydantic_validator(
         self, template_format: TemplateDataFormat
     ) -> tuple[type, FieldInfo] | None:
+        """Create a Pydantic validator for this item.
+
+        Args:
+            template_format: Format of the Template ("simple" or "api").
+
+        Returns:
+            tuple: (type, field) tuple for Pydantic model creation.
+
+        Raises:
+            ValueError: If widget_type or format is invalid.
+        """
         if self.widget_type in ("SECTION_HEADER", "PAGE_BREAK"):
             return None
         if self.widget_type not in (
@@ -381,6 +578,11 @@ class TemplateItem:
 
     @property
     def _value_type(self) -> type:
+        """Get the Python type for this item's values.
+
+        Returns:
+            type: Python type for values.
+        """
         if self.input_type == "integer":
             return int
         if self.input_type == "float":
@@ -388,6 +590,11 @@ class TemplateItem:
         return str
 
     def _simple_model_validator(self) -> tuple[type, FieldInfo]:
+        """A simple model validator for the template item.
+
+        Returns:
+            tuple: (type, field) tuple for Pydantic model creation.
+        """
         field = Field(title=self.title, description=self.help_text)
         answer_input_type = self._value_type
         if self.widget_type in {"RADIO_LIST", "CHECKBOX_LIST"}:
@@ -416,6 +623,11 @@ class TemplateItem:
         return (answer_input_type, field)
 
     def _api_model_validator(self) -> tuple[type, FieldInfo]:
+        """An API model validator for the template item.
+
+        Returns:
+            tuple: (type, field) tuple for Pydantic model creation.
+        """
         field = Field(title=self.title, description=self.help_text)
         answer_input_entry_type = self._value_type
 
@@ -449,6 +661,23 @@ class TemplateItem:
 
 @dataclass_pydantic(kw_only=True)
 class Template:
+    """Template Class for data collection.
+
+    Attributes:
+        created_at (datetime): Creation timestamp.
+        id (UUID): Unique identifier.
+        name (str): Template name.
+        updated_at (datetime): Last update timestamp.
+        recording_name_format (list[str]): Format for recording names.
+        items (list[TemplateItem]): List of template items.
+        label_ids (list[UUID]): Associated label IDs.
+        is_default_template (bool): Whether this is the default template.
+        description (str | None): Template description.
+        recording_ids (list[UUID] | None): Associated recording IDs.
+        published_at (datetime | None): Publication timestamp.
+        archived_at (datetime | None): Archival timestamp.
+    """
+
     created_at: datetime
     id: UUID
     name: str
@@ -465,6 +694,14 @@ class Template:
     def convert_from_simple_to_api_format(
         self, data: dict[str, Any]
     ) -> dict[str, list[Any]]:
+        """Convert data from simple format to API format.
+
+        Args:
+            data: Data in simple format.
+
+        Returns:
+            dict: Data in API format.
+        """
         api_format = {}
         for question_id, value in data.items():
             if value is None:
@@ -478,6 +715,14 @@ class Template:
     def convert_from_api_to_simple_format(
         self, data: dict[str, list[str]]
     ) -> dict[str, Any]:
+        """Convert data from API format to simple format.
+
+        Args:
+            data: Data in API format.
+
+        Returns:
+            dict: Data in simple format.
+        """
         simple_format = {}
         for question_id, value in data.items():
             question = self.get_question_by_id(question_id)
@@ -496,6 +741,14 @@ class Template:
         return simple_format
 
     def get_question_by_id(self, question_id: str | UUID) -> TemplateItem | None:
+        """Get a template item by ID.
+
+        Args:
+            question_id: ID of the template item.
+
+        Returns:
+            TemplateItem | None: The template item, or None if not found.
+        """
         for item in self.items:
             if str(item.id) == str(question_id):
                 return item
@@ -504,6 +757,14 @@ class Template:
     def _create_answer_model(
         self, template_format: TemplateDataFormat
     ) -> type[BaseModel]:
+        """Create a Pydantic model for validating answers.
+
+        Args:
+            template_format: Format of the answers ("simple" or "api").
+
+        Returns:
+            type: Pydantic model class.
+        """
         answer_types = {}
         for question in self.items:
             validator = question._pydantic_validator(template_format=template_format)
@@ -525,6 +786,20 @@ class Template:
         raise_exception: bool = True,
         template_format=TemplateDataFormat,
     ) -> list[ErrorDetails]:
+        """Validate answers for this Template.
+
+        Args:
+            answers: Answers to validate.
+            raise_exception: Whether to raise an exception on validation failure.
+            template_format: Format of the answers ("simple" or "api").
+
+        Returns:
+            list: List of validation errors, or empty list if validation succeeded.
+
+        Raises:
+            InvalidTemplateAnswersError: If validation fails and raise_exception is
+            True.
+        """
         AnswerModel = self._create_answer_model(template_format=template_format)
         errors = []
         try:
@@ -544,24 +819,36 @@ class Template:
 
 
 def not_empty(v: str) -> str:
+    """Validate that a string is not empty."""
     if not len(v) > 0:
         raise ValueError("value is required")
     return v
 
 
 def allow_empty(v: str) -> str | None:
+    """Convert empty strings to None."""
     if v == "":
         return None
     return v
 
 
 def option_in_allowed_values(value: Any, allowed: list[Any]) -> Any:
+    """Validate that a value is in a list of allowed values."""
     if value not in allowed:
         raise ValueError(f"{value!r} is not a valid choice from: {allowed}")
     return value
 
 
 def make_template_answer_model_base(template_: Template) -> type[BaseModel]:
+    """Create a base class for template answer models.
+
+    Args:
+        template_: Template to create the model for.
+
+    Returns:
+        type: Base class for template answer models.
+    """
+
     class TemplateAnswerModelBase(BaseModel):
         template: ClassVar[Template] = template_
         model_config = ConfigDict(extra="forbid")
@@ -596,6 +883,14 @@ def make_template_answer_model_base(template_: Template) -> type[BaseModel]:
 
 
 class InvalidTemplateAnswersError(Exception):
+    """Exception raised when template answers fail validation.
+
+    Attributes:
+        template (Template | TemplateItem): Template or item that failed validation.
+        errors (list[dict]): List of validation errors.
+        answers (dict): The answers that failed validation.
+    """
+
     def __init__(
         self,
         template: Template | TemplateItem,
