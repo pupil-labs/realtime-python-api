@@ -846,7 +846,7 @@ class Device(DeviceBase):
                 await notifier.receive_updates_stop()
                 device_weakref()._event_manager = None
 
-        def start_stream(stream_name) -> None:
+        def start_stream(stream_name: str) -> None:
             """Start streaming data from the specified sensor.
 
             Args:
@@ -857,7 +857,7 @@ class Device(DeviceBase):
             stream_managers[stream_name].should_be_streaming = True
             logger.debug(f"Streaming started {stream_name}")
 
-        def stop_stream(stream_name) -> None:
+        def stop_stream(stream_name: str) -> None:
             """Stop streaming data from the specified sensor.
 
             Args:
