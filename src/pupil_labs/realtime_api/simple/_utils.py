@@ -54,6 +54,7 @@ class _AsyncEventManager(Generic[EventKey]):
         events: A read-only mapping of registered event keys to their
                 corresponding asyncio.Event objects.
         name_to_register: An iterable of event keys to register.
+
     """
 
     def __init__(
@@ -78,6 +79,7 @@ class _AsyncEventManager(Generic[EventKey]):
 
         Raises:
             KeyError: If `name` is not a registered event key.
+
         """
         self._events[name].set()
 
@@ -96,6 +98,7 @@ class _AsyncEventManager(Generic[EventKey]):
 
         Raises:
             KeyError: If `name` is not a registered event key.
+
         """
         loop = loop or self._loop
         loop.call_soon_threadsafe(self.trigger, name)
@@ -109,6 +112,7 @@ class _AsyncEventManager(Generic[EventKey]):
 
         Returns:
             The key of the first event that was triggered.
+
         """
         tasks = {
             asyncio.create_task(event.wait()): name
@@ -144,6 +148,7 @@ class _StreamManager:
         should_be_streaming_by_default: The initial intended state of the
             stream (whether it should attempt to stream immediately if a
             sensor is available).
+
     """
 
     # TODO: Refactor matching logic to be more flexible
@@ -174,6 +179,7 @@ class _StreamManager:
 
         Args:
             should_stream: The desired streaming state (True to stream, False to stop).
+
         """
         if self._should_be_streaming == should_stream:
             return  # state is already set to desired value
@@ -192,6 +198,7 @@ class _StreamManager:
 
         Args:
             sensor: The updated Sensor information.
+
         """
         self._stop_streaming_task_if_running()
         self._start_streaming_task_if_intended(sensor)
@@ -206,6 +213,7 @@ class _StreamManager:
 
         Args:
             sensor: The Sensor information used to establish the stream.
+
         """
         if sensor.connected and self.should_be_streaming:
             logger_receive_data.info(f"Starting stream to {sensor}")
@@ -239,6 +247,7 @@ class _StreamManager:
             Various exceptions from the underlying streaming class (`_streaming_cls`)
             if connection or data reception fails.
             AttributeError: If the parent Device accessed via weakref no longer exists.
+
         """
         self._device()._cached_gaze_for_matching.clear()
         self._device()._cached_eyes_for_matching.clear()

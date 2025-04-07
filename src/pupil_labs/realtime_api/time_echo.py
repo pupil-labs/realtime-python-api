@@ -88,6 +88,7 @@ class Estimate:
         mean (float): Mean value of the measurements.
         std (float): Standard deviation of the measurements.
         median (float): Median value of the measurements.
+
     """
 
     def __init__(self, measurements: Iterable[int]) -> None:
@@ -127,6 +128,7 @@ class TimeEchoEstimates(NamedTuple):
     Attributes:
         roundtrip_duration_ms (Estimate): Statistics for roundtrip durations.
         time_offset_ms (Estimate): Statistics for time offsets.
+
     """
 
     roundtrip_duration_ms: Estimate
@@ -147,6 +149,7 @@ class TimeOffsetEstimator:
     Attributes:
         address (str): Host address.
         port (int): Host port for the Time Echo protocol.
+
     """
 
     def __init__(self, address: str, port: int) -> None:
@@ -170,6 +173,7 @@ class TimeOffsetEstimator:
         Returns:
             TimeEchoEstimates: Statistics for roundtrip durations and time offsets,
                 or None if estimation failed.
+
         """
         measurements = collections.defaultdict(list)
 
@@ -231,6 +235,7 @@ class TimeOffsetEstimator:
 
         Raises:
             ValueError: If the response is invalid.
+
         """
         before_ms = time_fn_ms()
         before_ms_bytes = struct.pack("!Q", before_ms)

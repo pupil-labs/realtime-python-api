@@ -28,6 +28,7 @@ class SimpleVideoFrame(NamedTuple):
     Attributes:
         bgr_pixels (BGRBuffer): BGR pixel data as a NumPy array.
         timestamp_unix_seconds (float): Timestamp in seconds since Unix epoch.
+
     """
 
     bgr_pixels: BGRBuffer
@@ -63,6 +64,7 @@ class MatchedItem(NamedTuple):
     Attributes:
         frame (SimpleVideoFrame): Scene video frame.
         gaze (GazeDataType): Corresponding gaze data.
+
     """
 
     frame: SimpleVideoFrame
@@ -79,6 +81,7 @@ class MatchedGazeEyesSceneItem(NamedTuple):
         scene (SimpleVideoFrame): Scene video frame.
         eyes (SimpleVideoFrame): Eye camera video frame.
         gaze (GazeDataType): Corresponding gaze data.
+
     """
 
     scene: SimpleVideoFrame

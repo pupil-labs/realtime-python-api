@@ -61,6 +61,7 @@ class DiscoveredDeviceInfo(NamedTuple):
         server (str): DNS name, e.g. ``'neon.local.' or 'pi.local.'``.
         port (int): Port number, e.g. ``8080``.
         addresses (list[str]): IP addresses, e.g. ``['192.168.0.2']``.
+
     """
 
     name: str
@@ -76,6 +77,7 @@ class Event(NamedTuple):
         name (str | None): Name of the event.
         recording_id (str | None): ID of the recording this event belongs to.
         timestamp (int): Unix epoch timestamp in nanoseconds.
+
     """
 
     name: str | None
@@ -91,6 +93,7 @@ class Event(NamedTuple):
 
         Returns:
             Event: New Event instance.
+
         """
         return cls(
             name=event_dict.get("name"),
@@ -104,6 +107,7 @@ class Event(NamedTuple):
 
         Returns:
             datetime: Event time as a Python datetime.
+
         """
         return datetime.fromtimestamp(self.timestamp / 1e9)
 
@@ -112,6 +116,7 @@ class Event(NamedTuple):
 
         Returns:
             str: String representation of the event.
+
         """
         return (
             f"Event(name={self.name} "
@@ -133,6 +138,7 @@ class Phone(NamedTuple):
         memory (int): Available memory.
         memory_state (Literal["OK", "LOW", "CRITICAL"]): Memory state.
         time_echo_port (int | None): Port for time synchronization.
+
     """
 
     battery_level: int
@@ -156,6 +162,7 @@ class Hardware(NamedTuple):
         world_camera_serial (str): Serial number of the world camera.
         For Pupil Invisible devices.
         module_serial (str): Serial number of the module. For Neon devices.
+
     """
 
     version: str = "unknown"
@@ -181,6 +188,7 @@ class NetworkDevice(NamedTuple):
         device_name (str): Human-readable device name (can be modified by the user in
         the Companion App settings).
         connected (bool): Whether the device is connected.
+
     """
 
     ip: str
@@ -200,6 +208,7 @@ class Sensor(NamedTuple):
         params (str | None): Additional parameters.
         port (int | None): Port number.
         protocol (str): Protocol used for the connection.
+
     """
 
     sensor: str
@@ -217,6 +226,7 @@ class Sensor(NamedTuple):
 
         Returns:
             str | None: URL if connected, None otherwise.
+
         """
         if self.connected:
             return f"{self.protocol}://{self.ip}:{self.port}/?{self.params}"
@@ -244,6 +254,7 @@ class Recording(NamedTuple):
         id (str): Unique recording identifier.
         message (str): Status message.
         rec_duration_ns (int): Recording duration in nanoseconds.
+
     """
 
     action: str
@@ -287,6 +298,7 @@ def _init_cls_with_annotated_fields_only(
 
     Returns:
         Instance of cls with annotated fields from d.
+
     """
     return cls(**{attr: d.get(attr) for attr in cls.__annotations__})
 
@@ -313,6 +325,7 @@ def parse_component(raw: ComponentRaw) -> Component:
         UnknownComponentError: If the component name cannot be mapped to an
         explicitly modelled class or the contained data does not fit the modelled
         fields.
+
     """
     model_name = raw["model"]
     data = raw["data"]
@@ -335,6 +348,7 @@ class Status:
             they are not connected
         sensors (list[Sensor]): List of sensor information.
         recording (Recording | None): Current recording, if any.
+
     """
 
     phone: Phone
@@ -351,6 +365,7 @@ class Status:
 
         Returns:
             Status: New Status instance.
+
         """
         phone = None
         recording = None
@@ -382,6 +397,7 @@ class Status:
 
         Args:
             component: Component to update.
+
         """
         if isinstance(component, Phone):
             self.phone = component
@@ -409,6 +425,7 @@ class Status:
 
         Yields:
             Sensor: Sensors matching the criteria.
+
         """
         for sensor in self.sensors:
             if name is not Sensor.Name.ANY and sensor.sensor != name.value:
@@ -425,6 +442,7 @@ class Status:
 
         Note:
             Pupil Invisible devices, the world camera can be detached
+
         """
         return next(
             self.matching_sensors(Sensor.Name.WORLD, Sensor.Connection.DIRECT),
@@ -495,6 +513,7 @@ class TemplateItem:
         choices (list[str] | None): Available choices for selection items.
         help_text (str | None): Help / description text for the item.
         required (bool): Whether the item is required.
+
     """
 
     id: UUID
@@ -524,6 +543,7 @@ class TemplateItem:
         Raises:
             InvalidTemplateAnswersError: If validation fails and raise_exception is
             True.
+
         """
         answers = {
             str(self.id): self._pydantic_validator(template_format=template_format)
@@ -558,6 +578,7 @@ class TemplateItem:
 
         Raises:
             ValueError: If widget_type or format is invalid.
+
         """
         if self.widget_type in ("SECTION_HEADER", "PAGE_BREAK"):
             return None
@@ -582,6 +603,7 @@ class TemplateItem:
 
         Returns:
             type: Python type for values.
+
         """
         if self.input_type == "integer":
             return int
@@ -590,10 +612,11 @@ class TemplateItem:
         return str
 
     def _simple_model_validator(self) -> tuple[type, FieldInfo]:
-        """A simple model validator for the template item.
+        """Create a simple model validator for the template item.
 
         Returns:
             tuple: (type, field) tuple for Pydantic model creation.
+
         """
         field = Field(title=self.title, description=self.help_text)
         answer_input_type = self._value_type
@@ -623,10 +646,11 @@ class TemplateItem:
         return (answer_input_type, field)
 
     def _api_model_validator(self) -> tuple[type, FieldInfo]:
-        """An API model validator for the template item.
+        """Create a validator for "api" format.
 
         Returns:
             tuple: (type, field) tuple for Pydantic model creation.
+
         """
         field = Field(title=self.title, description=self.help_text)
         answer_input_entry_type = self._value_type
@@ -676,6 +700,7 @@ class Template:
         recording_ids (list[UUID] | None): Associated recording IDs.
         published_at (datetime | None): Publication timestamp.
         archived_at (datetime | None): Archival timestamp.
+
     """
 
     created_at: datetime
@@ -701,6 +726,7 @@ class Template:
 
         Returns:
             dict: Data in API format.
+
         """
         api_format = {}
         for question_id, value in data.items():
@@ -722,6 +748,7 @@ class Template:
 
         Returns:
             dict: Data in simple format.
+
         """
         simple_format = {}
         for question_id, value in data.items():
@@ -748,6 +775,7 @@ class Template:
 
         Returns:
             TemplateItem | None: The template item, or None if not found.
+
         """
         for item in self.items:
             if str(item.id) == str(question_id):
@@ -764,6 +792,7 @@ class Template:
 
         Returns:
             type: Pydantic model class.
+
         """
         answer_types = {}
         for question in self.items:
@@ -799,6 +828,7 @@ class Template:
         Raises:
             InvalidTemplateAnswersError: If validation fails and raise_exception is
             True.
+
         """
         AnswerModel = self._create_answer_model(template_format=template_format)
         errors = []
@@ -847,6 +877,7 @@ def make_template_answer_model_base(template_: Template) -> type[BaseModel]:
 
     Returns:
         type: Base class for template answer models.
+
     """
 
     class TemplateAnswerModelBase(BaseModel):
@@ -889,6 +920,7 @@ class InvalidTemplateAnswersError(Exception):
         template (Template | TemplateItem): Template or item that failed validation.
         errors (list[dict]): List of validation errors.
         answers (dict): The answers that failed validation.
+
     """
 
     def __init__(

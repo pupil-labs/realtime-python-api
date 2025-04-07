@@ -31,6 +31,7 @@ class RTSPData(NamedTuple):
         raw (ByteString): Raw binary data received from the RTSP stream.
         timestamp_unix_seconds (float): Timestamp in seconds since the Unix epoch from
         RTCP SR packets.
+
     """
 
     raw: ByteString
@@ -62,6 +63,7 @@ async def receive_raw_rtsp_data(
 
     Yields:
         RTSPData: Timestamped RTSP data packets.
+
     """
     async with RTSPRawStreamer(url, *args, **kwargs) as streamer:
         for datum in streamer.receive():
@@ -111,6 +113,7 @@ class RTSPRawStreamer:
 
         Raises:
             SDPDataNotAvailableError: If SDP data is missing or incomplete.
+
         """
         if self._encoding is None:
             try:
@@ -127,6 +130,7 @@ class RTSPRawStreamer:
 
         Returns:
             RTSPRawStreamer: This instance.
+
         """
         await self.reader.__aenter__(*args, **kwargs)
         return self
@@ -167,6 +171,7 @@ class _WallclockRTSPReader(AiortspRTSPReader):
 
         Args:
             rtcp: RTCP packet to handle.
+
         """
         for pkt in rtcp.packets:
             if isinstance(pkt, SR):
@@ -186,6 +191,7 @@ class _WallclockRTSPReader(AiortspRTSPReader):
 
         Raises:
             _UnknownClockoffsetError: If the clock offset is not yet known.
+
         """
         try:
             return (
@@ -210,6 +216,7 @@ class _WallclockRTSPReader(AiortspRTSPReader):
 
         Returns:
             float: Relative timestamp in seconds.
+
         """
         rtpmap = self.get_rtpmap()
         clock_rate = rtpmap["clockRate"]
@@ -228,6 +235,7 @@ class _WallclockRTSPReader(AiortspRTSPReader):
             sr_pkt (aiortsp.rtcp.parser.SR):  packet which converts the raw NTP
                 timestamp [1] from seconds since 1900 to seconds since 1970 (unix epoch)
                 [1] see https://datatracker.ietf.org/doc/html/rfc3550#section-6.4.1
+
         """
         self._relative_to_ntp_clock_offset = (
             sr_pkt.ntp - self.relative_timestamp_from_packet(sr_pkt)
@@ -238,6 +246,7 @@ class _WallclockRTSPReader(AiortspRTSPReader):
 
         Returns:
             dict: RTP map containing encoding and clock rate information.
+
         """
         media = self.get_primary_media()
         return media["attributes"]["rtpmap"]
@@ -250,6 +259,7 @@ class _WallclockRTSPReader(AiortspRTSPReader):
 
         Returns:
             dict: Media description.
+
         """
         for media in self.session.sdp["medias"]:
             if media["type"] in ["video", "application"]:

@@ -25,6 +25,7 @@ def extract_payload_from_nal_unit(unit: ByteString) -> ByteString:
         Rewritten due to license incompatibility.
         See RFC 3984 (https://www.ietf.org/rfc/rfc3984.txt) for detailed NAL unit
         specifications.
+
     """
     start_code = b"\x00\x00\x00\x01"
     offset = 0

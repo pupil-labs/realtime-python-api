@@ -62,13 +62,14 @@ class Device(DeviceBase):
         session (aiohttp.ClientSession): The HTTP session used for making requests.
         template_definition (Template): The template definition currently selected on
         the device.
+
     """
 
     session: aiohttp.ClientSession | None
     template_definition: Template | None = None
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """Initializes the Device class."""
+        """Initialize the Device class."""
         super().__init__(*args, **kwargs)
         self._create_client_session()
 
@@ -80,6 +81,7 @@ class Device(DeviceBase):
 
         Raises:
             DeviceError: If the request fails.
+
         """
         async with self.session.get(self.api_url(APIPath.STATUS)) as response:
             confirmation = await response.json()
@@ -97,6 +99,7 @@ class Device(DeviceBase):
 
         Auto-reconnect, see:
             https://websockets.readthedocs.io/en/stable/reference/asyncio/client.html#websockets.asyncio.client.connect
+
         """
         websocket_status_endpoint = self.api_url(APIPath.STATUS, protocol="ws")
         async for websocket in websockets.connect(websocket_status_endpoint):
@@ -131,6 +134,7 @@ class Device(DeviceBase):
                 - No wearer selected
                 - No workspace selected
                 - Setup bottom sheets not completed
+
         """
         async with self.session.post(self.api_url(APIPath.RECORDING_START)) as response:
             confirmation = await response.json()
@@ -146,6 +150,7 @@ class Device(DeviceBase):
             DeviceError: If recording could not be stopped. Possible reasons include:
                 - Recording not running
                 - Template has required fields
+
         """
         async with self.session.post(
             self.api_url(APIPath.RECORDING_STOP_AND_SAVE)
@@ -162,6 +167,7 @@ class Device(DeviceBase):
             DeviceError: If the recording could not be cancelled.
                 Possible reasons include:
                 - Recording not running
+
         """
         async with self.session.post(
             self.api_url(APIPath.RECORDING_CANCEL)
@@ -186,6 +192,7 @@ class Device(DeviceBase):
 
         Raises:
             DeviceError: If sending the event fails.
+
         """
         event: dict[str, Any] = {"name": event_name}
         if event_timestamp_unix_ns is not None:
@@ -208,6 +215,7 @@ class Device(DeviceBase):
 
         Raises:
             DeviceError: If the template can't be fetched.
+
         """
         async with self.session.get(
             self.api_url(APIPath.TEMPLATE_DEFINITION)
@@ -236,6 +244,7 @@ class Device(DeviceBase):
         Raises:
             DeviceError: If the template's data could not be fetched.
             AssertionError: If an invalid format is provided.
+
         """
         assert template_format in TemplateDataFormat.__args__, (
             f"format should be one of {TemplateDataFormat}"
@@ -324,6 +333,7 @@ class Device(DeviceBase):
 
         Returns:
             Device: This device instance.
+
         """
         if self.session is None:
             self._create_client_session()
@@ -341,6 +351,7 @@ class Device(DeviceBase):
             exc_type: Exception type if an exception was raised.
             exc_val: Exception value if an exception was raised.
             exc_tb: Exception traceback if an exception was raised.
+
         """
         await self.close()
 
@@ -359,6 +370,7 @@ class Device(DeviceBase):
 
         Raises:
             DeviceError: If the request fails.
+
         """
         async with self.session.get(self.api_url(APIPath.CALIBRATION)) as response:
             if response.status != 200:
@@ -378,6 +390,7 @@ class StatusUpdateNotifier:
         _auto_update_task (asyncio.Task | None): Task for the update loop.
         _device (Device): The device to get updates from.
         _callbacks (list[UpdateCallback]): List of callbacks to invoke.
+
     """
 
     def __init__(self, device: Device, callbacks: list[UpdateCallback]) -> None:
@@ -431,6 +444,7 @@ class StatusUpdateNotifier:
             exc_type: Exception type if an exception was raised.
             exc_val: Exception value if an exception was raised.
             exc_tb: Exception traceback if an exception was raised.
+
         """
         await self.receive_updates_stop()
 

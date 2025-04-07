@@ -77,6 +77,7 @@ class Device(DeviceBase):
         serial_number_scene_cam (str | None): Serial number of the scene camera, None
         if not connected.
         is_currently_streaming (bool): Whether data streaming is currently active.
+
     """
 
     def __init__(
@@ -97,6 +98,7 @@ class Device(DeviceBase):
             dns_name: DNS name of the device.
             start_streaming_by_default: Whether to start streaming automatically.
             suppress_decoding_warnings: Whether to suppress decoding warnings.
+
         """
         super().__init__(
             address,
@@ -213,6 +215,7 @@ class Device(DeviceBase):
                 - No wearer selected
                 - No workspace selected
                 - Setup bottom sheets not completed
+
         """
 
         async def _start_recording() -> str:
@@ -231,6 +234,7 @@ class Device(DeviceBase):
             include:
                 - Recording not running
                 - Template has required fields
+
         """
 
         async def _stop_and_save_recording() -> None:
@@ -248,6 +252,7 @@ class Device(DeviceBase):
             DeviceError: If the recording could not be cancelled. Possible reasons
             include:
                 - Recording not running
+
         """
 
         async def _cancel_recording() -> None:
@@ -271,6 +276,7 @@ class Device(DeviceBase):
 
         Raises:
             DeviceError: If sending the event fails.
+
         """
 
         async def _send_event() -> Event:
@@ -289,6 +295,7 @@ class Device(DeviceBase):
 
         Raises:
             DeviceError: If the template can't be fetched.
+
         """
 
         async def _get_template() -> Template:
@@ -366,6 +373,7 @@ class Device(DeviceBase):
         Returns:
             SimpleVideoFrame or None: The received video frame, or None if timeout was
             reached.
+
         """
         return cast(
             SimpleVideoFrame,
@@ -384,6 +392,7 @@ class Device(DeviceBase):
         Returns:
             GazeDataType or None: The received gaze data, or None if timeout was
             reached.
+
         """
         return cast(
             GazeDataType, self._receive_item(Sensor.Name.GAZE.value, timeout_seconds)
@@ -401,6 +410,7 @@ class Device(DeviceBase):
         Returns:
             SimpleVideoFrame or None: The received video frame, or None if timeout
             was reached.
+
         """
         return cast(
             SimpleVideoFrame,
@@ -416,6 +426,7 @@ class Device(DeviceBase):
 
         Returns:
             IMUData or None: The received IMU data, or None if timeout was reached.
+
         """
         return cast(IMUData, self._receive_item(Sensor.Name.IMU.value, timeout_seconds))
 
@@ -431,6 +442,7 @@ class Device(DeviceBase):
         Returns:
             FixationEventData | BlinkEventData | FixationOnsetEventData or None:
             The received eye event, or None if timeout was reached.
+
         """
         return cast(
             FixationEventData | BlinkEventData | FixationOnsetEventData,
@@ -448,6 +460,7 @@ class Device(DeviceBase):
 
         Returns:
             MatchedItem or None: The matched pair, or None if timeout was reached.
+
         """
         return cast(
             MatchedItem, self._receive_item(MATCHED_ITEM_LABEL, timeout_seconds)
@@ -465,6 +478,7 @@ class Device(DeviceBase):
         Returns:
             MatchedGazeEyesSceneItem or None: The matched triplet, or None if timeout
             was reached.
+
         """
         return cast(
             MatchedGazeEyesSceneItem,
@@ -482,6 +496,7 @@ class Device(DeviceBase):
 
         Returns:
             The received item, or None if timeout was reached.
+
         """
         if sensor == MATCHED_ITEM_LABEL:
             self.start_stream_if_needed(Sensor.Name.GAZE.value)
@@ -510,6 +525,7 @@ class Device(DeviceBase):
 
         Args:
             sensor: Sensor name to check.
+
         """
         if not self._is_streaming_flags[sensor].is_set():
             logger.debug("receive_* called without being streaming")
@@ -524,6 +540,7 @@ class Device(DeviceBase):
 
         Raises:
             ValueError: If the stream name is not recognized.
+
         """
         if stream_name is None:
             for event in (
@@ -548,6 +565,7 @@ class Device(DeviceBase):
 
         Raises:
             ValueError: If the stream name is not recognized.
+
         """
         if stream_name is None:
             for event in (
@@ -577,6 +595,7 @@ class Device(DeviceBase):
 
         Returns:
             bool: True if streaming is active, False otherwise.
+
         """
         return any(flag.is_set() for flag in self._is_streaming_flags.values())
 
@@ -601,6 +620,7 @@ class Device(DeviceBase):
 
         See Also:
             :mod:`pupil_labs.realtime_api.time_echo` for more details.
+
         """
         if self._status.phone.time_echo_port is None:
             logger.warning(
@@ -653,6 +673,7 @@ class Device(DeviceBase):
 
         Args:
             start_streaming_by_default: Whether to start streaming automatically.
+
         """
         self._event_manager = None
         self._background_loop = None
@@ -708,6 +729,7 @@ class Device(DeviceBase):
 
         Raises:
             DeviceError: If the request fails.
+
         """
 
         async def _get_status() -> Status:
@@ -729,8 +751,9 @@ class Device(DeviceBase):
             device_weakref: Weak reference to the device instance.
             auto_update_started_flag: Event to signal when the update thread has
             started.
-            is_streaming_flag: Event to signal streaming state.
+            is_streaming_flags: Dict of Event to signal streaming state.
             start_streaming_by_default: Whether to start streaming automatically.
+
         """
         stream_managers = {
             Sensor.Name.GAZE.value: _StreamManager(
@@ -826,6 +849,7 @@ class Device(DeviceBase):
 
             Args:
                 stream_name: Name of the sensor to start streaming from.
+
             """
             is_streaming_flags[stream_name].set()
             stream_managers[stream_name].should_be_streaming = True
@@ -836,6 +860,7 @@ class Device(DeviceBase):
 
             Args:
                 stream_name: Name of the sensor to start streaming from.
+
             """
             stream_managers[stream_name].should_be_streaming = False
             is_streaming_flags[stream_name].clear()

@@ -44,6 +44,7 @@ class GazeData(NamedTuple):
 
         Returns:
             GazeData: An instance of GazeData with the parsed values.
+
         """
         x, y, worn = struct.unpack("!ffB", data.raw)
         return cls(x, y, worn == 255, data.timestamp_unix_seconds)
@@ -87,6 +88,7 @@ class DualMonocularGazeData(NamedTuple):
         Returns:
             DualMonocularGazeData: An instance of DualMonocularGazeData with the parsed
                 values.
+
         """
         x1, y1, worn, x2, y2 = struct.unpack("!ffBff", data.raw)
         return cls(
@@ -126,6 +128,7 @@ class EyestateGazeData(NamedTuple):
         optical_axis_left_z (float): Z coordinate of the optical axis for the left eye.
         ...
         timestamp_unix_seconds (float): Timestamp in seconds since Unix epoch.
+
     """
 
     x: float
@@ -156,6 +159,7 @@ class EyestateGazeData(NamedTuple):
 
         Returns:
             EyestateGazeData: An instance of EyestateGazeData with the parsed values.
+
         """
         (
             x,
@@ -220,6 +224,7 @@ class EyestateEyelidGazeData(NamedTuple):
         eyelid_angle_bottom_left (float): Angle of the bottom eyelid for the left eye.
         eyelid_aperture_left (float): Aperture of the eyelid for the left eye.
         ...
+
     """
 
     x: float
@@ -257,6 +262,7 @@ class EyestateEyelidGazeData(NamedTuple):
         Returns:
             EyestateEyelidGazeData: An instance of EyestateEyelidGazeData with the
                 parsed values.
+
         """
         (
             x,

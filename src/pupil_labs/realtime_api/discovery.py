@@ -27,6 +27,7 @@ class Network:
         _aiobrowser (AsyncServiceBrowser | None): An instance of AsyncServiceBrowser
             for browsing services on the network.
         _open (bool): A flag indicating whether the network discovery client is open.
+
     """
 
     def __init__(self) -> None:
@@ -74,6 +75,7 @@ class Network:
         Returns:
             Optional[DiscoveredDeviceInfo]: The newly discovered device,
                 or None if the timeout was reached.
+
         """
         try:
             return await asyncio.wait_for(self._new_devices.get(), timeout_seconds)
@@ -94,6 +96,7 @@ class Network:
             service_type: Type of the service.
             name: Name of the service.
             state_change: Type of state change event.
+
         """
         logger.debug(f"{state_change} {name}")
         if is_valid_service_name(name) and state_change in (
@@ -122,6 +125,7 @@ class Network:
             service_type: Type of the service.
             name: Name of the service.
             timeout_ms: Timeout for the request in milliseconds.
+
         """
         info = AsyncServiceInfo(service_type, name)
         if await info.async_request(zeroconf, timeout_ms):
@@ -139,6 +143,7 @@ class Network:
 
         Returns:
             Network: This network instance.
+
         """
         return self
 
@@ -154,6 +159,7 @@ class Network:
             exc_type: Exception type if an exception was raised.
             exc_val: Exception value if an exception was raised.
             exc_tb: Exception traceback if an exception was raised.
+
         """
         await self.close()
 
@@ -178,6 +184,7 @@ async def discover_devices(
         async for device in discover_devices(timeout_seconds=10.0):
             print(f"Found device: {device.name} at {device.addresses[0]}:{device.port}")
         ```
+
     """
     async with Network() as network:
         while True:

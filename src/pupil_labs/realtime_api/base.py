@@ -40,8 +40,10 @@ class DeviceBase(abc.ABC):  # noqa: B024
             address (str): REST API server address.
             port (int): REST API server port.
             full_name (str | None): Full service discovery name.
-            dns_name (str | None): REST API server DNS name, e.g.``neon.local / pi.local.``.
+            dns_name (str | None): REST API server DNS name,
+                e.g.``neon.local / pi.local.``.
             suppress_decoding_warnings: Whether to suppress libav decoding warnings.
+
         """
         self.address: str = address
         self.port: int = port
@@ -90,6 +92,7 @@ class DeviceBase(abc.ABC):  # noqa: B024
 
         Returns:
             Device instance
+
         """
         return cls(
             device.addresses[0],
@@ -107,6 +110,7 @@ class DeviceBase(abc.ABC):  # noqa: B024
 
         Returns:
             Converted device instance.
+
         """
         return cls(
             other.address,

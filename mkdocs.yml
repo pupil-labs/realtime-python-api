@@ -1,0 +1,152 @@
+site_name: "Pupil Labs Real-Time Python API Client"
+site_description: "Python Client for the Pupil Labs Real-Time API"
+site_url: "https://pupil-labs.github.io/realtime-python-api"
+repo_url: "https://github.com/pupil-labs/realtime-python-api"
+repo_name: "pupil-labs/realtime-python-api"
+site_dir: "site"
+watch: [mkdocs.yml, README.md, CONTRIBUTING.md, src/pupil_labs/realtime_api]
+edit_uri: edit/main/docs/
+
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+
+nav:
+  - Home:
+      - Overview: index.md
+      - License: license.md
+  - API reference: modules.md
+  - Development:
+      - Contributing: contributing.md
+      - Coverage report: coverage.md
+
+theme:
+  name: material
+  custom_dir: docs/overrides
+  logo: assets/logo.svg
+  favicon: assets/favicon.ico
+  features:
+    - announce.dismiss
+    - content.action.edit
+    - content.code.copy
+    - content.code.annotate
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: blue
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: blue
+      toggle:
+        icon: material/weather-night
+        name: Switch to system preference
+
+extra_css:
+  - css/material.css
+  - css/mkdocstrings.css
+
+markdown_extensions:
+  - attr_list
+  - admonition
+  - callouts
+  - footnotes
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      options:
+        custom_icons:
+          - overrides/.icons
+  - pymdownx.magiclink
+  - pymdownx.snippets:
+      base_path: [!relative $config_dir]
+      check_paths: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - markdown-exec
+  - coverage
+  - mike:
+      # These fields are all optional; the defaults are as below...
+      alias_type: symlink
+      redirect_template: null
+      deploy_prefix: ""
+      canonical_version: null
+      version_selector: true
+      css_dir: css
+      javascript_dir: js
+  - mkdocstrings:
+      handlers:
+        python:
+          inventories:
+            - https://docs.python.org/3/objects.inv
+          paths: [src]
+          options:
+            docstring_options:
+              ignore_init_summary: true
+            docstring_section_style: list
+            filters: ["!^_"]
+            heading_level: 1
+            inherited_members: true
+            merge_init_into_class: true
+            separate_signature: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_signature_annotations: true
+            show_source: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            signature_crossrefs: true
+            summary: true
+  - git-revision-date-localized:
+      enabled: !ENV [DEPLOY, false]
+      enable_creation_date: true
+      type: timeago
+  - minify:
+      minify_html: !ENV [DEPLOY, false]
+  - group:
+      enabled: !ENV [MATERIAL_INSIDERS, false]
+      plugins:
+        - typeset
+
+extra:
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/pupil-labs
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/pupil-labs-realtime-api/
+    - icon: assets/logomark.svg
+      link: https://pupil-labs.com/
+    - icon: fontawesome/brands/discord
+      link: https://pupil-labs.com/chat
+    - icon: logomark
+      link: https://pupil-labs.com/

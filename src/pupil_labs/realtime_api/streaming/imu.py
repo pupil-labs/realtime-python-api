@@ -37,6 +37,7 @@ class IMUData(NamedTuple):
         accel_data (Data3D): Accelerometer data in m/s².
         quaternion (Quaternion): Rotation represented as a quaternion.
         timestamp_unix_seconds (float): Timestamp in seconds since Unix epoch.
+
     """
 
     gyro_data: Data3D
@@ -69,6 +70,7 @@ def IMUPacket_to_IMUData(imu_packet: ImuPacket) -> IMUData:
 
     Returns:
         IMUData: Converted IMU data.
+
     """
     gyro_data = Data3D(
         x=imu_packet.gyroData.x,
@@ -107,6 +109,7 @@ async def receive_imu_data(
 
     Yields:
         IMUData: Parsed IMU data from the RTSP stream.
+
     """
     async with RTSPImuStreamer(url, *args, **kwargs) as streamer:
         async for datum in streamer.receive():
@@ -133,6 +136,7 @@ class RTSPImuStreamer(RTSPRawStreamer):
 
         Raises:
             Exception: If there is an error parsing the IMU data.
+
         """
         async for data in super().receive():
             try:

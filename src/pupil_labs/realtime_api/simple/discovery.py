@@ -31,6 +31,7 @@ def discover_devices(search_duration_seconds: float) -> list[Device]:
     See Also:
         The asynchronous equivalent
         :func:`pupil_labs.realtime_api.discovery.discover_devices`
+
     """
 
     async def _discover() -> tuple[DiscoveredDeviceInfo, ...]:
@@ -71,6 +72,7 @@ def discover_one_device(
     See Also:
         The asynchronous equivalent
         :func:`pupil_labs.realtime_api.discovery.Network.wait_for_new_device`
+
     """
 
     async def _discover() -> DiscoveredDeviceInfo | None:

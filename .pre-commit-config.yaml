@@ -1,41 +1,23 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: "v5.0.0"
     hooks:
       - id: check-case-conflict
       - id: check-merge-conflict
-      - id: check-yaml
       - id: check-toml
-      - id: debug-statements
+      - id: check-yaml
+        args: [--unsafe]
       - id: end-of-file-fixer
-      - id: mixed-line-ending
       - id: trailing-whitespace
 
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v3.3.1
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: "v0.8.1"
     hooks:
-      - id: pyupgrade
-        name: PyUpgrade 3.7+
-        args: ["--py37-plus"]
-        exclude: ^bin/
+      - id: ruff
+        args: [--exit-non-zero-on-fix]
+      - id: ruff-format
 
-  - repo: https://github.com/pycqa/flake8
-    rev: 6.0.0
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: "v3.0.3"
     hooks:
-      - id: flake8
-
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        args: [--profile, black]
-
-  - repo: https://github.com/psf/black
-    rev: 22.12.0
-    hooks:
-      - id: black
-
-  - repo: https://github.com/asottile/setup-cfg-fmt
-    rev: v2.2.0
-    hooks:
-      - id: setup-cfg-fmt
+      - id: prettier

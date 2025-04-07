@@ -19,6 +19,7 @@ class BlinkEventData(NamedTuple):
         start_time_ns (int): Start time of the blink in nanoseconds.
         end_time_ns (int): End time of the blink in nanoseconds.
         rtp_ts_unix_seconds (float): RTP timestamp in seconds since Unix epoch.
+
     """
 
     event_type: int
@@ -71,6 +72,7 @@ class FixationEventData(NamedTuple):
         mean_velocity (float): Mean velocity pixels per degree.
         max_velocity (float): Maximum velocity pixels per degree.
         rtp_ts_unix_seconds (float): RTP timestamp in seconds since Unix epoch.
+
     """
 
     event_type: int  # 0: Saccade, 1: Fixation
@@ -140,9 +142,11 @@ class FixationOnsetEventData(NamedTuple):
     Represents the beginning of a fixation or saccade event.
 
     Attributes:
-        event_type (int): Type of event (2 for saccade onset, 3 for fixation onset). TODO: check
+        event_type (int): Type of event (2 for saccade onset, 3 for fixation onset).
+        TODO: check
         start_time_ns (int): Start time in nanoseconds.
         rtp_ts_unix_seconds (float): RTP timestamp in seconds since Unix epoch.
+
     """
 
     event_type: int  # 0: Saccade, 1: Fixation
@@ -184,6 +188,7 @@ async def receive_eye_events_data(
 
     Yields:
         FixationEventData: Parsed fixation event data.
+
     """
     async with RTSPEyeEventStreamer(url, *args, **kwargs) as streamer:
         async for datum in streamer.receive():
@@ -209,6 +214,7 @@ class RTSPEyeEventStreamer(RTSPRawStreamer):
         Raises:
             KeyError: If the event type is not recognized.
             Exception: If there is an error parsing the event data.
+
         """
         data_class_by_type = {
             0: FixationEventData,

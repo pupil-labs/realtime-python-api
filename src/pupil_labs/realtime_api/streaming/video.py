@@ -26,6 +26,7 @@ class VideoFrame(NamedTuple):
     Attributes:
         av_frame (av.VideoFrame): The video frame.
         timestamp_unix_seconds (float): Timestamp in seconds since Unix epoch.
+
     """
 
     av_frame: av.VideoFrame
@@ -54,6 +55,7 @@ class VideoFrame(NamedTuple):
 
         Returns:
             BGRBuffer: The BGR buffer as a NumPy array.
+
         """
         return self.to_ndarray(format="bgr24")
 
@@ -73,6 +75,7 @@ async def receive_video_frames(
 
     Yields:
         VideoFrame: Parsed video frames.
+
     """
     async with RTSPVideoFrameStreamer(url, *args, **kwargs) as streamer:
         async for datum in streamer.receive():
@@ -87,6 +90,7 @@ class RTSPVideoFrameStreamer(RTSPRawStreamer):
 
     Attributes:
         _sprop_parameter_set_payloads: Cached SPS/PPS parameters for the H.264 codec.
+
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -136,6 +140,7 @@ class RTSPVideoFrameStreamer(RTSPRawStreamer):
 
         Raises:
             SDPDataNotAvailableError: If SDP data is missing required fields.
+
         """
         if self._sprop_parameter_set_payloads is None:
             try:
