@@ -316,7 +316,7 @@ class Device(DeviceBase):
             pre_populated_data | template_answers, template_format="api"
         )
         if errors:
-            raise ValueError(errors=errors)
+            raise ValueError(errors)
 
         # workaround for issue with api as it fails when passing in an empty list
         # ie. it wants [""] instead of []

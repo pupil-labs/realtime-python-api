@@ -48,10 +48,11 @@ class Network:
         the device list.
         """
         if self._open:
-            await self._aiobrowser.async_cancel()
-            await self._aiozeroconf.async_close()
-            self._devices.clear()
-            self._devices = None
+            await self._aiobrowser.async_cancel() if self._aiobrowser else None
+            await self._aiozeroconf.async_close() if self._aiozeroconf else None
+            if self._devices:
+                self._devices.clear()
+                self._devices = None
             while not self._new_devices.empty():
                 self._new_devices.get_nowait()
             self._aiobrowser = None
@@ -128,7 +129,10 @@ class Network:
 
         """
         info = AsyncServiceInfo(service_type, name)
-        if await info.async_request(zeroconf, timeout_ms):
+        if await info.async_request(zeroconf, timeout_ms):  # type: ignore
+            if info.server is None or info.port is None or info.addresses is None:
+                logger.warning(f"Received incomplete info for service {name}")
+                return
             device = DiscoveredDeviceInfo(
                 name,
                 info.server,

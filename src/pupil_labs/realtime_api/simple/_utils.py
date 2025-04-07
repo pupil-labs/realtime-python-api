@@ -249,8 +249,12 @@ class _StreamManager:
             AttributeError: If the parent Device accessed via weakref no longer exists.
 
         """
-        self._device()._cached_gaze_for_matching.clear()
-        self._device()._cached_eyes_for_matching.clear()
+        if self._device() is None:
+            raise AttributeError(
+                "Device reference no longer exists. Cannot append data to queue."
+            )
+        self._device()._cached_gaze_for_matching.clear()  # type: ignore[union-attr]
+        self._device()._cached_eyes_for_matching.clear()  # type: ignore[union-attr]
         async with self._streaming_cls(
             sensor.url, run_loop=True, log_level=logging.WARNING
         ) as streamer:
@@ -263,7 +267,7 @@ class _StreamManager:
 
                 if name in (SensorName.WORLD.value, SensorName.EYES.value):
                     # convert to simple video frame
-                    item = SimpleVideoFrame.from_video_frame(item)
+                    item = SimpleVideoFrame.from_video_frame(item)  # type: ignore[arg-type, assignment]
 
                 logger_receive_data.debug(f"{self} received {item}")
                 device._most_recent_item[name].append(item)

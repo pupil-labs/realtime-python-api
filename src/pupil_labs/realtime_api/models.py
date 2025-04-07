@@ -632,9 +632,19 @@ class TemplateItem:
 
         """
         field = Field(title=self.title, description=self.help_text)
-        answer_input_type = self._value_type
+        answer_input_type: type = self._value_type
         if self.widget_type in {"RADIO_LIST", "CHECKBOX_LIST"}:
-            answer_input_type = Annotated[
+            if not self.choices:
+                logging.warning(
+                    f"Choices are not defined for widget type {self.widget_type}"
+                )
+
+            # Mypy raises the [assignment] error because constructs like Annotated[...]
+            # or conlist(...) aren't strictly instances of type itself, even though they
+            #  represent type information for Pydantic. Thus, we need to ignore
+            # the assignment error here.
+
+            answer_input_type = Annotated[  # type: ignore[assignment]
                 answer_input_type,
                 AfterValidator(partial(option_in_allowed_values, allowed=self.choices)),
             ]
@@ -649,11 +659,11 @@ class TemplateItem:
         else:
             if self.required:
                 if self.input_type == "any":
-                    answer_input_type = Annotated[
+                    answer_input_type = Annotated[  # type: ignore[assignment]
                         answer_input_type, StringConstraints(min_length=1)
                     ]
             else:
-                answer_input_type = [answer_input_type] | None
+                answer_input_type = [answer_input_type] | None  # type: ignore
                 field.default = None
 
         return (answer_input_type, field)
@@ -666,21 +676,25 @@ class TemplateItem:
 
         """
         field = Field(title=self.title, description=self.help_text)
-        answer_input_entry_type = self._value_type
+        answer_input_entry_type: type = self._value_type
 
         if self.widget_type in {"RADIO_LIST", "CHECKBOX_LIST"}:
-            answer_input_entry_type = Annotated[
+            if not self.choices:
+                logging.warning(
+                    f"Choices are not defined for widget type {self.widget_type}"
+                )
+            answer_input_entry_type = Annotated[  # type: ignore[assignment]
                 answer_input_entry_type,
                 AfterValidator(partial(option_in_allowed_values, allowed=self.choices)),
             ]
         else:
             if self.required:
-                answer_input_entry_type = Annotated[
+                answer_input_entry_type = Annotated[  # type: ignore
                     answer_input_entry_type, BeforeValidator(not_empty)
                 ]
             else:
                 if answer_input_entry_type in (int, float):
-                    answer_input_entry_type = Annotated[
+                    answer_input_entry_type = Annotated[  # type: ignore[assignment]
                         answer_input_entry_type | None,
                         BeforeValidator(allow_empty),
                     ]
@@ -688,7 +702,7 @@ class TemplateItem:
         if not self.required:
             field.default_factory = lambda: [""]
 
-        answer_input_type = conlist(
+        answer_input_type: type = conlist(
             answer_input_entry_type,
             min_length=1 if self.required else 0,
             max_length=None if self.widget_type == "CHECKBOX_LIST" else 1,
@@ -766,18 +780,35 @@ class Template:
         simple_format = {}
         for question_id, value in data.items():
             question = self.get_question_by_id(question_id)
+            if question is None:
+                logger.warning(
+                    f"Skipping unknown question ID '{question_id}' during API to "
+                    f"simple conversion."
+                )
+                continue
+            processed_value: Any
             if question.widget_type in {"CHECKBOX_LIST", "RADIO_LIST"}:
+                if question.choices is None:
+                    logger.warning(
+                        f"Question {question_id} (type {question.widget_type}) "
+                        f"has no choices defined."
+                    )
+                    processed_value = []
                 if value == [""] and "" not in question.choices:
-                    value = []
+                    processed_value = []
             else:
                 if not value:
                     value = [""]
 
                 value = value[0]
                 if question.input_type != "any":
-                    value = None if value == "" else question._value_type(value)
+                    processed_value = (
+                        None if value == "" else question._value_type(value)
+                    )
+                else:
+                    processed_value = value
 
-            simple_format[question_id] = value
+            simple_format[question_id] = processed_value
         return simple_format
 
     def get_question_by_id(self, question_id: str | UUID) -> TemplateItem | None:
@@ -814,19 +845,20 @@ class Template:
                 continue
             answer_types[f"{question.id}"] = validator
 
+        base_model = make_template_answer_model_base(self)
         model = create_model(
             f"Template_{self.id}_Answers",
-            **(answer_types),
-            __base__=make_template_answer_model_base(self),
-        )
+            **answer_types,
+            __base__=base_model,
+        )  # type: ignore[call-overload]
 
-        return model
+        return model  # type: ignore[no-any-return]
 
     def validate_answers(
         self,
         answers: dict[str, list[str]],
-        raise_exception: bool = True,
         template_format=TemplateDataFormat,
+        raise_exception: bool = True,
     ) -> list[ErrorDetails]:
         """Validate answers for this Template.
 
@@ -852,9 +884,9 @@ class Template:
 
         for error in errors:
             question_id = error["loc"][0]
-            question = self.get_question_by_id(question_id)
+            question = self.get_question_by_id(str(question_id))
             if question:
-                error["question"] = asdict(question)
+                error["question"] = asdict(question)  # type: ignore[typeddict-unknown-key]
 
         if errors and raise_exception:
             raise InvalidTemplateAnswersError(self, answers, errors)
@@ -875,7 +907,7 @@ def allow_empty(v: str) -> str | None:
     return v
 
 
-def option_in_allowed_values(value: Any, allowed: list[Any]) -> Any:
+def option_in_allowed_values(value: Any, allowed: list[str]) -> Any:
     """Validate that a value is in a list of allowed values."""
     if value not in allowed:
         raise ValueError(f"{value!r} is not a valid choice from: {allowed}")
@@ -904,6 +936,10 @@ def make_template_answer_model_base(template_: Template) -> type[BaseModel]:
             args = []
             for item_id, _validator in self.model_fields.items():
                 question = self.template.get_question_by_id(item_id)
+                if not question:
+                    raise ValueError(
+                        f"Question with ID {item_id} not found in template."
+                    )
                 infos = map(
                     str,
                     [
@@ -917,9 +953,9 @@ def make_template_answer_model_base(template_: Template) -> type[BaseModel]:
                     f"    {item_id}={self.__dict__[item_id]!r}, # {' - '.join(infos)}"
                 )
                 args.append(line)
-            args = "\n".join(args)
+            args_str = "\n".join(args)
 
-            return f"Template_{self.template.id}_AnswerModel(\n" + args + "\n)"
+            return f"Template_{self.template.id}_AnswerModel(\n" + args_str + "\n)"
 
         __str__ = __repr__
 
@@ -939,8 +975,8 @@ class InvalidTemplateAnswersError(Exception):
     def __init__(
         self,
         template: Template | TemplateItem,
-        answers: dict[str, list[str]],
-        errors: list[dict],
+        answers: dict[str, Any],
+        errors: list[ErrorDetails],
     ) -> None:
         self.template = template
         self.errors = errors
@@ -964,7 +1000,7 @@ class InvalidTemplateAnswersError(Exception):
                         + "\n"
                     )
                 error_lines.append(indent(error_msg, "   "))
-            error_lines = "\n".join(error_lines)
+            error_lines_str = "\n".join(error_lines)
 
             name = "?"
             if isinstance(self.template, Template):
@@ -975,4 +1011,4 @@ class InvalidTemplateAnswersError(Exception):
         except Exception as e:
             return f"InvalidTemplateAnswersError.__str__ error: {e}"
         else:
-            return f"{name} ({self.template.id}) validation errors:\n{error_lines}"
+            return f"{name} ({self.template.id}) validation errors:\n{error_lines_str}"

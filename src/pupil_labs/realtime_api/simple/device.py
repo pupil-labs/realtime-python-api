@@ -3,7 +3,7 @@ import collections
 import enum
 import threading
 import weakref
-from typing import Any, Literal, cast
+from typing import Any, Literal, TypeAlias, cast
 
 from pupil_labs.neon_recording.calib import Calibration
 
@@ -193,7 +193,7 @@ class Device(DeviceBase):
         return self._status.direct_eye_events_sensor()
 
     def get_calibration(self) -> Calibration:
-        async def _get_calibration():
+        async def _get_calibration() -> Calibration:
             async with _DeviceAsync.convert_from(self) as control:
                 return await control.get_calibration()
 
@@ -583,7 +583,7 @@ class Device(DeviceBase):
         event = self.stream_name_stop_event_map[stream_name]
         self._streaming_trigger_action(event)
 
-    def _streaming_trigger_action(self, action) -> None:
+    def _streaming_trigger_action(self, action: "Device._EVENT") -> None:
         """Trigger the specified action."""
         if self._event_manager and self._background_loop:
             logger.debug(f"Sending {action.name} trigger")
@@ -690,13 +690,17 @@ class Device(DeviceBase):
             MATCHED_ITEM_LABEL,
             MATCHED_GAZE_EYES_LABEL,
         ]
-        self._most_recent_item = {
+        self._most_recent_item: dict[str, collections.deque[ReceivedItemType]] = {
             name: collections.deque(maxlen=1) for name in sensor_names
         }
-        self._event_new_item = {name: threading.Event() for name in sensor_names}
+        self._event_new_item: dict[str, threading.Event] = {
+            name: threading.Event() for name in sensor_names
+        }
+
         # only cache 3-4 seconds worth of gaze data in case no scene camera is connected
-        GazeCacheType = collections.deque[tuple[float, GazeDataType]]
-        EyesCacheType = collections.deque[tuple[float, SimpleVideoFrame]]
+        GazeCacheType: TypeAlias = collections.deque[tuple[float, GazeDataType]]
+        EyesCacheType: TypeAlias = collections.deque[tuple[float, SimpleVideoFrame]]
+
         self._cached_gaze_for_matching: GazeCacheType = collections.deque(maxlen=200)
         self._cached_eyes_for_matching: EyesCacheType = collections.deque(maxlen=200)
 
@@ -746,7 +750,7 @@ class Device(DeviceBase):
         auto_update_started_flag: threading.Event,
         is_streaming_flags: dict[str, threading.Event],
         start_streaming_by_default: bool = False,
-    ):
+    ) -> None:
         """Background thread for auto-updating device status and handling streams.
 
         Args:
@@ -797,12 +801,12 @@ class Device(DeviceBase):
                     logger.debug(f"Unhandled DIRECT sensor {changed.sensor}")
 
             elif isinstance(changed, Recording) and changed.action == "ERROR":
-                device_weakref()._errors.append(changed.message)
+                device_weakref()._errors.append(changed.message)  # type: ignore
 
             elif isinstance(changed, Sensor) and changed.stream_error:
                 error = f"Stream error in sensor {changed.sensor}"
                 if error not in device_weakref()._errors:
-                    device_weakref()._errors.append(error)
+                    device_weakref()._errors.append(error)  # type: ignore
 
         async def _auto_update_until_closed() -> None:
             """Run the auto-update loop until closed."""
@@ -826,7 +830,7 @@ class Device(DeviceBase):
                     start_stream(SensorName.WORLD.value)
                     start_stream(SensorName.EYES.value)
                     start_stream(SensorName.IMU.value)
-                    start_stream(SensorName.EYE_EVENTS)
+                    start_stream(SensorName.EYE_EVENTS.value)
 
                 while True:
                     logger.debug("Background worker waiting for event...")
@@ -844,7 +848,7 @@ class Device(DeviceBase):
                         raise RuntimeError(f"Unhandled {event!r}") from None
 
                 await notifier.receive_updates_stop()
-                device_weakref()._event_manager = None
+                device_weakref()._event_manager = None  # type: ignore
 
         def start_stream(stream_name: str) -> None:
             """Start streaming data from the specified sensor.
