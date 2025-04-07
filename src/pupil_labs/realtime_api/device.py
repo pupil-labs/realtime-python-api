@@ -68,6 +68,13 @@ class Device(DeviceBase):
     session: aiohttp.ClientSession | None
     template_definition: Template | None = None
 
+    @property
+    def active_session(self) -> aiohttp.ClientSession:
+        """Returns the active session, raising an error if it's None."""
+        if self.session is None:
+            raise DeviceError("Session is not active or has been closed.")
+        return self.session
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize the Device class."""
         super().__init__(*args, **kwargs)
@@ -83,7 +90,7 @@ class Device(DeviceBase):
             DeviceError: If the request fails.
 
         """
-        async with self.session.get(self.api_url(APIPath.STATUS)) as response:
+        async with self.active_session.get(self.api_url(APIPath.STATUS)) as response:
             confirmation = await response.json()
             if response.status != 200:
                 raise DeviceError(response.status, confirmation["message"])
@@ -136,7 +143,9 @@ class Device(DeviceBase):
                 - Setup bottom sheets not completed
 
         """
-        async with self.session.post(self.api_url(APIPath.RECORDING_START)) as response:
+        async with self.active_session.post(
+            self.api_url(APIPath.RECORDING_START)
+        ) as response:
             confirmation = await response.json()
             logger.debug(f"[{self}.start_recording] Received response: {confirmation}")
             if response.status != 200:
@@ -152,7 +161,7 @@ class Device(DeviceBase):
                 - Template has required fields
 
         """
-        async with self.session.post(
+        async with self.active_session.post(
             self.api_url(APIPath.RECORDING_STOP_AND_SAVE)
         ) as response:
             confirmation = await response.json()
@@ -169,7 +178,7 @@ class Device(DeviceBase):
                 - Recording not running
 
         """
-        async with self.session.post(
+        async with self.active_session.post(
             self.api_url(APIPath.RECORDING_CANCEL)
         ) as response:
             confirmation = await response.json()
@@ -198,7 +207,7 @@ class Device(DeviceBase):
         if event_timestamp_unix_ns is not None:
             event["timestamp"] = event_timestamp_unix_ns
 
-        async with self.session.post(
+        async with self.active_session.post(
             self.api_url(APIPath.EVENT), json=event
         ) as response:
             confirmation = await response.json()
@@ -217,7 +226,7 @@ class Device(DeviceBase):
             DeviceError: If the template can't be fetched.
 
         """
-        async with self.session.get(
+        async with self.active_session.get(
             self.api_url(APIPath.TEMPLATE_DEFINITION)
         ) as response:
             confirmation = await response.json()
@@ -250,7 +259,9 @@ class Device(DeviceBase):
             f"format should be one of {TemplateDataFormat}"
         )
 
-        async with self.session.get(self.api_url(APIPath.TEMPLATE_DATA)) as response:
+        async with self.active_session.get(
+            self.api_url(APIPath.TEMPLATE_DATA)
+        ) as response:
             confirmation = await response.json()
             if response.status != 200:
                 raise DeviceError(response.status, confirmation["message"])
@@ -313,7 +324,7 @@ class Device(DeviceBase):
             key: value or [""] for key, value in template_answers.items()
         }
 
-        async with self.session.post(
+        async with self.active_session.post(
             self.api_url(APIPath.TEMPLATE_DATA), json=template_answers
         ) as response:
             confirmation = await response.json()
@@ -325,7 +336,7 @@ class Device(DeviceBase):
 
     async def close(self) -> None:
         """Close the connection to the device."""
-        await self.session.close()
+        await self.active_session.close()
         self.session = None
 
     async def __aenter__(self) -> "Device":
@@ -372,7 +383,9 @@ class Device(DeviceBase):
             DeviceError: If the request fails.
 
         """
-        async with self.session.get(self.api_url(APIPath.CALIBRATION)) as response:
+        async with self.active_session.get(
+            self.api_url(APIPath.CALIBRATION)
+        ) as response:
             if response.status != 200:
                 raise DeviceError(response.status, "Failed to fetch calibration")
 
