@@ -8,7 +8,7 @@ from collections.abc import Hashable, Iterable, Mapping
 from types import MappingProxyType
 from typing import Generic, TypeVar
 
-from ..models import Sensor
+from ..models import Sensor, SensorName
 from ..streaming import (
     RTSPEyeEventStreamer,
     RTSPGazeStreamer,
@@ -261,18 +261,18 @@ class _StreamManager:
                     break
                 name = sensor.sensor
 
-                if name in (Sensor.Name.WORLD.value, Sensor.Name.EYES.value):
+                if name in (SensorName.WORLD.value, SensorName.EYES.value):
                     # convert to simple video frame
                     item = SimpleVideoFrame.from_video_frame(item)
 
                 logger_receive_data.debug(f"{self} received {item}")
                 device._most_recent_item[name].append(item)
-                if name == Sensor.Name.GAZE.value:
+                if name == SensorName.GAZE.value:
                     device._cached_gaze_for_matching.append((
                         item.timestamp_unix_seconds,
                         item,
                     ))
-                elif name == Sensor.Name.WORLD.value:
+                elif name == SensorName.WORLD.value:
                     # Matching priority
                     # 1. Match gaze datum to scene video frame (MATCHED_ITEM_LABEL)
                     # 2. If match not possible: Abort matching
@@ -341,14 +341,13 @@ class _StreamManager:
                         f"\tscene - eyes: {eyes_match_time_difference:.3f}s)\n"
                         f"\tgaze - eyes: {gaze_eyes_time_difference:.3f}s)"
                     )
-                elif name == Sensor.Name.EYES.value:
+                elif name == SensorName.EYES.value:
                     device._cached_eyes_for_matching.append((
                         item.timestamp_unix_seconds,
                         item,
                     ))
                 elif (
-                    name == Sensor.Name.IMU.value
-                    or name == Sensor.Name.EYE_EVENTS.value
+                    name == SensorName.IMU.value or name == SensorName.EYE_EVENTS.value
                 ):
                     pass
                 else:

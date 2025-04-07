@@ -197,12 +197,31 @@ class NetworkDevice(NamedTuple):
     connected: bool
 
 
+class SensorName(enum.Enum):
+    """Enumeration of sensor types."""
+
+    ANY = None
+    GAZE = "gaze"
+    WORLD = "world"
+    IMU = "imu"
+    EYES = "eyes"
+    EYE_EVENTS = "eye_events"
+
+
+class ConnectionType(enum.Enum):
+    """Enumeration of connection types."""
+
+    ANY = None
+    WEBSOCKET = "WEBSOCKET"
+    DIRECT = "DIRECT"
+
+
 class Sensor(NamedTuple):
     """Information about a sensor on the device.
 
     Attributes:
-        sensor (str): Sensor type (see :attr:`Sensor.Name`).
-        conn_type (str): Connection type (see :attr:`Sensor.Connection`).
+        sensor (str): Sensor type (see Name Enum).
+        conn_type (str): Connection type (see Connection enum).
         connected (bool): Whether the sensor is connected.
         ip (str | None): IP address of the sensor.
         params (str | None): Additional parameters.
@@ -231,19 +250,6 @@ class Sensor(NamedTuple):
         if self.connected:
             return f"{self.protocol}://{self.ip}:{self.port}/?{self.params}"
         return None
-
-    class Name(enum.Enum):
-        ANY = None
-        GAZE = "gaze"
-        WORLD = "world"
-        IMU = "imu"
-        EYES = "eyes"
-        EYE_EVENTS = "eye_events"
-
-    class Connection(enum.Enum):
-        ANY = None
-        WEBSOCKET = "WEBSOCKET"
-        DIRECT = "DIRECT"
 
 
 class Recording(NamedTuple):
@@ -300,7 +306,14 @@ def _init_cls_with_annotated_fields_only(
         Instance of cls with annotated fields from d.
 
     """
-    return cls(**{attr: d.get(attr) for attr in cls.__annotations__})
+    init_args = {}
+    for attr in cls.__annotations__:
+        if attr in d:
+            init_args[attr] = d[attr]
+    try:
+        return cls(**init_args)
+    except TypeError as e:
+        raise ValueError(f"Missing required fields for {cls.__name__} in {d}") from e
 
 
 class UnknownComponentError(ValueError):
@@ -390,6 +403,8 @@ class Status:
             else:
                 logger.warning(f"Unknown model class: {type(component).__name__}")
         sensors.sort(key=lambda s: (not s.connected, s.conn_type, s.sensor))
+        if not phone:
+            raise ValueError("Status data must include a 'Phone' component.")
         return cls(phone, hardware, sensors, recording)
 
     def update(self, component: Component) -> None:
@@ -415,7 +430,7 @@ class Status:
                     break
 
     def matching_sensors(
-        self, name: Sensor.Name, connection: Sensor.Connection
+        self, name: SensorName, connection: ConnectionType
     ) -> Iterator[Sensor]:
         """Find sensors matching specified criteria.
 
@@ -428,10 +443,10 @@ class Status:
 
         """
         for sensor in self.sensors:
-            if name is not Sensor.Name.ANY and sensor.sensor != name.value:
+            if name is not SensorName.ANY and sensor.sensor != name.value:
                 continue
             if (
-                connection is not Sensor.Connection.ANY
+                connection is not ConnectionType.ANY
                 and sensor.conn_type != connection.value
             ):
                 continue
@@ -445,37 +460,31 @@ class Status:
 
         """
         return next(
-            self.matching_sensors(Sensor.Name.WORLD, Sensor.Connection.DIRECT),
+            self.matching_sensors(SensorName.WORLD, ConnectionType.DIRECT),
             Sensor(
-                sensor=Sensor.Name.WORLD.value, conn_type=Sensor.Connection.DIRECT.value
+                sensor=SensorName.WORLD.value, conn_type=ConnectionType.DIRECT.value
             ),
         )
 
     def direct_gaze_sensor(self) -> Sensor | None:
         """Get the gaze sensor with direct connection."""
         return next(
-            self.matching_sensors(Sensor.Name.GAZE, Sensor.Connection.DIRECT),
-            Sensor(
-                sensor=Sensor.Name.GAZE.value, conn_type=Sensor.Connection.DIRECT.value
-            ),
+            self.matching_sensors(SensorName.GAZE, ConnectionType.DIRECT),
+            Sensor(sensor=SensorName.GAZE.value, conn_type=ConnectionType.DIRECT.value),
         )
 
     def direct_imu_sensor(self) -> Sensor | None:
         """Get the IMU sensor with direct connection."""
         return next(
-            self.matching_sensors(Sensor.Name.IMU, Sensor.Connection.DIRECT),
-            Sensor(
-                sensor=Sensor.Name.IMU.value, conn_type=Sensor.Connection.DIRECT.value
-            ),
+            self.matching_sensors(SensorName.IMU, ConnectionType.DIRECT),
+            Sensor(sensor=SensorName.IMU.value, conn_type=ConnectionType.DIRECT.value),
         )
 
     def direct_eyes_sensor(self) -> Sensor | None:
         """Get the eye camera sensor with direct connection. Only available on Neon."""
         return next(
-            self.matching_sensors(Sensor.Name.EYES, Sensor.Connection.DIRECT),
-            Sensor(
-                sensor=Sensor.Name.EYES.value, conn_type=Sensor.Connection.DIRECT.value
-            ),
+            self.matching_sensors(SensorName.EYES, ConnectionType.DIRECT),
+            Sensor(sensor=SensorName.EYES.value, conn_type=ConnectionType.DIRECT.value),
         )
 
     def direct_eye_events_sensor(self) -> Sensor | None:
@@ -484,10 +493,10 @@ class Status:
         Only available on Neon with Companion App version 2.9 or newer.
         """
         return next(
-            self.matching_sensors(Sensor.Name.EYE_EVENTS, Sensor.Connection.DIRECT),
+            self.matching_sensors(SensorName.EYE_EVENTS, ConnectionType.DIRECT),
             Sensor(
-                sensor=Sensor.Name.EYE_EVENTS.value,
-                conn_type=Sensor.Connection.DIRECT.value,
+                sensor=SensorName.EYE_EVENTS.value,
+                conn_type=ConnectionType.DIRECT.value,
             ),
         )
 
@@ -545,14 +554,18 @@ class TemplateItem:
             True.
 
         """
-        answers = {
-            str(self.id): self._pydantic_validator(template_format=template_format)
-        }
+        validator = self._pydantic_validator(template_format=template_format)
+        if validator is None:
+            logger.warning(
+                f"Skipping validation for {self.widget_type} item: {self.title}"
+            )
+            return []
+        answers_model_def = {str(self.id): validator}
         model = create_model(
             f"TemplateItem_{self.id}_Answer",
-            **answers,
+            **answers_model_def,
             __config__=ConfigDict(extra="forbid"),
-        )
+        )  # type: ignore[call-overload]
         errors = []
         try:
             model.__pydantic_validator__.validate_assignment(
@@ -562,7 +575,7 @@ class TemplateItem:
             errors = e.errors()
 
         if errors and raise_exception:
-            raise InvalidTemplateAnswersError(self, answers, errors)
+            raise InvalidTemplateAnswersError(self, answers_model_def, errors)
         return errors
 
     def _pydantic_validator(

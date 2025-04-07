@@ -12,9 +12,11 @@ from ..device import Device as _DeviceAsync
 from ..device import StatusUpdateNotifier
 from ..models import (
     Component,
+    ConnectionType,
     Event,
     Recording,
     Sensor,
+    SensorName,
     Status,
     Template,
     TemplateDataFormat,
@@ -113,19 +115,19 @@ class Device(DeviceBase):
         self._errors: list[str] = []
 
         self.stream_name_start_event_map = {
-            Sensor.Name.GAZE.value: self._EVENT.SHOULD_START_GAZE,
-            Sensor.Name.WORLD.value: self._EVENT.SHOULD_START_WORLD,
-            Sensor.Name.EYES.value: self._EVENT.SHOULD_START_EYES,
-            Sensor.Name.IMU.value: self._EVENT.SHOULD_START_IMU,
-            Sensor.Name.EYE_EVENTS.value: self._EVENT.SHOULD_START_EYE_EVENTS,
+            SensorName.GAZE.value: self._EVENT.SHOULD_START_GAZE,
+            SensorName.WORLD.value: self._EVENT.SHOULD_START_WORLD,
+            SensorName.EYES.value: self._EVENT.SHOULD_START_EYES,
+            SensorName.IMU.value: self._EVENT.SHOULD_START_IMU,
+            SensorName.EYE_EVENTS.value: self._EVENT.SHOULD_START_EYE_EVENTS,
         }
 
         self.stream_name_stop_event_map = {
-            Sensor.Name.GAZE.value: self._EVENT.SHOULD_STOP_GAZE,
-            Sensor.Name.WORLD.value: self._EVENT.SHOULD_STOP_WORLD,
-            Sensor.Name.EYES.value: self._EVENT.SHOULD_STOP_EYES,
-            Sensor.Name.IMU.value: self._EVENT.SHOULD_STOP_IMU,
-            Sensor.Name.EYE_EVENTS.value: self._EVENT.SHOULD_STOP_EYE_EVENTS,
+            SensorName.GAZE.value: self._EVENT.SHOULD_STOP_GAZE,
+            SensorName.WORLD.value: self._EVENT.SHOULD_STOP_WORLD,
+            SensorName.EYES.value: self._EVENT.SHOULD_STOP_EYES,
+            SensorName.IMU.value: self._EVENT.SHOULD_STOP_IMU,
+            SensorName.EYE_EVENTS.value: self._EVENT.SHOULD_STOP_EYE_EVENTS,
         }
 
     @property
@@ -377,7 +379,7 @@ class Device(DeviceBase):
         """
         return cast(
             SimpleVideoFrame,
-            self._receive_item(Sensor.Name.WORLD.value, timeout_seconds),
+            self._receive_item(SensorName.WORLD.value, timeout_seconds),
         )
 
     def receive_gaze_datum(
@@ -395,7 +397,7 @@ class Device(DeviceBase):
 
         """
         return cast(
-            GazeDataType, self._receive_item(Sensor.Name.GAZE.value, timeout_seconds)
+            GazeDataType, self._receive_item(SensorName.GAZE.value, timeout_seconds)
         )
 
     def receive_eyes_video_frame(
@@ -414,7 +416,7 @@ class Device(DeviceBase):
         """
         return cast(
             SimpleVideoFrame,
-            self._receive_item(Sensor.Name.EYES.value, timeout_seconds),
+            self._receive_item(SensorName.EYES.value, timeout_seconds),
         )
 
     def receive_imu_datum(self, timeout_seconds: float | None = None) -> IMUData | None:
@@ -428,7 +430,7 @@ class Device(DeviceBase):
             IMUData or None: The received IMU data, or None if timeout was reached.
 
         """
-        return cast(IMUData, self._receive_item(Sensor.Name.IMU.value, timeout_seconds))
+        return cast(IMUData, self._receive_item(SensorName.IMU.value, timeout_seconds))
 
     def receive_eye_events(
         self, timeout_seconds: float | None = None
@@ -446,7 +448,7 @@ class Device(DeviceBase):
         """
         return cast(
             FixationEventData | BlinkEventData | FixationOnsetEventData,
-            self._receive_item(Sensor.Name.EYE_EVENTS.value, timeout_seconds),
+            self._receive_item(SensorName.EYE_EVENTS.value, timeout_seconds),
         )
 
     def receive_matched_scene_video_frame_and_gaze(
@@ -499,13 +501,13 @@ class Device(DeviceBase):
 
         """
         if sensor == MATCHED_ITEM_LABEL:
-            self.start_stream_if_needed(Sensor.Name.GAZE.value)
-            self.start_stream_if_needed(Sensor.Name.WORLD.value)
+            self.start_stream_if_needed(SensorName.GAZE.value)
+            self.start_stream_if_needed(SensorName.WORLD.value)
 
         elif sensor == MATCHED_GAZE_EYES_LABEL:
-            self.start_stream_if_needed(Sensor.Name.GAZE.value)
-            self.start_stream_if_needed(Sensor.Name.EYES.value)
-            self.start_stream_if_needed(Sensor.Name.WORLD.value)
+            self.start_stream_if_needed(SensorName.GAZE.value)
+            self.start_stream_if_needed(SensorName.EYES.value)
+            self.start_stream_if_needed(SensorName.WORLD.value)
 
         else:
             self.start_stream_if_needed(sensor)
@@ -536,7 +538,7 @@ class Device(DeviceBase):
 
         Args:
             stream_name: Name of the sensor to start streaming from. It can be one of
-            :py:attr:`Sensor.Name` values or None, which will start all streams.
+            :py:attr:`SensorName` values or None, which will start all streams.
 
         Raises:
             ValueError: If the stream name is not recognized.
@@ -561,7 +563,7 @@ class Device(DeviceBase):
 
         Args:
             stream_name: Name of the sensor to start streaming from. It can be one of
-            :py:attr:`Sensor.Name` values or None, which will stop all streams.
+            :py:attr:`SensorName` values or None, which will stop all streams.
 
         Raises:
             ValueError: If the stream name is not recognized.
@@ -680,11 +682,11 @@ class Device(DeviceBase):
 
         # List of sensors that will
         sensor_names = [
-            Sensor.Name.GAZE.value,
-            Sensor.Name.WORLD.value,
-            Sensor.Name.EYES.value,
-            Sensor.Name.IMU.value,
-            Sensor.Name.EYE_EVENTS.value,
+            SensorName.GAZE.value,
+            SensorName.WORLD.value,
+            SensorName.EYES.value,
+            SensorName.IMU.value,
+            SensorName.EYE_EVENTS.value,
             MATCHED_ITEM_LABEL,
             MATCHED_GAZE_EYES_LABEL,
         ]
@@ -700,11 +702,11 @@ class Device(DeviceBase):
 
         event_auto_update_started = threading.Event()
         self._is_streaming_flags = {
-            Sensor.Name.GAZE.value: threading.Event(),
-            Sensor.Name.WORLD.value: threading.Event(),
-            Sensor.Name.EYES.value: threading.Event(),
-            Sensor.Name.IMU.value: threading.Event(),
-            Sensor.Name.EYE_EVENTS.value: threading.Event(),
+            SensorName.GAZE.value: threading.Event(),
+            SensorName.WORLD.value: threading.Event(),
+            SensorName.EYES.value: threading.Event(),
+            SensorName.IMU.value: threading.Event(),
+            SensorName.EYE_EVENTS.value: threading.Event(),
         }
         self._auto_update_thread = threading.Thread(
             target=self._auto_update,
@@ -756,27 +758,27 @@ class Device(DeviceBase):
 
         """
         stream_managers = {
-            Sensor.Name.GAZE.value: _StreamManager(
+            SensorName.GAZE.value: _StreamManager(
                 device_weakref,
                 RTSPGazeStreamer,
                 should_be_streaming_by_default=start_streaming_by_default,
             ),
-            Sensor.Name.WORLD.value: _StreamManager(
+            SensorName.WORLD.value: _StreamManager(
                 device_weakref,
                 RTSPVideoFrameStreamer,
                 should_be_streaming_by_default=start_streaming_by_default,
             ),
-            Sensor.Name.EYES.value: _StreamManager(
+            SensorName.EYES.value: _StreamManager(
                 device_weakref,
                 RTSPVideoFrameStreamer,
                 should_be_streaming_by_default=start_streaming_by_default,
             ),
-            Sensor.Name.IMU.value: _StreamManager(
+            SensorName.IMU.value: _StreamManager(
                 device_weakref,
                 RTSPImuStreamer,
                 should_be_streaming_by_default=start_streaming_by_default,
             ),
-            Sensor.Name.EYE_EVENTS.value: _StreamManager(
+            SensorName.EYE_EVENTS.value: _StreamManager(
                 device_weakref,
                 RTSPEyeEventStreamer,
                 should_be_streaming_by_default=start_streaming_by_default,
@@ -787,7 +789,7 @@ class Device(DeviceBase):
             """Process status changes from the device."""
             if (
                 isinstance(changed, Sensor)
-                and changed.conn_type == Sensor.Connection.DIRECT.value
+                and changed.conn_type == ConnectionType.DIRECT.value
             ):
                 if changed.sensor in stream_managers:
                     await stream_managers[changed.sensor].handle_sensor_update(changed)
@@ -820,11 +822,11 @@ class Device(DeviceBase):
                 auto_update_started_flag.set()
                 if start_streaming_by_default:
                     logger.debug("Streaming started by default")
-                    start_stream(Sensor.Name.GAZE.value)
-                    start_stream(Sensor.Name.WORLD.value)
-                    start_stream(Sensor.Name.EYES.value)
-                    start_stream(Sensor.Name.IMU.value)
-                    start_stream(Sensor.Name.EYE_EVENTS)
+                    start_stream(SensorName.GAZE.value)
+                    start_stream(SensorName.WORLD.value)
+                    start_stream(SensorName.EYES.value)
+                    start_stream(SensorName.IMU.value)
+                    start_stream(SensorName.EYE_EVENTS)
 
                 while True:
                     logger.debug("Background worker waiting for event...")
@@ -880,16 +882,16 @@ class Device(DeviceBase):
         }
 
         event_stream_map = {
-            Device._EVENT.SHOULD_START_GAZE: Sensor.Name.GAZE,
-            Device._EVENT.SHOULD_START_WORLD: Sensor.Name.WORLD,
-            Device._EVENT.SHOULD_START_EYES: Sensor.Name.EYES,
-            Device._EVENT.SHOULD_START_IMU: Sensor.Name.IMU,
-            Device._EVENT.SHOULD_START_EYE_EVENTS: Sensor.Name.EYE_EVENTS,
-            Device._EVENT.SHOULD_STOP_GAZE: Sensor.Name.GAZE,
-            Device._EVENT.SHOULD_STOP_WORLD: Sensor.Name.WORLD,
-            Device._EVENT.SHOULD_STOP_EYES: Sensor.Name.EYES,
-            Device._EVENT.SHOULD_STOP_IMU: Sensor.Name.IMU,
-            Device._EVENT.SHOULD_STOP_EYE_EVENTS: Sensor.Name.EYE_EVENTS,
+            Device._EVENT.SHOULD_START_GAZE: SensorName.GAZE,
+            Device._EVENT.SHOULD_START_WORLD: SensorName.WORLD,
+            Device._EVENT.SHOULD_START_EYES: SensorName.EYES,
+            Device._EVENT.SHOULD_START_IMU: SensorName.IMU,
+            Device._EVENT.SHOULD_START_EYE_EVENTS: SensorName.EYE_EVENTS,
+            Device._EVENT.SHOULD_STOP_GAZE: SensorName.GAZE,
+            Device._EVENT.SHOULD_STOP_WORLD: SensorName.WORLD,
+            Device._EVENT.SHOULD_STOP_EYES: SensorName.EYES,
+            Device._EVENT.SHOULD_STOP_IMU: SensorName.IMU,
+            Device._EVENT.SHOULD_STOP_EYE_EVENTS: SensorName.EYE_EVENTS,
         }
 
         return asyncio.run(_auto_update_until_closed())
