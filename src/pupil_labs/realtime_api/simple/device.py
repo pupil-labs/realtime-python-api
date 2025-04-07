@@ -806,15 +806,15 @@ class Device(DeviceBase):
 
         async def _auto_update_until_closed() -> None:
             """Run the auto-update loop until closed."""
-            async with _DeviceAsync.convert_from(device_weakref()) as device:
+            async with _DeviceAsync.convert_from(device_weakref()) as device:  # type: ignore
                 event_manager = _AsyncEventManager(Device._EVENT)
-                device_weakref()._event_manager = event_manager
-                device_weakref()._background_loop = asyncio.get_running_loop()
+                device_weakref()._event_manager = event_manager  # type: ignore
+                device_weakref()._background_loop = asyncio.get_running_loop()  # type: ignore
 
                 notifier = StatusUpdateNotifier(
                     device,
                     callbacks=[
-                        device_weakref()._status.update,
+                        device_weakref()._status.update,  # type: ignore
                         _process_status_changes,
                     ],
                 )
