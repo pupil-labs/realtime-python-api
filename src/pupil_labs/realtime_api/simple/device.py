@@ -58,27 +58,10 @@ class Device(DeviceBase):
     This class provides a simplified, synchronous interface to Pupil Labs devices,
     wrapping the asynchronous API with a more user-friendly interface.
 
-    Note:
-        Use :func:`pupil_labs.realtime_api.simple.discover_devices` instead of
-        initializing the class manually. See the :ref:`simple_discovery_example`
-        example.
-
-    Attributes:
-        phone_name (str): Name of the connected phone.
-        phone_id (str): Unique identifier of the connected phone.
-        phone_ip (str): IP address of the connected phone.
-        battery_level_percent (int): Battery level in percentage.
-        battery_state (str): Battery state ("OK", "LOW", or "CRITICAL").
-        memory_num_free_bytes (int): Available memory in bytes.
-        memory_state (str): Memory state ("OK", "LOW", or "CRITICAL").
-        version_glasses (str): Version of the connected glasses.
-        module_serial (str | None): Serial number of the module, None if no glasses
-        connected.
-        serial_number_glasses (str | None): Serial number of the glasses, None if no
-        glasses connected.
-        serial_number_scene_cam (str | None): Serial number of the scene camera, None
-        if not connected.
-        is_currently_streaming (bool): Whether data streaming is currently active.
+    Important:
+        Use :func:`~pupil_labs.realtime_api.simple.discovery.discover_devices` instead
+        of initializing the class manually.
+        See the :ref:`simple_discovery_example` example.
 
     """
 
@@ -132,67 +115,117 @@ class Device(DeviceBase):
 
     @property
     def phone_name(self) -> str:
+        """Get the name of the connected phone."""
         return self._status.phone.device_name
 
     @property
     def phone_id(self) -> str:
+        """Get the ID of the connected phone."""
         return self._status.phone.device_id
 
     @property
     def phone_ip(self) -> str:
+        """Get the IP address of the connected phone."""
         return self._status.phone.ip
 
     @property
     def battery_level_percent(self) -> int:
+        """Get the battery level of the connected phone in percentage."""
         return self._status.phone.battery_level
 
     @property
     def battery_state(self) -> Literal["OK", "LOW", "CRITICAL"]:
+        """Get the battery state of the connected phone.
+
+        Possible values are "OK", "LOW", or "CRITICAL".
+        """
         return self._status.phone.battery_state
 
     @property
     def memory_num_free_bytes(self) -> int:
+        """Get the available memory of the connected phone in bytes."""
         return self._status.phone.memory
 
     @property
     def memory_state(self) -> Literal["OK", "LOW", "CRITICAL"]:
+        """Get the memory state of the connected phone.
+
+        Possible values are "OK", "LOW", or "CRITICAL".
+        """
         return self._status.phone.memory_state
 
     @property
-    def version_glasses(self) -> str:
+    def version_glasses(self) -> str | None:
+        """Get the version of the connected glasses.
+
+        Returns:
+            str: 1 -> Pupil Invisible, 2 -> Neon, or None -> No glasses connected.
+
+        """
         return self._status.hardware.version
 
     @property
     def module_serial(self) -> str | Literal["default"] | None:
-        """Returns ``None`` or ``"default"`` if no glasses are connected"""
+        """Returns ``None`` or ``"default"`` if no glasses are connected
+
+        Only available on **Neon**.
+        """
         return self._status.hardware.module_serial
 
     @property
     def serial_number_glasses(self) -> str | Literal["default"] | None:
-        """Returns ``None`` or ``"default"`` if no glasses are connected"""
+        """Returns ``None`` or ``"default"`` if no glasses are connected
+
+        Only available on **Pupil Invisible**.
+        """
         return self._status.hardware.glasses_serial
 
     @property
     def serial_number_scene_cam(self) -> str | None:
-        """Returns ``None`` if no scene camera is connected"""
+        """Returns ``None`` if no scene camera is connected
+
+        Only available on **Pupil Invisible**.
+        """
         return self._status.hardware.world_camera_serial
 
     def get_errors(self) -> list[str]:
+        """Get a list of errors from the device.
+
+        Returns:
+            list[str]: List of error messages.
+
+        """
         errors = self._errors.copy()
         self._errors.clear()
 
         return errors
 
     def world_sensor(self) -> Sensor | None:
+        """Get the world sensor."""
         return self._status.direct_world_sensor()
 
     def gaze_sensor(self) -> Sensor | None:
+        """Get the gaze sensor."""
         return self._status.direct_gaze_sensor()
 
     def eye_events_sensor(self) -> Sensor | None:
+        """Get the eye events sensor."""
         return self._status.direct_eye_events_sensor()
 
     def get_calibration(self) -> Calibration:
+        """Get the current cameras calibration data.
+
+        Note that Pupil Invisible and Neon are calibration free systems, this refers to
+        the intrinsincs and extrinsics of the cameras.
+
+        Returns:
+            pupil_labs.neon_recording.calib.Calibration: The calibration data.
+
+        Raises:
+            DeviceError: If the request fails.
+
+        """
+
         async def _get_calibration() -> Calibration:
             async with _DeviceAsync.convert_from(self) as control:
                 return await control.get_calibration()
