@@ -1,7 +1,7 @@
 import datetime
 import logging
 from collections.abc import AsyncIterator, ByteString
-from typing import Any, NamedTuple, TypeAlias
+from typing import Any, NamedTuple, TypeAlias, cast
 
 from aiortsp.rtcp.parser import SR, RTCPPacket
 from aiortsp.rtsp.reader import RTSPReader
@@ -66,8 +66,8 @@ async def receive_raw_rtsp_data(
 
     """
     async with RTSPRawStreamer(url, *args, **kwargs) as streamer:
-        for datum in streamer.receive():
-            yield datum
+        async for datum in streamer.receive():
+            yield cast(RTSPData, datum)
 
 
 class RTSPRawStreamer:
@@ -123,7 +123,7 @@ class RTSPRawStreamer:
                 raise SDPDataNotAvailableError(
                     f"SDP data is missing {err} field"
                 ) from err
-        return self._encoding
+        return str(self._encoding)
 
     async def __aenter__(self, *args: Any, **kwargs: Any) -> "RTSPRawStreamer":
         """Enter the async context manager.
@@ -193,6 +193,11 @@ class _WallclockRTSPReader(AiortspRTSPReader):
             _UnknownClockoffsetError: If the clock offset is not yet known.
 
         """
+        if self._relative_to_ntp_clock_offset is None:
+            raise _UnknownClockoffsetError(
+                "Clock offset between relative and NTP clock is still unknown. "
+                "Waiting for first RTCP SR packet..."
+            )
         try:
             return (
                 self.relative_timestamp_from_packet(packet)
@@ -220,7 +225,7 @@ class _WallclockRTSPReader(AiortspRTSPReader):
         """
         rtpmap = self.get_rtpmap()
         clock_rate = rtpmap["clockRate"]
-        return packet.ts / clock_rate
+        return cast(float, packet.ts / clock_rate)
 
     def _calculate_clock_offset(self, sr_pkt: Any) -> None:
         """Calculate the offset between RTP and NTP clocks from an SR packet.

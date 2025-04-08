@@ -2,7 +2,7 @@ import base64
 import datetime
 import logging
 from collections.abc import AsyncIterator, ByteString
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, cast
 
 import av
 import numpy as np
@@ -79,7 +79,7 @@ async def receive_video_frames(
     """
     async with RTSPVideoFrameStreamer(url, *args, **kwargs) as streamer:
         async for datum in streamer.receive():
-            yield datum
+            yield cast(VideoFrame, datum)
 
 
 class RTSPVideoFrameStreamer(RTSPRawStreamer):
@@ -95,7 +95,7 @@ class RTSPVideoFrameStreamer(RTSPRawStreamer):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self._sprop_parameter_set_payloads = None
+        self._sprop_parameter_set_payloads: list[ByteString] | None = None
 
     async def receive(self) -> AsyncIterator[VideoFrame]:  # type: ignore[override]
         """Receive and decode video frames from the RTSP stream."""
@@ -114,7 +114,7 @@ class RTSPVideoFrameStreamer(RTSPRawStreamer):
                         f"Session description protocol data not available yet: {err}"
                     )
                     continue
-                except av.codec.UnknownCodecError:
+                except av.codec.codec.UnknownCodecError:
                     logger.exception(
                         "Unknown codec error: "
                         "Please try clearing the app's storage and cache."
@@ -122,9 +122,11 @@ class RTSPVideoFrameStreamer(RTSPRawStreamer):
                     raise
             # if pkt is the start of a new fragmented frame, parse will return a packet
             # containing the data from the previous fragments
-            for packet in codec.parse(extract_payload_from_nal_unit(data.raw)):  # type: ignore[attr-defined]
+            for packet in codec.parse(extract_payload_from_nal_unit(data.raw)):
                 # use timestamp of previous packets
                 for av_frame in codec.decode(packet):  # type: ignore[attr-defined]
+                    if frame_timestamp is None:
+                        raise ValueError("No timestamp available for the video frame.")
                     yield VideoFrame(av_frame, frame_timestamp)
 
             frame_timestamp = data.timestamp_unix_seconds

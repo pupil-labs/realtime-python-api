@@ -791,6 +791,13 @@ class Device(DeviceBase):
 
         async def _process_status_changes(changed: Component) -> None:
             """Process status changes from the device."""
+            device_instance = device_weakref()
+            if device_instance is None:
+                # The device object might have been garbage collected, do nothing.
+                logger.warning(
+                    "Device instance no longer available in _process_status_changes."
+                )
+                return
             if (
                 isinstance(changed, Sensor)
                 and changed.conn_type == ConnectionType.DIRECT.value
@@ -801,12 +808,12 @@ class Device(DeviceBase):
                     logger.debug(f"Unhandled DIRECT sensor {changed.sensor}")
 
             elif isinstance(changed, Recording) and changed.action == "ERROR":
-                device_weakref()._errors.append(changed.message)  # type: ignore
+                device_instance._errors.append(changed.message)
 
             elif isinstance(changed, Sensor) and changed.stream_error:
                 error = f"Stream error in sensor {changed.sensor}"
-                if error not in device_weakref()._errors:
-                    device_weakref()._errors.append(error)  # type: ignore
+                if error not in device_instance._errors:
+                    device_instance._errors.append(error)
 
         async def _auto_update_until_closed() -> None:
             """Run the auto-update loop until closed."""

@@ -2,7 +2,7 @@ import datetime
 import logging
 import struct
 from collections.abc import AsyncIterator
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, cast
 
 from .base import RTSPData, RTSPRawStreamer
 
@@ -79,7 +79,7 @@ class DualMonocularGazeData(NamedTuple):
     timestamp_unix_seconds: float
 
     @classmethod
-    def from_raw(cls, data: RTSPData) -> "GazeData":
+    def from_raw(cls, data: RTSPData) -> "DualMonocularGazeData":
         """Create a DualMonocularGazeData instance from raw data.
 
         Args:
@@ -327,11 +327,15 @@ class EyestateEyelidGazeData(NamedTuple):
         return int(self.timestamp_unix_seconds * 1e9)
 
 
+GazeDataType = (
+    GazeData | DualMonocularGazeData | EyestateGazeData | EyestateEyelidGazeData
+)
+"""Type alias for various gaze data types."""
+
+
 async def receive_gaze_data(
     url: str, *args: Any, **kwargs: Any
-) -> AsyncIterator[
-    GazeData | DualMonocularGazeData | EyestateGazeData | EyestateEyelidGazeData
-]:
+) -> AsyncIterator[GazeDataType]:
     """Receive gaze data from an RTSP stream.
 
     This is a convenience function that creates an RTSPGazeStreamer and yields
@@ -343,13 +347,17 @@ async def receive_gaze_data(
         **kwargs: Additional keyword arguments passed to RTSPGazeStreamer.
 
     Yields:
-        GazeData | DualMonocularGazeData | EyestateGazeData | EyestateEyelidGazeData:
-        Parsed gaze data of various types.
+        GazeDataType: Parsed gaze data of various types.
+        The type of gaze data object is determined by the length of the raw data packet:
+        - 9 bytes: GazeData (basic gaze position)
+        - 17 bytes: DualMonocularGazeData (left and right eye positions)
+        - 65 bytes: EyestateGazeData (gaze with eye state)
+        - 89 bytes: EyestateEyelidGazeData (gaze with eye state and eyelid info)
 
     """
     async with RTSPGazeStreamer(url, *args, **kwargs) as streamer:
         async for datum in streamer.receive():
-            yield datum
+            yield cast(GazeDataType, datum)
 
 
 class RTSPGazeStreamer(RTSPRawStreamer):
@@ -361,15 +369,13 @@ class RTSPGazeStreamer(RTSPRawStreamer):
 
     """
 
-    async def receive(
+    async def receive(  # type: ignore[override]
         self,
-    ) -> AsyncIterator[
-        GazeData | DualMonocularGazeData | EyestateGazeData | EyestateEyelidGazeData
-    ]:
+    ) -> AsyncIterator[GazeDataType]:
         """Receive and parse gaze data from the RTSP stream.
 
         Yields:
-            GazeData | DualMonocularGazeData | EyestateGazeData | EyestateEyelidGazeData
+            GazeDataType
 
             Parsed gaze data of various types. The type of gaze data object is
             determined by the length of the raw data packet:
@@ -392,7 +398,7 @@ class RTSPGazeStreamer(RTSPRawStreamer):
         async for data in super().receive():
             try:
                 cls = data_class_by_raw_len[len(data.raw)]
-                yield cls.from_raw(data)
+                yield cls.from_raw(data)  # type: ignore[attr-defined]
             except KeyError:
                 logger.exception(f"Raw gaze data has unexpected length: {data}")
                 raise

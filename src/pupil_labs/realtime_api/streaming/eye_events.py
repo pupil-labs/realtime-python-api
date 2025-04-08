@@ -2,7 +2,7 @@ import datetime
 import logging
 import struct
 from collections.abc import AsyncIterator
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, cast
 
 from .base import RTSPData, RTSPRawStreamer
 
@@ -192,7 +192,9 @@ async def receive_eye_events_data(
     """
     async with RTSPEyeEventStreamer(url, *args, **kwargs) as streamer:
         async for datum in streamer.receive():
-            yield datum  # type: ignore
+            yield cast(
+                FixationEventData | FixationOnsetEventData | BlinkEventData, datum
+            )
 
 
 class RTSPEyeEventStreamer(RTSPRawStreamer):

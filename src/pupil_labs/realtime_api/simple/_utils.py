@@ -6,7 +6,7 @@ import weakref
 from collections import deque
 from collections.abc import Hashable, Iterable, Mapping
 from types import MappingProxyType
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, cast
 
 from ..models import Sensor, SensorName
 from ..streaming import (
@@ -31,7 +31,7 @@ logger_receive_data = logging.getLogger(logger_name + ".Device.receive_data")
 logger_receive_data.setLevel(logging.INFO)
 
 
-EventKey = TypeVar("EventKey", bound=Hashable, covariant=True)
+EventKey = TypeVar("EventKey", bound=Hashable)
 StreamerClassType = type[
     RTSPVideoFrameStreamer
     | RTSPGazeStreamer
@@ -224,8 +224,11 @@ class _StreamManager:
     def _stop_streaming_task_if_running(self) -> None:
         """Cancel and clears the current streaming task if it exists."""
         if self._streaming_task is not None:
+            sensor_name = (
+                self._recent_sensor.sensor if self._recent_sensor else "unknown sensor"
+            )
             logger_receive_data.info(
-                f"Cancelling prior streaming connection to {self._recent_sensor.sensor}"
+                f"Cancelling prior streaming connection to {sensor_name}"
             )
             self._streaming_task.cancel()
             self._streaming_task = None
@@ -310,7 +313,7 @@ class _StreamManager:
                             item.timestamp_unix_seconds - gaze.timestamp_unix_seconds
                         )
                         device._most_recent_item[MATCHED_ITEM_LABEL].append(
-                            MatchedItem(item, gaze)
+                            MatchedItem(cast(SimpleVideoFrame, item), gaze)
                         )
                         device._event_new_item[MATCHED_ITEM_LABEL].set()
 
@@ -335,7 +338,11 @@ class _StreamManager:
                                 - eyes.timestamp_unix_seconds
                             )
                             device._most_recent_item[MATCHED_GAZE_EYES_LABEL].append(
-                                MatchedGazeEyesSceneItem(item, eyes, gaze)
+                                MatchedGazeEyesSceneItem(
+                                    cast(SimpleVideoFrame, item),
+                                    cast(SimpleVideoFrame, eyes),
+                                    gaze,
+                                )
                             )
                             device._event_new_item[MATCHED_GAZE_EYES_LABEL].set()
 

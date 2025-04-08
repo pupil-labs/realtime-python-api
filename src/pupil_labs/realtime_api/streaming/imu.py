@@ -1,9 +1,9 @@
 import datetime
 import logging
 from collections.abc import AsyncIterator
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, cast
 
-from pupil_labs.neon_recording.stream.imu.imu_pb2 import ImuPacket
+from pupil_labs.neon_recording.stream.imu.imu_pb2 import ImuPacket  # type: ignore
 
 from .base import RTSPRawStreamer
 
@@ -62,7 +62,7 @@ class IMUData(NamedTuple):
         return self.timestamp_unix_ns
 
 
-def IMUPacket_to_IMUData(imu_packet: ImuPacket) -> IMUData:
+def IMUPacket_to_IMUData(imu_packet: "ImuPacket") -> IMUData:  # type: ignore[no-any-unimported]
     """Create an IMUData instance from a protobuf IMU packet.
 
     Args:
@@ -112,8 +112,9 @@ async def receive_imu_data(
 
     """
     async with RTSPImuStreamer(url, *args, **kwargs) as streamer:
+        assert isinstance(streamer, RTSPImuStreamer)
         async for datum in streamer.receive():
-            yield datum
+            yield cast(IMUData, datum)
 
 
 class RTSPImuStreamer(RTSPRawStreamer):
@@ -123,7 +124,7 @@ class RTSPImuStreamer(RTSPRawStreamer):
     IMU data objects.
     """
 
-    async def receive(
+    async def receive(  # type: ignore[override]
         self,
     ) -> AsyncIterator[IMUData]:
         """Receive and parse IMU data from the RTSP stream.

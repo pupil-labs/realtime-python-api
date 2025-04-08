@@ -2,21 +2,9 @@ import datetime
 from typing import NamedTuple
 
 from ..streaming.gaze import (
-    DualMonocularGazeData,
-    EyestateEyelidGazeData,
-    EyestateGazeData,
-    GazeData,
+    GazeDataType,
 )
 from ..streaming.video import BGRBuffer, VideoFrame
-
-GazeDataType = (
-    GazeData | DualMonocularGazeData | EyestateGazeData | EyestateEyelidGazeData
-)
-"""Type alias for any type of gaze data.
-
-This includes basic gaze data, dual monocular gaze data, and gaze data with
-eye state and eyelid information.
-"""
 
 
 class SimpleVideoFrame(NamedTuple):

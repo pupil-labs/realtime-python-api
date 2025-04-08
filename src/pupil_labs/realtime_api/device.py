@@ -5,7 +5,7 @@ import json
 import logging
 import types
 from collections.abc import AsyncIterator, Awaitable, Callable
-from typing import Any, cast
+from typing import Any, cast, get_args
 
 import aiohttp
 import websockets
@@ -255,7 +255,7 @@ class Device(DeviceBase):
             AssertionError: If an invalid format is provided.
 
         """
-        assert template_format in TemplateDataFormat.__args__, (
+        assert template_format in get_args(TemplateDataFormat), (
             f"format should be one of {TemplateDataFormat}"
         )
 
@@ -298,7 +298,7 @@ class Device(DeviceBase):
             AssertionError: If an invalid format is provided.
 
         """
-        assert template_format in TemplateDataFormat.__args__, (
+        assert template_format in get_args(TemplateDataFormat), (
             f"format should be one of {TemplateDataFormat}"
         )
 
