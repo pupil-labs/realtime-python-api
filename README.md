@@ -9,6 +9,10 @@
 
 Python Client for the Pupil Labs Real-Time API
 
+`pupil_labs.realtime_api` is a Python module to wrap around the [Pupil Labs Real-Time Network API](https://github.com/pupil-labs/realtime-network-api).
+
+It also offers some convenience functions like gaze↔frame matching and exposes easy-to-use functions and classes to get started without having to know much about advanced programming or network communication!
+
 ## Installation
 
 ```
@@ -20,3 +24,7 @@ or
 ```bash
 pip install -e git+https://github.com/pupil-labs/realtime-python-api.git
 ```
+
+> [!IMPORTANT]
+> This package is only available for Pupil Invisible and Neon, Pupil Core uses a different API. Please have a look at:
+> [Pupil Core Network API](https://docs.pupil-labs.com/core/developer/network-api/) if you need streaming capabilities > for Pupil Core.
