@@ -192,7 +192,7 @@ async def receive_eye_events_data(
     """
     async with RTSPEyeEventStreamer(url, *args, **kwargs) as streamer:
         async for datum in streamer.receive():
-            yield datum
+            yield datum  # type: ignore
 
 
 class RTSPEyeEventStreamer(RTSPRawStreamer):
@@ -202,7 +202,7 @@ class RTSPEyeEventStreamer(RTSPRawStreamer):
     eye event data objects.
     """
 
-    async def receive(
+    async def receive(  # type: ignore[override]
         self,
     ) -> AsyncIterator[FixationEventData | FixationOnsetEventData | BlinkEventData]:
         """Receive and parse eye events from the RTSP stream.
@@ -229,7 +229,7 @@ class RTSPEyeEventStreamer(RTSPRawStreamer):
                 event_type = struct.unpack_from("!i", data.raw)[0]
                 cls = data_class_by_type[event_type]
                 if cls is not None:
-                    yield cls.from_raw(data)
+                    yield cls.from_raw(data)  # type: ignore[attr-defined]
             except KeyError:
                 logger.exception(f"Raw eye event data has unexpected type: {data}")
                 raise

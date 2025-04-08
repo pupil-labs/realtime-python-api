@@ -13,4 +13,3 @@ python_package_import_name: realtime_api
 repository_name: realtime-python-api
 repository_namespace: pupil-labs
 repository_provider: github.com
-

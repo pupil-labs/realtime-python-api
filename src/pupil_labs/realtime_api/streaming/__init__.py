@@ -22,7 +22,7 @@ from .gaze import (
     RTSPGazeStreamer,
     receive_gaze_data,
 )
-from .imu import RTSPImuStreamer, receive_imu_data
+from .imu import IMUData, RTSPImuStreamer, receive_imu_data
 from .video import RTSPVideoFrameStreamer, VideoFrame, receive_video_frames
 
 RTSPStreamerType = TypeVar("RTSPStreamerType", bound="RTSPRawStreamer")
@@ -35,6 +35,7 @@ __all__ = [
     "FixationEventData",
     "FixationOnsetEventData",
     "GazeData",
+    "IMUData",
     "ImuPacket",
     "RTSPData",
     "RTSPEyeEventStreamer",

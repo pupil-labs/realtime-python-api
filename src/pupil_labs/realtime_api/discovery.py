@@ -62,7 +62,7 @@ class Network:
     @property
     def devices(self) -> tuple[DiscoveredDeviceInfo, ...]:
         """Return a tuple of discovered devices."""
-        return tuple(self._devices.values())
+        return tuple(self._devices.values()) if self._devices is not None else ()
 
     async def wait_for_new_device(
         self, timeout_seconds: float | None = None
@@ -113,7 +113,7 @@ class Network:
                 lambda t: logger.debug(f"Task completed: {t.result()}")
             )
 
-        elif name in self._devices:
+        elif self._devices is not None and name in self._devices:
             del self._devices[name]
 
     async def _request_info_and_put_new_device(
@@ -139,8 +139,11 @@ class Network:
                 info.port,
                 [".".join([str(symbol) for symbol in addr]) for addr in info.addresses],
             )
-            self._devices[name] = device
-            await self._new_devices.put(device)
+            if self._devices is not None:
+                self._devices[name] = device
+                await self._new_devices.put(device)
+            else:
+                raise RuntimeError("Network instance is closed. Cannot add new device.")
 
     async def __aenter__(self) -> "Network":
         """Enter the async context manager.

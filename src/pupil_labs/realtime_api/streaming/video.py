@@ -97,7 +97,7 @@ class RTSPVideoFrameStreamer(RTSPRawStreamer):
         super().__init__(*args, **kwargs)
         self._sprop_parameter_set_payloads = None
 
-    async def receive(self) -> AsyncIterator[VideoFrame]:
+    async def receive(self) -> AsyncIterator[VideoFrame]:  # type: ignore[override]
         """Receive and decode video frames from the RTSP stream."""
         codec = None
         frame_timestamp = None
@@ -106,8 +106,9 @@ class RTSPVideoFrameStreamer(RTSPRawStreamer):
             if not codec:
                 try:
                     codec = av.CodecContext.create(self.encoding, "r")
-                    for param in self.sprop_parameter_set_payloads:
-                        codec.parse(param)
+                    if self.sprop_parameter_set_payloads:
+                        for param in self.sprop_parameter_set_payloads:
+                            codec.parse(param)
                 except SDPDataNotAvailableError as err:
                     logger.debug(
                         f"Session description protocol data not available yet: {err}"
@@ -121,9 +122,9 @@ class RTSPVideoFrameStreamer(RTSPRawStreamer):
                     raise
             # if pkt is the start of a new fragmented frame, parse will return a packet
             # containing the data from the previous fragments
-            for packet in codec.parse(extract_payload_from_nal_unit(data.raw)):
+            for packet in codec.parse(extract_payload_from_nal_unit(data.raw)):  # type: ignore[attr-defined]
                 # use timestamp of previous packets
-                for av_frame in codec.decode(packet):
+                for av_frame in codec.decode(packet):  # type: ignore[attr-defined]
                     yield VideoFrame(av_frame, frame_timestamp)
 
             frame_timestamp = data.timestamp_unix_seconds

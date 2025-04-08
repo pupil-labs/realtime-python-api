@@ -638,7 +638,6 @@ class TemplateItem:
                 logging.warning(
                     f"Choices are not defined for widget type {self.widget_type}"
                 )
-
             # Mypy raises the [assignment] error because constructs like Annotated[...]
             # or conlist(...) aren't strictly instances of type itself, even though they
             #  represent type information for Pydantic. Thus, we need to ignore
@@ -794,16 +793,16 @@ class Template:
                         f"has no choices defined."
                     )
                     processed_value = []
-                if value == [""] and "" not in question.choices:
+                elif value == [""] and "" not in question.choices:
                     processed_value = []
             else:
                 if not value:
                     value = [""]
 
-                value = value[0]
+                value_str = value[0]
                 if question.input_type != "any":
                     processed_value = (
-                        None if value == "" else question._value_type(value)
+                        None if value_str == "" else question._value_type(value_str)
                     )
                 else:
                     processed_value = value
@@ -857,7 +856,7 @@ class Template:
     def validate_answers(
         self,
         answers: dict[str, list[str]],
-        template_format=TemplateDataFormat,
+        template_format: TemplateDataFormat,
         raise_exception: bool = True,
     ) -> list[ErrorDetails]:
         """Validate answers for this Template.
@@ -907,9 +906,9 @@ def allow_empty(v: str) -> str | None:
     return v
 
 
-def option_in_allowed_values(value: Any, allowed: list[str]) -> Any:
+def option_in_allowed_values(value: Any, allowed: list[str] | None) -> Any:
     """Validate that a value is in a list of allowed values."""
-    if value not in allowed:
+    if allowed is None or value not in allowed:
         raise ValueError(f"{value!r} is not a valid choice from: {allowed}")
     return value
 

@@ -248,8 +248,8 @@ class _WallclockRTSPReader(AiortspRTSPReader):
             dict: RTP map containing encoding and clock rate information.
 
         """
-        media = self.get_primary_media()
-        return media["attributes"]["rtpmap"]
+        media: dict[str, Any] = self.get_primary_media()
+        return media["attributes"]["rtpmap"]  # type: ignore[no-any-return]
 
     def get_primary_media(self) -> Any:
         """Get the primary media description from the SDP data.
@@ -261,6 +261,18 @@ class _WallclockRTSPReader(AiortspRTSPReader):
             dict: Media description.
 
         """
-        for media in self.session.sdp["medias"]:
-            if media["type"] in ["video", "application"]:
+        if self.session is None:
+            raise SDPDataNotAvailableError("RTSP session not initialized")
+        if self.session.sdp is None:
+            raise SDPDataNotAvailableError("SDP data not available in session")
+        medias = self.session.sdp.get("medias")
+        if not medias:
+            raise SDPDataNotAvailableError("No 'medias' found in SDP data")
+
+        for media in medias:
+            if media and media.get("type") in ["video", "application"]:
                 return media
+
+        raise SDPDataNotAvailableError(
+            "No suitable video/application media found in SDP"
+        )
