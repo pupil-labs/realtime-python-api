@@ -15,8 +15,31 @@ validation:
 nav:
   - Home:
       - Overview: index.md
+      - Getting Started: getting-started.md
+      - Simple vs Async API: guides/simple-vs-async-api.md
+      - Examples:
+          - Simple API: examples/simple.md
+          - Connect to a Device: examples/simple/connect-to-a-device.md
+          - Remote Control: examples/simple/remote-control.md
+          - Templates: examples/simple/templates.md
+          - Streaming: examples/simple/streaming.md
+          - Others: examples/simple/others.md
+          - Async API: examples/async.md
+          - Connect to a Device: examples/async/connect-to-a-device.md
+          - Remote Control: examples/async/remote-control.md
+          - Templates: examples/async/templates.md
+          - Streaming: examples/async/streaming.md
+          - Others: examples/async/others.md
+      - Under the Hood: guides/under-the-hood.md
       - License: license.md
-  - API reference: modules.md
+  - API reference:
+      - Index: modules.md
+      - Simple API reference: api/simple.md
+      - Async API reference: api/async.md
+      - Models: api/models.md
+      - Base: api/base.md
+  - Cookbook: cookbook.md
+  - Changelog: changelog.md
   - Development:
       - Contributing: contributing.md
       - Coverage report: coverage.md
@@ -79,6 +102,7 @@ markdown_extensions:
       base_path: [!relative $config_dir]
       check_paths: true
   - pymdownx.superfences
+  - pymdownx.details
   - pymdownx.tabbed:
       alternate_style: true
       slugify: !!python/object/apply:pymdownx.slugs.slugify
