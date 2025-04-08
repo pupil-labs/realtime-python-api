@@ -1,5 +1,5 @@
 # Changes here will be overwritten by Copier
-_commit: 18d4dd9
+_commit: bb8bd8d
 _src_path: git@github.com:pupil-labs/pl-template
 author_email: info@pupil-labs.com
 author_fullname: Pupil Labs GmbH
@@ -13,3 +13,4 @@ python_package_import_name: realtime_api
 repository_name: realtime-python-api
 repository_namespace: pupil-labs
 repository_provider: github.com
+
