@@ -25,6 +25,7 @@ dependencies = [
     "aiortsp>=1.4.0",
     "av>=14.2.0",
     "beaupy>=3.10.1",
+    "deprecated>=1.2.18",
     "numpy",
     "pupil-labs-neon-recording>=1.0.1",
     "pupil-labs-video>=1.0.3",
