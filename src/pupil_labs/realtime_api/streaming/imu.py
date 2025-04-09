@@ -3,6 +3,8 @@ import logging
 from collections.abc import AsyncIterator
 from typing import Any, NamedTuple, cast
 
+from deprecated import deprecated
+
 from pupil_labs.neon_recording.stream.imu.imu_pb2 import ImuPacket  # type: ignore
 
 from .base import RTSPRawStreamer
@@ -57,8 +59,14 @@ class IMUData(NamedTuple):
 
     # For backward compatibility
     @property
+    @deprecated(version="1.5.1", reason="Use timestamp_unix_ns() instead.")
     def timestamp_unix_nanoseconds(self) -> int:
-        """Get timestamp in nanoseconds since Unix epoch. LEGACY."""
+        """Get timestamp in nanoseconds since Unix epoch.
+
+        Warning: Deprecated
+            This class property is deprecated and will be removed in future versions.
+            Use timestamp_unix_ns() instead.
+        """
         return self.timestamp_unix_ns
 
 
