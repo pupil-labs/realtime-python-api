@@ -53,12 +53,10 @@ dev = [
     "deptry>=0.20.0",
     "tox-uv>=1.11.3",
     "pytest-cov>=4.0.0",
-
     # stubs
     # "opencv-stubs",
     # "types-protobuf",
     # "pandas-stubs",
-
     # docs
     "markdown-callouts>=0.4",
     "markdown-exec>=1.8",
@@ -73,6 +71,7 @@ dev = [
     "mkdocstrings[python]>=0.25",
     # YORE: EOL 3.10: Remove line.
     "tomli>=2.0; python_version < '3.11'",
+    "types-deprecated>=1.2.15.20250304",
 ]
 
 [build-system]
