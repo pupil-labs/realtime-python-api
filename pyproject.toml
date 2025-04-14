@@ -32,11 +32,6 @@ dependencies = [
     "zeroconf>=0.146.1",
 ]
 
-[project.optional-dependencies]
-examples = [
-    "opencv-python",
-]
-
 [project.urls]
 Homepage = "https://pupil-labs.github.io/realtime-python-api"
 Documentation = "https://pupil-labs.github.io/realtime-python-api"
@@ -72,6 +67,9 @@ dev = [
     # YORE: EOL 3.10: Remove line.
     "tomli>=2.0; python_version < '3.11'",
     "types-deprecated>=1.2.15.20250304",
+]
+examples = [
+	"opencv-python",
 ]
 
 [build-system]

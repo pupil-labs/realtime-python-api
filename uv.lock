@@ -1650,6 +1650,9 @@ dev = [
     { name = "tox-uv" },
     { name = "types-deprecated" },
 ]
+examples = [
+    { name = "opencv-python" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -1690,6 +1693,7 @@ dev = [
     { name = "tox-uv", specifier = ">=1.11.3" },
     { name = "types-deprecated", specifier = ">=1.2.15.20250304" },
 ]
+examples = [{ name = "opencv-python" }]
 
 [[package]]
 name = "pupil-labs-video"
