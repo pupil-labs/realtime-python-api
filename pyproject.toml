@@ -91,7 +91,7 @@ source = ["pupil_labs"]
 DEP001 = ["pupil_labs", "cv2"]
 DEP002 = ["opencv-python"]
 DEP003 = ["pupil_labs", "typing_extensions", "pydantic_core"]
-DEP004 = ["cv2"]
+DEP004 = ["cv2", "mkdocs"]
 
 [tool.hatch.version]
 source = "uv-dynamic-versioning"

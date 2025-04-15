@@ -52,37 +52,30 @@ class APIPath(enum.Enum):
 
 
 class DiscoveredDeviceInfo(NamedTuple):
-    """Information about a discovered device on the network.
-
-    Attributes:
-        name (str): Full mDNS service name. Follows
-            ``'PI monitor:<phone name>:<hardware id>._http._tcp.local.'`` naming
-            pattern.
-        server (str): DNS name, e.g. ``'neon.local.' or 'pi.local.'``.
-        port (int): Port number, e.g. ``8080``.
-        addresses (list[str]): IP addresses, e.g. ``['192.168.0.2']``.
-
-    """
+    """Information about a discovered device on the network."""
 
     name: str
+    """Full mDNS service name.
+
+    Follows `'PI monitor:<phone name>:<hardware id>._http._tcp.local.'` naming pattern.
+    """
     server: str
+    """mDNS server name. e.g. `'neon.local.' or 'pi.local.'`."""
     port: int
+    """Port number, e.g. `8080`."""
     addresses: list[str]
+    """IP addresses, e.g. `['192.168.0.2']`."""
 
 
 class Event(NamedTuple):
-    """Event information from the device.
-
-    Attributes:
-        name (str | None): Name of the event.
-        recording_id (str | None): ID of the recording this event belongs to.
-        timestamp (int): Unix epoch timestamp in nanoseconds.
-
-    """
+    """Event information from the device."""
 
     name: str | None
+    """Name of the event."""
     recording_id: str | None
+    """ID of the recording this event belongs to."""
     timestamp: int
+    """Unix epoch timestamp in nanoseconds."""
 
     @classmethod
     def from_dict(cls, event_dict: dict[str, Any]) -> "Event":
@@ -127,48 +120,40 @@ class Event(NamedTuple):
 
 
 class Phone(NamedTuple):
-    """Information relative to the Companion Device.
-
-    Attributes:
-        battery_level (int): Battery percentage.
-        battery_state (Literal["OK", "LOW", "CRITICAL"]): Battery state.
-        device_id (str): Unique device identifier.
-        device_name (str): Human-readable device name.
-        ip (str): IP address of the phone.
-        memory (int): Available memory.
-        memory_state (Literal["OK", "LOW", "CRITICAL"]): Memory state.
-        time_echo_port (int | None): Port for time synchronization.
-
-    """
+    """Information relative to the Companion Device."""
 
     battery_level: int
+    """Battery percentage (0-100)"""
     battery_state: Literal["OK", "LOW", "CRITICAL"]
+    """Battery state."""
     device_id: str
+    """Unique device identifier."""
     device_name: str
+    """Human-readable device name."""
     ip: str
+    """IP address of the phone."""
     memory: int
+    """Available memory in bytes."""
     memory_state: Literal["OK", "LOW", "CRITICAL"]
+    """Memory state."""
     time_echo_port: int | None = None
+    """Port for time synchronization, if available."""
 
 
 class Hardware(NamedTuple):
-    """Information about the Hardware connected (eye tracker)
-
-    Attributes:
-        version (str): Hardware version.
-            1-> Pupil Invisible
-            2-> Neon
-        glasses_serial (str): Serial number of the glasses. For Pupil Invisible devices.
-        world_camera_serial (str): Serial number of the world camera.
-        For Pupil Invisible devices.
-        module_serial (str): Serial number of the module. For Neon devices.
-
-    """
+    """Information about the Hardware connected (eye tracker)."""
 
     version: str = "unknown"
+    """Hardware version.
+        1-> Pupil Invisible
+        2-> Neon
+    """
     glasses_serial: str = "unknown"
+    """Serial number of the glasses. For Pupil Invisible devices."""
     world_camera_serial: str = "unknown"
+    """Serial number of the world camera. For Pupil Invisible devices."""
     module_serial: str = "unknown"
+    """Serial number of the module. For Neon devices."""
 
 
 class NetworkDevice(NamedTuple):
@@ -176,25 +161,22 @@ class NetworkDevice(NamedTuple):
 
     This class represents device information made available via the websocket update
     connection by the host device (exposed via
-    :meth:`~pupil_labs.realtime_api.device.Device.status_updates`). Devices
+    [`pupil_labs.realtime_api.device.Device.status_updates`][]. Devices
     discovered directly by this library are represented as
-    :class:`~.DiscoveredDeviceInfo` and returned by
-    :func:`~pupil_labs.realtime_api.discovery.discover_devices` and
-    :class:`~pupil_labs.realtime_api.discovery.Network`.
-
-    Attributes:
-        ip (str): IP address of the device.
-        device_id (str): Unique device identifier.
-        device_name (str): Human-readable device name (can be modified by the user in
-        the Companion App settings).
-        connected (bool): Whether the device is connected.
-
+    [DiscoveredDeviceInfo][pupil_labs.realtime_api.discovery.DiscoveredDeviceInfo] and
+    returned by [discover_devices][pupil_labs.realtime_api.discovery.discover_devices]
+    [Network][pupil_labs.realtime_api.discovery.Network].
     """
 
     ip: str
+    """IP address of the device."""
     device_id: str
+    """Unique device identifier."""
     device_name: str
+    """Human-readable device name (can be modified by the user in the Companion App
+    settings)."""
     connected: bool
+    """Whether the device is connected."""
 
 
 class SensorName(enum.Enum):
@@ -217,27 +199,24 @@ class ConnectionType(enum.Enum):
 
 
 class Sensor(NamedTuple):
-    """Information about a sensor on the device.
-
-    Attributes:
-        sensor (str): Sensor type (see Name Enum).
-        conn_type (str): Connection type (see Connection enum).
-        connected (bool): Whether the sensor is connected.
-        ip (str | None): IP address of the sensor.
-        params (str | None): Additional parameters.
-        port (int | None): Port number.
-        protocol (str): Protocol used for the connection.
-
-    """
+    """Information about a sensor on the device."""
 
     sensor: str
+    """Sensor type (see Name Enum)."""
     conn_type: str
+    """Connection type (see ConnectionType Enum)."""
     connected: bool = False
+    """Whether the sensor is connected."""
     ip: str | None = None
+    """IP address of the sensor."""
     params: str | None = None
+    """Additional parameters."""
     port: int | None = None
+    """Port number."""
     protocol: str = "rtsp"
+    """Protocol used for the connection."""
     stream_error: bool = True
+    """Whether the stream errors."""
 
     @property
     def url(self) -> str | None:
@@ -253,20 +232,16 @@ class Sensor(NamedTuple):
 
 
 class Recording(NamedTuple):
-    """Information about a recording.
-
-    Attributes:
-        action (str): Current recording action.
-        id (str): Unique recording identifier.
-        message (str): Status message.
-        rec_duration_ns (int): Recording duration in nanoseconds.
-
-    """
+    """Information about a recording."""
 
     action: str
+    """Current recording action."""
     id: str
+    """Unique recording identifier."""
     message: str
+    """Status message."""
     rec_duration_ns: int
+    """Recording duration in nanoseconds."""
 
     @property
     def rec_duration_seconds(self) -> float:
@@ -353,21 +328,16 @@ def parse_component(raw: ComponentRaw) -> Component:
 
 @dataclass_python
 class Status:
-    """Represents the Companion's Device full status
-
-    Attributes:
-        phone (Phone): Information about the connected phone. Always present.
-        hardware (Hardware): Information about glasses connected, won't be present if
-            they are not connected
-        sensors (list[Sensor]): List of sensor information.
-        recording (Recording | None): Current recording, if any.
-
-    """
+    """Represents the Companion's Device full status"""
 
     phone: Phone
+    """Information about the connected phone. Always present."""
     hardware: Hardware
+    """Information about glasses connected, won't be present if not connected"""
     sensors: list[Sensor]
+    """"List of sensor information."""
     recording: Recording | None
+    """Current recording, if any."""
 
     @classmethod
     def from_dict(cls, status_json_result: list[ComponentRaw]) -> "Status":
@@ -512,26 +482,22 @@ TemplateItemInputType = Literal["any", "integer", "float"]
 
 @dataclass_pydantic(kw_only=True)
 class TemplateItem:
-    """Individual item/ question in a Template.
-
-    Attributes:
-        id (UUID): Unique identifier.
-        title (str): The question or title of the item.
-        widget_type (TemplateItemWidgetType): Type of widget to display.
-        input_type (TemplateItemInputType): Type of input data.
-        choices (list[str] | None): Available choices for selection items.
-        help_text (str | None): Help / description text for the item.
-        required (bool): Whether the item is required.
-
-    """
+    """Individual item/ question in a Template."""
 
     id: UUID
+    """Unique identifier for the template item."""
     title: str
+    """Title or question text for the template item."""
     widget_type: TemplateItemWidgetType
+    """Type of widget to display for this item."""
     input_type: TemplateItemInputType
+    """Type of input data for this item."""
     choices: list[str] | None
+    """Available choices for selection items (e.g., radio or checkbox)."""
     help_text: str | None
+    """Help or description text for the item."""
     required: bool
+    """Whether the item is required or not."""
 
     def validate_answer(
         self,
@@ -711,36 +677,32 @@ class TemplateItem:
 
 @dataclass_pydantic(kw_only=True)
 class Template:
-    """Template Class for data collection.
-
-    Attributes:
-        created_at (datetime): Creation timestamp.
-        id (UUID): Unique identifier.
-        name (str): Template name.
-        updated_at (datetime): Last update timestamp.
-        recording_name_format (list[str]): Format for recording names.
-        items (list[TemplateItem]): List of template items.
-        label_ids (list[UUID]): Associated label IDs.
-        is_default_template (bool): Whether this is the default template.
-        description (str | None): Template description.
-        recording_ids (list[UUID] | None): Associated recording IDs.
-        published_at (datetime | None): Publication timestamp.
-        archived_at (datetime | None): Archival timestamp.
-
-    """
+    """Template Class for data collection."""
 
     created_at: datetime
+    """Creation timestamp."""
     id: UUID
+    """Unique identifier."""
     name: str
+    """Template name."""
     updated_at: datetime
+    """Last update timestamp."""
     recording_name_format: list[str]
+    """Format for recording name."""
     items: list[TemplateItem] = field(default_factory=list)
+    """List of template items."""
     label_ids: list[UUID] = field(default_factory=list, metadata={"readonly": True})
+    """Associated label IDs."""
     is_default_template: bool = True
+    """Whether this is the default template for the Workspace"""
     description: str | None = None
+    """Template description."""
     recording_ids: list[UUID] | None = None
+    """Associated recording IDs."""
     published_at: datetime | None = None
+    """Publication timestamp."""
     archived_at: datetime | None = None
+    """Archival timestamp (if archived)."""
 
     def convert_from_simple_to_api_format(
         self, data: dict[str, Any]

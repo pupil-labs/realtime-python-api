@@ -59,9 +59,10 @@ class Device(DeviceBase):
     wrapping the asynchronous API with a more user-friendly interface.
 
     Important:
-        Use :func:`~pupil_labs.realtime_api.simple.discovery.discover_devices` instead
-        of initializing the class manually.
-        See the :ref:`simple_discovery_example` example.
+        Use [discover_devices][pupil_labs.realtime_api.simple.discovery.
+        discover_devices]
+        instead of initializing the class manually.
+        See the simple_discovery_example example.
 
     """
 
@@ -168,7 +169,8 @@ class Device(DeviceBase):
     def module_serial(self) -> str | Literal["default"] | None:
         """Returns ``None`` or ``"default"`` if no glasses are connected
 
-        Only available on **Neon**.
+        Info:
+            Only available on **Neon**.
         """
         return self._status.hardware.module_serial
 
@@ -176,7 +178,8 @@ class Device(DeviceBase):
     def serial_number_glasses(self) -> str | Literal["default"] | None:
         """Returns ``None`` or ``"default"`` if no glasses are connected
 
-        Only available on **Pupil Invisible**.
+        Info:
+            Only available on **Pupil Invisible**.
         """
         return self._status.hardware.glasses_serial
 
@@ -184,7 +187,8 @@ class Device(DeviceBase):
     def serial_number_scene_cam(self) -> str | None:
         """Returns ``None`` if no scene camera is connected
 
-        Only available on **Pupil Invisible**.
+        Info:
+            Only available on **Pupil Invisible**.
         """
         return self._status.hardware.world_camera_serial
 
@@ -235,7 +239,7 @@ class Device(DeviceBase):
     def recording_start(self) -> str:
         """Start a recording on the device.
 
-        Wraps :meth:`pupil_labs.realtime_api.device.Device.recording_start`
+        Wraps [pupil_labs.realtime_api.device.Device.recording_start][]
 
         Returns:
             str: ID of the started recording.
@@ -262,7 +266,7 @@ class Device(DeviceBase):
     def recording_stop_and_save(self) -> None:
         """Stop and save the current recording.
 
-        Wraps :meth:`pupil_labs.realtime_api.device.Device.recording_stop_and_save`
+        Wraps [pupil_labs.realtime_api.device.Device.recording_stop_and_save][]
 
         Raises:
             DeviceError: If the recording could not be stopped. Possible reasons
@@ -281,7 +285,7 @@ class Device(DeviceBase):
     def recording_cancel(self) -> None:
         """Cancel the current recording without saving it.
 
-        Wraps :meth:`pupil_labs.realtime_api.device.Device.recording_cancel`
+        Wraps [pupil_labs.realtime_api.device.Device.recording_cancel][]
 
         Raises:
             DeviceError: If the recording could not be cancelled. Possible reasons
@@ -323,7 +327,7 @@ class Device(DeviceBase):
     def get_template(self) -> Template:
         """Get the template currently selected on the device.
 
-        Wraps :meth:`pupil_labs.realtime_api.device.Device.get_template`
+        Wraps [pupil_labs.realtime_api.device.Device.get_template][]
 
         Returns:
             Template: The currently selected template.
@@ -342,7 +346,7 @@ class Device(DeviceBase):
     def get_template_data(self, template_format: TemplateDataFormat = "simple") -> Any:
         """Get the template data entered on the device.
 
-        Wraps :meth:`pupil_labs.realtime_api.device.Device.get_template_data`
+        Wraps [pupil_labs.realtime_api.device.Device.get_template_data][]
 
         Args:
             template_format: Format of the returned data.
@@ -370,7 +374,7 @@ class Device(DeviceBase):
     ) -> Any:
         """Send the data to the currently selected template.
 
-        Wraps :meth:`pupil_labs.realtime_api.device.Device.post_template_data`
+        Wraps [pupil_labs.realtime_api.device.Device.post_template_data][]
 
         Args:
             template_data: The template data to send.
@@ -761,7 +765,7 @@ class Device(DeviceBase):
     def _get_status(self) -> Status:
         """Request the device's current status.
 
-        Wraps :meth:`pupil_labs.realtime_api.device.Device.get_status`
+        Wraps [pupil_labs.realtime_api.device.Device.get_status][]
 
         Returns:
             Status: The current device status.

@@ -13,19 +13,16 @@ class BlinkEventData(NamedTuple):
     """Data for a blink event.
 
     Represents a detected blink event with timing information.
-
-    Attributes:
-        event_type (int): Type of event (4 -> blink events).
-        start_time_ns (int): Start time of the blink in nanoseconds.
-        end_time_ns (int): End time of the blink in nanoseconds.
-        rtp_ts_unix_seconds (float): RTP timestamp in seconds since Unix epoch.
-
     """
 
     event_type: int
+    """Type of event (4 -> blink events)."""
     start_time_ns: int
+    """Start time of the blink in nanoseconds."""
     end_time_ns: int
+    """End time of the blink in nanoseconds."""
     rtp_ts_unix_seconds: float
+    """RTP timestamp in seconds since Unix epoch."""
 
     @classmethod
     def from_raw(cls, data: RTSPData) -> "BlinkEventData":
@@ -52,43 +49,36 @@ class FixationEventData(NamedTuple):
     """Data for a fixation or saccade event.
 
     Represents a completed fixation or saccade event with detailed information.
-
-    Attributes:
-        event_type (int): Type of event (0 for saccade, 1 for fixation).
-        start_time_ns (int): Start time in nanoseconds.
-        end_time_ns (int): End time in nanoseconds.
-        ---
-        Only for fixation events:
-        start_gaze_x (float): Start gaze x-coordinate in pixels.
-        start_gaze_y (float): Start gaze y-coordinate in pixels.
-        end_gaze_x (float): End gaze x-coordinate in pixels.
-        end_gaze_y (float): End gaze y-coordinate in pixels.
-        mean_gaze_x (float): Mean gaze x-coordinate in pixels.
-        mean_gaze_y (float): Mean gaze y-coordinate in pixels.
-        ---
-        Only for saccade events:
-        amplitude_pixels (float): Amplitude in pixels.
-        amplitude_angle_deg (float): Amplitude in degrees.
-        mean_velocity (float): Mean velocity pixels per degree.
-        max_velocity (float): Maximum velocity pixels per degree.
-        rtp_ts_unix_seconds (float): RTP timestamp in seconds since Unix epoch.
-
     """
 
-    event_type: int  # 0: Saccade, 1: Fixation
+    event_type: int
+    """Type of event (0 for saccade, 1 for fixation)."""
     start_time_ns: int
+    """Start time of the event in nanoseconds."""
     end_time_ns: int
+    """End time of the event in nanoseconds."""
     start_gaze_x: float
+    """Start gaze x-coordinate in pixels."""
     start_gaze_y: float
+    """Start gaze y-coordinate in pixels."""
     end_gaze_x: float
+    """End gaze x-coordinate in pixels."""
     end_gaze_y: float
+    """End gaze y-coordinate in pixels."""
     mean_gaze_x: float
+    """Mean gaze x-coordinate in pixels."""
     mean_gaze_y: float
+    """Mean gaze y-coordinate in pixels."""
     amplitude_pixels: float
+    """Amplitude in pixels."""
     amplitude_angle_deg: float
+    """Amplitude in degrees."""
     mean_velocity: float
+    """Mean velocity in pixels per degree."""
     max_velocity: float
+    """Maximum velocity in pixels per degree."""
     rtp_ts_unix_seconds: float
+    """RTP timestamp in seconds since Unix epoch."""
 
     @classmethod
     def from_raw(cls, data: RTSPData) -> "FixationEventData":
@@ -140,18 +130,14 @@ class FixationOnsetEventData(NamedTuple):
     """Data for a fixation or saccade onset event.
 
     Represents the beginning of a fixation or saccade event.
-
-    Attributes:
-        event_type (int): Type of event (2 for saccade onset, 3 for fixation onset).
-        TODO: check
-        start_time_ns (int): Start time in nanoseconds.
-        rtp_ts_unix_seconds (float): RTP timestamp in seconds since Unix epoch.
-
     """
 
-    event_type: int  # 0: Saccade, 1: Fixation
+    event_type: int
+    """Type of event (2 for saccade onset, 3 for fixation onset)."""
     start_time_ns: int
+    """Start time of the event in nanoseconds."""
     rtp_ts_unix_seconds: float
+    """RTP timestamp in seconds since Unix epoch."""
 
     @classmethod
     def from_raw(cls, data: RTSPData) -> "FixationOnsetEventData":

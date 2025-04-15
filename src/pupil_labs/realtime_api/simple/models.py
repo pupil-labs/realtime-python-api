@@ -12,15 +12,12 @@ class SimpleVideoFrame(NamedTuple):
 
     This class provides a simplified representation of a video frame with
     BGR pixel data and timestamp information.
-
-    Attributes:
-        bgr_pixels (BGRBuffer): BGR pixel data as a NumPy array.
-        timestamp_unix_seconds (float): Timestamp in seconds since Unix epoch.
-
     """
 
     bgr_pixels: BGRBuffer
+    """BGR pixel data as a NumPy array."""
     timestamp_unix_seconds: float
+    """Timestamp in seconds since Unix epoch."""
 
     @classmethod
     def from_video_frame(cls, vf: VideoFrame) -> "SimpleVideoFrame":
@@ -49,14 +46,12 @@ class MatchedItem(NamedTuple):
         The name MatchedItem is maintained for backward compatibility.
         It represents a matched pair of scene video frame and gaze data.
 
-    Attributes:
-        frame (SimpleVideoFrame): Scene video frame.
-        gaze (GazeDataType): Corresponding gaze data.
-
     """
 
     frame: SimpleVideoFrame
+    """Scene video frame."""
     gaze: GazeDataType
+    """Corresponding gaze data."""
 
 
 class MatchedGazeEyesSceneItem(NamedTuple):
@@ -64,17 +59,14 @@ class MatchedGazeEyesSceneItem(NamedTuple):
 
     This class represents scene and eye video frames along with gaze data
     that occurred at approximately the same time.
-
-    Attributes:
-        scene (SimpleVideoFrame): Scene video frame.
-        eyes (SimpleVideoFrame): Eye camera video frame.
-        gaze (GazeDataType): Corresponding gaze data.
-
     """
 
     scene: SimpleVideoFrame
+    """Scene video frame."""
     eyes: SimpleVideoFrame
+    """Eye camera video frame."""
     gaze: GazeDataType
+    """Corresponding gaze data."""
 
 
 MATCHED_ITEM_LABEL = "matched_gaze_and_scene_video"

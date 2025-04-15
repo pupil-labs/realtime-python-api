@@ -33,19 +33,16 @@ class IMUData(NamedTuple):
     """Data from the Inertial Measurement Unit (IMU).
 
     Contains gyroscope, accelerometer, and rotation data from the IMU sensor.
-
-    Attributes:
-        gyro_data (Data3D): Gyroscope data in deg/s.
-        accel_data (Data3D): Accelerometer data in m/s².
-        quaternion (Quaternion): Rotation represented as a quaternion.
-        timestamp_unix_seconds (float): Timestamp in seconds since Unix epoch.
-
     """
 
     gyro_data: Data3D
+    """Gyroscope data in deg/s."""
     accel_data: Data3D
+    """Accelerometer data in m/s²."""
     quaternion: Quaternion
+    """ Rotation represented as a quaternion."""
     timestamp_unix_seconds: float
+    """Timestamp in seconds since Unix epoch."""
 
     @property
     def datetime(self) -> datetime.datetime:

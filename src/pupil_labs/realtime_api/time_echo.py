@@ -1,14 +1,13 @@
-"""Manual time offset estimation via the Pupil Labs Time Echo protocol
+"""Manual time offset estimation via the Pupil Labs Time Echo protocol.
 
 The Realtime Network API host device timestamps its data with nanoseconds since the
-`Unix epoch`_ (January 1, 1970, 00:00:00 UTC). This clock is kept in sync by the
-operating system through `NTP`_ (Network Time Protocol). For some use cases, this sync
-is not good enough. For more accurate time syncs, the Time Echo protocol allows the
-estimation of the direct offset between the host's and the client's clocks.
+[Unix epoch](https://docs.python.org/3/library/time.html#epoch)(January 1, 1970,
+00:00:00 UTC). This clock is kept in sync by the operating system through
+[NTP Network Time Protocol](https://en.wikipedia.org/wiki/Network_Time_Protocol#Clock_synchronization_algorithm).
+For some use cases, this sync is not good enough. For more accurate time syncs, the Time
+Echo protocol allows the estimation of the direct offset between the host's and the
+client's clocks.
 
-.. _Unix epoch: https://docs.python.org/3/library/time.html#epoch
-.. _NTP: https://en.wikipedia.org/wiki/Network_Time_Protocol#
-   Clock_synchronization_algorithm
 
 The Time Echo protocol works in the following way:
 
@@ -64,17 +63,12 @@ TimeFunction = Callable[[], int]
 
 
 class TimeEcho(NamedTuple):
-    """Measurement of a single time echo.
-
-    Attributes:
-        roundtrip_duration_ms (int): Round trip duration of the time echo, in
-            milliseconds.
-        time_offset_ms (int): Time offset between host and client, in milliseconds.
-
-    """
+    """Measurement of a single time echo."""
 
     roundtrip_duration_ms: int
+    """Round trip duration of the time echo, in milliseconds."""
     time_offset_ms: int
+    """Time offset between host and client, in milliseconds."""
 
 
 class Estimate:
@@ -123,16 +117,12 @@ class Estimate:
 
 
 class TimeEchoEstimates(NamedTuple):
-    """Provides estimates for the roundtrip duration and time offsets.
-
-    Attributes:
-        roundtrip_duration_ms (Estimate): Statistics for roundtrip durations.
-        time_offset_ms (Estimate): Statistics for time offsets.
-
-    """
+    """Provides estimates for the roundtrip duration and time offsets."""
 
     roundtrip_duration_ms: Estimate
+    """Statistics for roundtrip durations."""
     time_offset_ms: Estimate
+    """Statistics for time offsets."""
 
 
 def time_ms() -> int:

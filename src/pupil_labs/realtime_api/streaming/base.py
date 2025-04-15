@@ -25,17 +25,12 @@ class SDPDataNotAvailableError(Exception):
 
 
 class RTSPData(NamedTuple):
-    """Container for RTSP data with timestamp information.
-
-    Attributes:
-        raw (ByteString): Raw binary data received from the RTSP stream.
-        timestamp_unix_seconds (float): Timestamp in seconds since the Unix epoch from
-        RTCP SR packets.
-
-    """
+    """Container for RTSP data with timestamp information."""
 
     raw: ByteString
+    """Raw binary data received from the RTSP stream."""
     timestamp_unix_seconds: float
+    """Timestamp in seconds since the Unix epoch from RTCP SR packets."""
 
     @property
     def datetime(self) -> datetime.datetime:

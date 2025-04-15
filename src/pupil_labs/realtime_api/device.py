@@ -57,16 +57,12 @@ class Device(DeviceBase):
     and stopping recordings, sending events, and fetching device status.
     It also provides a context manager for automatically closing the device
     session.
-
-    Attributes:
-        session (aiohttp.ClientSession): The HTTP session used for making requests.
-        template_definition (Template): The template definition currently selected on
-        the device.
-
     """
 
     session: aiohttp.ClientSession | None
+    """The HTTP session used for making requests."""
     template_definition: Template | None = None
+    """The template definition currently selected on the device."""
 
     @property
     def active_session(self) -> aiohttp.ClientSession:

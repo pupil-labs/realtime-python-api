@@ -17,6 +17,7 @@ from .eye_events import (
 )
 from .gaze import (
     DualMonocularGazeData,
+    EyestateEyelidGazeData,
     EyestateGazeData,
     GazeData,
     RTSPGazeStreamer,
@@ -31,6 +32,7 @@ RTSPStreamerType = TypeVar("RTSPStreamerType", bound="RTSPRawStreamer")
 __all__ = [
     "BlinkEventData",
     "DualMonocularGazeData",
+    "EyestateEyelidGazeData",
     "EyestateGazeData",
     "FixationEventData",
     "FixationOnsetEventData",

@@ -1623,11 +1623,6 @@ dependencies = [
     { name = "zeroconf" },
 ]
 
-[package.optional-dependencies]
-examples = [
-    { name = "opencv-python" },
-]
-
 [package.dev-dependencies]
 dev = [
     { name = "deptry" },
@@ -1662,14 +1657,12 @@ requires-dist = [
     { name = "beaupy", specifier = ">=3.10.1" },
     { name = "deprecated", specifier = ">=1.2.18" },
     { name = "numpy" },
-    { name = "opencv-python", marker = "extra == 'examples'" },
     { name = "pupil-labs-neon-recording", specifier = ">=1.0.1" },
     { name = "pupil-labs-video", specifier = ">=1.0.3" },
     { name = "pydantic", specifier = ">=2.10.6" },
     { name = "websockets", specifier = ">=15.0.1" },
     { name = "zeroconf", specifier = ">=0.146.1" },
 ]
-provides-extras = ["examples"]
 
 [package.metadata.requires-dev]
 dev = [

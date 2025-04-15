@@ -22,15 +22,12 @@ class VideoFrame(NamedTuple):
 
     This class represents a video frame from the scene camera with associated
     timestamp information. The Class inherits VideoFrame from py.av library.
-
-    Attributes:
-        av_frame (av.VideoFrame): The video frame.
-        timestamp_unix_seconds (float): Timestamp in seconds since Unix epoch.
-
     """
 
     av_frame: av.VideoFrame
+    """The video frame."""
     timestamp_unix_seconds: float
+    """ Timestamp in seconds since Unix epoch."""
 
     @property
     def datetime(self) -> datetime.datetime:

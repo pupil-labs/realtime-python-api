@@ -21,19 +21,16 @@ class GazeData(NamedTuple):
 
     Represents the 2D gaze point on the scene camera coordinates with a timestamp in
     nanoseconds unix epoch and an indicator of whether the glasses are being worn.
-
-    Attributes:
-        x (float): X coordinate of the gaze point.
-        y (float): Y coordinate of the gaze point.
-        worn (bool): Whether the glasses are being worn.
-        timestamp_unix_seconds (float): Timestamp in seconds since Unix epoch.
-
     """
 
     x: float
+    """"X coordinate of the gaze point"""
     y: float
+    """Y coordinate of the gaze point."""
     worn: bool
+    """Whether the glasses are being worn."""
     timestamp_unix_seconds: float
+    """Timestamp in seconds since Unix epoch."""
 
     @classmethod
     def from_raw(cls, data: RTSPData) -> "GazeData":
@@ -64,19 +61,16 @@ class DualMonocularGazeData(NamedTuple):
     """Experimental class for dual monocular gaze data.
 
     Contains separate gaze points for left and right eyes.
-
-    Attributes:
-        left (Point): Gaze point for the left eye.
-        right (Point): Gaze point for the right eye.
-        worn (bool): Whether the glasses are being worn.
-        timestamp_unix_seconds (float): Timestamp in seconds since Unix epoch.
-
     """
 
     left: Point
+    """Gaze point for the left eye."""
     right: Point
+    """Gaze point for the right eye."""
     worn: bool
+    """Whether the glasses are being worn."""
     timestamp_unix_seconds: float
+    """Timestamp in seconds since Unix epoch."""
 
     @classmethod
     def from_raw(cls, data: RTSPData) -> "DualMonocularGazeData":
@@ -111,44 +105,44 @@ class EyestateGazeData(NamedTuple):
 
     Contains gaze point, pupil diameter, eyeball center coordinates, and optical axis
     coordinates for both left and right eyes.
-
-    Attributes:
-        x (float): X coordinate of the gaze point.
-        y (float): Y coordinate of the gaze point.
-        worn (bool): Whether the glasses are being worn.
-        pupil_diameter_left (float): Pupil diameter for the left eye.
-        eyeball_center_left_x (float): X coordinate of the eyeball center for the left
-            eye.
-        eyeball_center_left_y (float): Y coordinate of the eyeball center for the left
-            eye.
-        eyeball_center_left_z (float): Z coordinate of the eyeball center for the left
-            eye.
-        optical_axis_left_x (float): X coordinate of the optical axis for the left eye.
-        optical_axis_left_y (float): Y coordinate of the optical axis for the left eye.
-        optical_axis_left_z (float): Z coordinate of the optical axis for the left eye.
-        ...
-        timestamp_unix_seconds (float): Timestamp in seconds since Unix epoch.
-
     """
 
     x: float
+    """X coordinate of the gaze point."""
     y: float
+    """Y coordinate of the gaze point."""
     worn: bool
+    """Whether the glasses are being worn."""
     pupil_diameter_left: float
+    """Pupil diameter for the left eye."""
     eyeball_center_left_x: float
+    """X coordinate of the eyeball center for the left eye."""
     eyeball_center_left_y: float
+    """Y coordinate of the eyeball center for the left eye."""
     eyeball_center_left_z: float
+    """Z coordinate of the eyeball center for the left eye."""
     optical_axis_left_x: float
+    """X coordinate of the optical axis for the left eye."""
     optical_axis_left_y: float
+    """Y coordinate of the optical axis for the left eye."""
     optical_axis_left_z: float
+    """Z coordinate of the optical axis for the left eye."""
     pupil_diameter_right: float
+    """Pupil diameter for the right eye."""
     eyeball_center_right_x: float
+    """X coordinate of the eyeball center for the right eye."""
     eyeball_center_right_y: float
+    """Y coordinate of the eyeball center for the right eye."""
     eyeball_center_right_z: float
+    """Z coordinate of the eyeball center for the right eye."""
     optical_axis_right_x: float
+    """X coordinate of the optical axis for the right eye."""
     optical_axis_right_y: float
+    """Y coordinate of the optical axis for the right eye."""
     optical_axis_right_z: float
+    """Z coordinate of the optical axis for the right eye."""
     timestamp_unix_seconds: float
+    """Timestamp in seconds since Unix epoch."""
 
     @classmethod
     def from_raw(cls, data: RTSPData) -> "EyestateGazeData":
@@ -217,40 +211,56 @@ class EyestateEyelidGazeData(NamedTuple):
 
     Contains gaze point, pupil diameter, eyeball center coordinates, optical axis
     coordinates, as well as eyelid angles and aperture for both left and right eyes.
-
-    Attributes:
-        ...
-        eyelid_angle_top_left (float): Angle of the top eyelid for the left eye.
-        eyelid_angle_bottom_left (float): Angle of the bottom eyelid for the left eye.
-        eyelid_aperture_left (float): Aperture of the eyelid for the left eye.
-        ...
-
     """
 
     x: float
+    """X coordinate of the gaze point."""
     y: float
+    """Y coordinate of the gaze point."""
     worn: bool
+    """Whether the glasses are being worn."""
     pupil_diameter_left: float
+    """Pupil diameter for the left eye."""
     eyeball_center_left_x: float
+    """X coordinate of the eyeball center for the left eye."""
     eyeball_center_left_y: float
+    """Y coordinate of the eyeball center for the left eye."""
     eyeball_center_left_z: float
+    """Z coordinate of the eyeball center for the left eye."""
     optical_axis_left_x: float
+    """X coordinate of the optical axis for the left eye."""
     optical_axis_left_y: float
+    """Y coordinate of the optical axis for the left eye."""
     optical_axis_left_z: float
+    """Z coordinate of the optical axis for the left eye."""
     pupil_diameter_right: float
+    """Pupil diameter for the right eye."""
     eyeball_center_right_x: float
+    """X coordinate of the eyeball center for the right eye."""
     eyeball_center_right_y: float
+    """Y coordinate of the eyeball center for the right eye."""
     eyeball_center_right_z: float
+    """Z coordinate of the eyeball center for the right eye."""
     optical_axis_right_x: float
+    """X coordinate of the optical axis for the right eye."""
     optical_axis_right_y: float
+    """Y coordinate of the optical axis for the right eye."""
     optical_axis_right_z: float
+    """Z coordinate of the optical axis for the right eye."""
     eyelid_angle_top_left: float
+    """Angle of the top eyelid for the left eye(rad)."""
     eyelid_angle_bottom_left: float
+    """Angle of the bottom eyelid for the left eye(rad)."""
     eyelid_aperture_left: float
+    """Aperture of the eyelid for the left eye (mm)."""
     eyelid_angle_top_right: float
+    """Angle of the top eyelid for the right eye (rad)."""
     eyelid_angle_bottom_right: float
+    """Angle of the bottom eyelid for the right eye (rad)."""
     eyelid_aperture_right: float
+    """Aperture of the eyelid for the right eye (mm)."""
     timestamp_unix_seconds: float
+    """Timestamp in seconds since Unix epoch."""
 
     @classmethod
     def from_raw(cls, data: RTSPData) -> "EyestateEyelidGazeData":

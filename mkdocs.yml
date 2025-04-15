@@ -16,20 +16,30 @@ nav:
   - Home:
       - Overview: index.md
       - Getting Started: getting-started.md
-      - Simple vs Async API: guides/simple-vs-async-api.md
       - Examples:
           - Simple API: examples/simple.md
           - Connect to a Device: examples/simple/connect-to-a-device.md
           - Remote Control: examples/simple/remote-control.md
+          - Streaming:
+              - Stream Gaze: examples/simple/streaming/gaze.md
+              - Scene Camera: examples/simple/streaming/scene-camera.md
+              - Eye Cameras: examples/simple/streaming/eye-cameras.md
+              - IMU Data: examples/simple/streaming/imu-data.md
+              - Eye Events: examples/simple/streaming/eye-events.md
           - Templates: examples/simple/templates.md
-          - Streaming: examples/simple/streaming.md
           - Others: examples/simple/others.md
           - Async API: examples/async.md
           - Connect to a Device: examples/async/connect-to-a-device.md
           - Remote Control: examples/async/remote-control.md
+          - Streaming:
+              - Stream Gaze: examples/async/streaming/gaze.md
+              - Scene Camera: examples/async/streaming/scene-camera.md
+              - Eye Cameras: examples/async/streaming/eye-cameras.md
+              - IMU Data: examples/async/streaming/imu-data.md
+              - Eye Events: examples/async/streaming/eye-events.md
           - Templates: examples/async/templates.md
-          - Streaming: examples/async/streaming.md
           - Others: examples/async/others.md
+      - Simple vs Async API: guides/simple-vs-async-api.md
       - Under the Hood: guides/under-the-hood.md
       - License: license.md
   - API reference:
@@ -85,9 +95,11 @@ theme:
 extra_css:
   - css/material.css
   - css/mkdocstrings.css
+  - css/badges.css
 
 markdown_extensions:
   - attr_list
+  - md_in_html
   - admonition
   - callouts
   - footnotes
@@ -112,6 +124,9 @@ markdown_extensions:
       custom_checkbox: true
   - toc:
       permalink: true
+
+hooks:
+  - docs/overrides/hooks/shortcodes.py
 
 plugins:
   - search

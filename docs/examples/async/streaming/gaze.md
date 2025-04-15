@@ -1,14 +1,10 @@
 # Streaming Gaze Data
 
-Use [`device.receive_gaze_datum`][pupil_labs.realtime_api.simple.Device.receive_gaze_datum] to receive gaze data.
-
-```py linenums="0"
-gaze = device.receive_gaze_datum()
-```
+Use [`receive_gaze_data`][pupil_labs.realtime_api.streaming.receive_gaze_data] to subscribe to gaze data.
 
 Can return different types of gaze data ([GazeDataType][pupil_labs.realtime_api.streaming.gaze.GazeDataType]):
 
--   [GazeData][pupil_labs.realtime_api.streaming.gaze.GazeData] object for Pupil Invisible or Neon without "Compute eye state" enabled.
+-   [GazeData][pupil_labs.realtime_api.streaming.gaze.GazeData] object for Pupil Invisible or Neon without eye state enabled.
 -   [EyestateGazeData][pupil_labs.realtime_api.streaming.gaze.EyestateGazeData] or [EyestateEyelidGazeData][pupil_labs.realtime_api.streaming.gaze.EyestateEyelidGazeData] for Neon with "Compute eye state" enabled, depending on the version of the Neon Companion app.
 
 See below samples for each type of gaze data.
@@ -23,9 +19,6 @@ See below samples for each type of gaze data.
     	timestamp_unix_seconds=1744294828.3579288
     )
     ```
-    ??? quote "GazeData"
-
-    	::: pupil_labs.realtime_api.streaming.gaze.GazeData
 
 === "With Eye State"
 
@@ -57,11 +50,7 @@ See below samples for each type of gaze data.
     ```
      This method also provides [pupil diameter](https://docs.pupil-labs.com/neon/data-collection/data-streams/#pupil-diameters) and [eye poses](https://docs.pupil-labs.com/neon/data-collection/data-streams/#_3d-eye-poses).
 
-    ??? quote "EyestateGazeData"
-
-    	::: pupil_labs.realtime_api.streaming.gaze.EyestateGazeData
-
-=== "With Eye State & Eye Lid data"
+=== "With Eye Lid data"
 
     <!-- badge:product Neon -->
     <!-- badge:companion +2.9.0 -->
@@ -97,10 +86,6 @@ See below samples for each type of gaze data.
     ```
     This method also provides [eye openness](https://docs.pupil-labs.com/neon/data-collection/data-streams/#eye-openness) data.
 
-    ??? quote "EyestateEyelidGazeData"
-
-    	::: pupil_labs.realtime_api.streaming.gaze.EyestateEyelidGazeData
-
 You can learn more about the payload in the [Under the Hood](../../../guides/under-the-hood.md) guide.
 
 ## Full Code Examples
@@ -108,5 +93,5 @@ You can learn more about the payload in the [Under the Hood](../../../guides/und
 ??? example "Check the whole example code here"
 
     ```py title="stream_gaze.py" linenums="1"
-    --8<-- "examples/simple/stream_gaze.py"
+    --8<-- "examples/async/stream_gaze.py"
     ```
