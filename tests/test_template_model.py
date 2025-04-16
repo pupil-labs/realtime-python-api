@@ -172,11 +172,14 @@ template_dict = {
 
 def test_template_answer_api_format():
     template_def = Template(**template_dict)
-    validate_template_answers = partial(template_def.validate_answers, format="api")
+    validate_template_answers = partial(
+        template_def.validate_answers, template_format="api"
+    )
 
     def validate_question_answer(question_id: str):
         return partial(
-            template_def.get_question_by_id(question_id).validate_answer, format="api"
+            template_def.get_question_by_id(question_id).validate_answer,
+            template_format="api",
         )
 
     # fmt: off
@@ -267,12 +270,14 @@ def test_template_answer_api_format():
 
 def test_template_answers_simple_format():
     template_def = Template(**template_dict)
-    validate_template_answers = partial(template_def.validate_answers, format="simple")
+    validate_template_answers = partial(
+        template_def.validate_answers, template_format="simple"
+    )
 
     def validate_question_answer(question_id: str):
         return partial(
             template_def.get_question_by_id(question_id).validate_answer,
-            format="simple",
+            template_format="simple",
         )
 
     # fmt: off

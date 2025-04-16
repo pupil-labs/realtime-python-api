@@ -64,9 +64,6 @@ def on_page_markdown(
         try:
             matched_string = match.group(0)
             groups = match.groups()
-            print(f"DEBUG: Hook processing match: '{matched_string}'")
-            print(f"DEBUG: Match object: {match}")
-            print(f"DEBUG: Groups found: {groups}")
         except Exception as e:
             print(f"DEBUG: Error retrieving info for match: {match} - Error: {e}")
             return match.group(0) if match else ""

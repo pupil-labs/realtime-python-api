@@ -18,6 +18,13 @@ nav:
       - Getting Started: getting-started.md
       - Examples:
           - Simple API: examples/simple.md
+          - Async API: examples/async.md
+      - Simple vs Async API: guides/simple-vs-async-api.md
+      - Under the Hood: guides/under-the-hood.md
+      - License: license.md
+  - Examples:
+      - Simple API:
+          - Index: examples/simple.md
           - Connect to a Device: examples/simple/connect-to-a-device.md
           - Remote Control: examples/simple/remote-control.md
           - Streaming:
@@ -28,7 +35,8 @@ nav:
               - Eye Events: examples/simple/streaming/eye-events.md
           - Templates: examples/simple/templates.md
           - Others: examples/simple/others.md
-          - Async API: examples/async.md
+      - Async API:
+          - Index: examples/async.md
           - Connect to a Device: examples/async/connect-to-a-device.md
           - Remote Control: examples/async/remote-control.md
           - Streaming:
@@ -39,15 +47,10 @@ nav:
               - Eye Events: examples/async/streaming/eye-events.md
           - Templates: examples/async/templates.md
           - Others: examples/async/others.md
-      - Simple vs Async API: guides/simple-vs-async-api.md
-      - Under the Hood: guides/under-the-hood.md
-      - License: license.md
   - API reference:
       - Index: modules.md
       - Simple API reference: api/simple.md
       - Async API reference: api/async.md
-      - Models: api/models.md
-      - Base: api/base.md
   - Cookbook: cookbook.md
   - Changelog: changelog.md
   - Development:

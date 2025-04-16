@@ -13,8 +13,6 @@
 ### Gaze Data
 
 ::: pupil_labs.realtime_api.streaming.gaze
-options:
-except_members: - DualMonocularGazeData
 
 ### IMU Data
 
@@ -33,11 +31,11 @@ except_members: - DualMonocularGazeData
 ### Raw RTSP Data
 
 ::: pupil_labs.realtime_api.streaming.base
-options:
-show_if_no_docstring: true
-members_order: source
-show_submodules: true
 
 ## Time Echo Protocol
 
 ::: pupil_labs.realtime_api.time_echo
+
+::: pupil_labs.realtime_api.models
+
+::: pupil_labs.realtime_api.base
