@@ -19,7 +19,7 @@ The current connection details can be looked up under the app's main menu → St
 
 ### Start/stop/cancel recordings
 
-By sending [HTTP POST](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) requests to the `/api/recording:*` endpoints, you can start, stop, and cancel recordings.
+By sending [HTTP POST](https://developer.mozilla.org/en-US/docs/Web/HTTP/examples/POST) requests to the `/api/recording:*` endpoints, you can start, stop, and cancel recordings.
 
 -   [`POST /api/recording:start`](https://pupil-labs.github.io/realtime-network-api/#/recording/post_recording_start) - Starts a recording if possible
 -   [`POST /api/recording:stop_and_save`](https://pupil-labs.github.io/realtime-network-api/#/recording/post_recording_stop_and_save) - Stops and saves the running recording if possible
@@ -53,7 +53,7 @@ By sending [HTTP POST](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods
 
 ### Send events
 
-By [HTTP POSTing](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST) requests to the `/api/event` endpoint, you can send labeled events to the device. Events will be timestamped on reception. Alternatively, you can provide a Unix-epoch timestamp in nanosecond. This is recommended if you want to control the timing of the event.
+By [HTTP POSTing](https://developer.mozilla.org/en-US/docs/Web/HTTP/examples/POST) requests to the `/api/event` endpoint, you can send labeled events to the device. Events will be timestamped on reception. Alternatively, you can provide a Unix-epoch timestamp in nanosecond. This is recommended if you want to control the timing of the event.
 
 -   [`POST /api/event`](https://pupil-labs.github.io/realtime-network-api/#/events/post_event) - Sends an event to the device
 
@@ -65,7 +65,7 @@ By [HTTP POSTing](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST
 
 ### Get Current Status
 
-By sending a [HTTP GET](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/GET) request to the `/api/status` endpoint, you can receive information about the device's current status. This includes information about the battery and storage capacities, connected sensors, and running recordings.
+By sending a [HTTP GET](https://developer.mozilla.org/en-US/docs/Web/HTTP/examples/GET) request to the `/api/status` endpoint, you can receive information about the device's current status. This includes information about the battery and storage capacities, connected sensors, and running recordings.
 
 -   [`GET /api/status`](https://pupil-labs.github.io/realtime-network-api/#/status/get_status) - Receive status from device
 

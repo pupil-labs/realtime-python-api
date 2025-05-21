@@ -8,11 +8,7 @@
 [![pypi version](https://img.shields.io/pypi/v/pupil-labs-realtime-api.svg)](https://pypi.org/project/pupil-labs-realtime-api/)
 [![python versions](https://img.shields.io/pypi/pyversions/pupil-labs-realtime-api)](https://pypi.org/project/pupil-labs-realtime-api/)
 
-Python Client for the Pupil Labs Real-Time API
-
-`pupil_labs.realtime_api` is a Python module to wrap around the [Pupil Labs Real-Time Network API](https://github.com/pupil-labs/realtime-network-api).
-
-It also offers some convenience functions like gaze↔frame matching and exposes easy-to-use functions and classes to get started without having to know much about advanced programming or network communication!
+`pupil_labs.realtime_api` is a Python module that wraps around the [Pupil Labs Real-Time Network API](https://github.com/pupil-labs/realtime-network-api) while offering some convenience functions sucha as gaze ↔ frame matching, and exposing easy-to-use functions and classes to get started without having to know much about advanced programming or network communication!
 
 ## Installation
 
@@ -20,12 +16,14 @@ It also offers some convenience functions like gaze↔frame matching and exposes
 pip install pupil-labs-realtime-api
 ```
 
-or
+Or, to install directly from the repository:
 
 ```bash
 pip install -e git+https://github.com/pupil-labs/realtime-python-api.git
 ```
 
 > [!IMPORTANT]
-> This package is only available for Pupil Invisible and Neon, Pupil Core uses a different API. Please have a look at:
-> [Pupil Core Network API](https://docs.pupil-labs.com/core/developer/network-api/) if you need streaming capabilities > for Pupil Core.
+> This package is only available for Pupil Invisible and Neon, Pupil Core uses a different API.
+> If you’re working with Pupil Core, please refer to the Pupil Core Network API](https://docs.pupil-labs.com/core/developer/network-api/) if you need streaming capabilities.
+
+📚 Check out the [documentation here](https://pupil-labs.github.io/realtime-python-api)

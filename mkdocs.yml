@@ -16,46 +16,42 @@ nav:
   - Home:
       - Overview: index.md
       - Getting Started: getting-started.md
-      - Examples:
-          - Simple API: examples/simple.md
-          - Async API: examples/async.md
+      - Simple API: methods/simple.md
+      - Async API: methods/async.md
       - Simple vs Async API: guides/simple-vs-async-api.md
       - Under the Hood: guides/under-the-hood.md
       - License: license.md
-  - Examples:
-      - Simple API:
-          - Index: examples/simple.md
-          - Connect to a Device: examples/simple/connect-to-a-device.md
-          - Remote Control: examples/simple/remote-control.md
-          - Streaming:
-              - Stream Gaze: examples/simple/streaming/gaze.md
-              - Scene Camera: examples/simple/streaming/scene-camera.md
-              - Eye Cameras: examples/simple/streaming/eye-cameras.md
-              - IMU Data: examples/simple/streaming/imu-data.md
-              - Eye Events: examples/simple/streaming/eye-events.md
-          - Templates: examples/simple/templates.md
-          - Others: examples/simple/others.md
-      - Async API:
-          - Index: examples/async.md
-          - Connect to a Device: examples/async/connect-to-a-device.md
-          - Remote Control: examples/async/remote-control.md
-          - Streaming:
-              - Stream Gaze: examples/async/streaming/gaze.md
-              - Scene Camera: examples/async/streaming/scene-camera.md
-              - Eye Cameras: examples/async/streaming/eye-cameras.md
-              - IMU Data: examples/async/streaming/imu-data.md
-              - Eye Events: examples/async/streaming/eye-events.md
-          - Templates: examples/async/templates.md
-          - Others: examples/async/others.md
+  - Simple API:
+      - Index: methods/simple.md
+      - Connect to a Device: methods/simple/connect-to-a-device.md
+      - Remote Control: methods/simple/remote-control.md
+      - Streaming:
+          - Stream Gaze: methods/simple/streaming/gaze.md
+          - Scene Camera: methods/simple/streaming/scene-camera.md
+          - Eye Cameras: methods/simple/streaming/eye-cameras.md
+          - IMU Data: methods/simple/streaming/imu-data.md
+          - Eye Events: methods/simple/streaming/eye-events.md
+      - Templates: methods/simple/templates.md
+      - Others: methods/simple/others.md
+  - Async API:
+      - Index: methods/async.md
+      - Connect to a Device: methods/async/connect-to-a-device.md
+      - Remote Control: methods/async/remote-control.md
+      - Streaming:
+          - Stream Gaze: methods/async/streaming/gaze.md
+          - Scene Camera: methods/async/streaming/scene-camera.md
+          - Eye Cameras: methods/async/streaming/eye-cameras.md
+          - IMU Data: methods/async/streaming/imu-data.md
+          - Eye Events: methods/async/streaming/eye-events.md
+      - Templates: methods/async/templates.md
+      - Others: methods/async/others.md
   - API reference:
       - Index: modules.md
       - Simple API reference: api/simple.md
       - Async API reference: api/async.md
+  - Under the Hood: guides/under-the-hood.md
   - Cookbook: cookbook.md
   - Changelog: changelog.md
-  - Development:
-      - Contributing: contributing.md
-      - Coverage report: coverage.md
 
 theme:
   name: material
