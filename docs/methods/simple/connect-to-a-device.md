@@ -1,10 +1,10 @@
 # Connect to a Device
 
-You can find one or multiple devices connected to your local network and connect to them using:
+One of the first steps you need to carry to leverage the API is to connect to one device. This library offers you ways to find one ormultiple devices connected to your local network. See below the different ways to connect to a device:
 
 === "Discover One Device"
 
-    Using the [`discover_one_device()`][pupil_labs.realtime_api.simple.discover_one_device]:
+    Using the [`discover_one_device()`][pupil_labs.realtime_api.simple.discover_one_device], you will get access to the first device it detects.
 
     ```py title="discover_devices.py" linenums="0" hl_lines="4"
     --8<-- "examples/simple/discover_devices.py:1:2,4:5"
@@ -12,13 +12,15 @@ You can find one or multiple devices connected to your local network and connect
 
 === "Discover Multiple Devices"
 
-    Using the [`discover_devices()`][pupil_labs.realtime_api.simple.discover_devices]:
+    Using the [`discover_devices()`][pupil_labs.realtime_api.simple.discover_devices], you can connect to more than one device.
 
     ```py title="discover_devices.py" linenums="0" hl_lines="4"
     --8<-- "examples/simple/discover_devices.py:1:2,8:9"
     ```
 
 === "Connect Directly via IP Address"
+
+    There might be instances where devices can't be found due to the network, but you can always specify the IP address and port to simplify the process.
 
     ```py linenums="0" hl_lines="4-5"
     from pupil_labs.realtime_api.simple import Device
@@ -30,9 +32,7 @@ You can find one or multiple devices connected to your local network and connect
 
 Make sure the Companion App is running! If no device can be found, please have a look at the [troubleshooting section](../../troubleshooting.md).
 
-??? quote "Device"
-
-    ::: pupil_labs.realtime_api.simple.Device
+Below you can find a link to the full code example and the API referece for the returned Device object.
 
 ## Device Information & Automatic Status Updates
 
@@ -40,7 +40,7 @@ Once connected, the [`Device`][pupil_labs.realtime_api.simple.Device] object pro
 
 This class, will automatically monitor Neon / Pupil Invisible Companion's Device in the background and mirror its state accordingly.
 
-=== "Get Status"
+=== "Get a snap of Status"
 
     ```python title="get_status.py" linenums="0"
     --8<-- "examples/simple/get_status.py"
@@ -53,7 +53,7 @@ This class, will automatically monitor Neon / Pupil Invisible Companion's Device
     Serial number of connected glasses: h4gcf
     ```
 
-=== "Status Auto-Update"
+=== "Continuously monitor Status Updates"
 
     ```python linenums="0"
     --8<-- "examples/simple/status_auto_update.py"
@@ -66,7 +66,9 @@ This class, will automatically monitor Neon / Pupil Invisible Companion's Device
     Scene camera connected: False
     ```
 
-Refer to the [Device API documentation](::: pupil_labs.realtime_api.simple.Device) for more details.
+??? quote "Device"
+
+    ::: pupil_labs.realtime_api.simple.Device
 
 ## Full Code Examples
 
@@ -74,4 +76,12 @@ Refer to the [Device API documentation](::: pupil_labs.realtime_api.simple.Devic
 
     ```py title="discover_devices.py" linenums="1"
     --8<-- "examples/simple/discover_devices.py"
+    ```
+
+    ```py title="get_status.py" linenums="1"
+    --8<-- "examples/simple/get_status.py"
+    ```
+
+    ```python title="status_auto_update.py" linenums="0"
+    --8<-- "examples/simple/status_auto_update.py"
     ```

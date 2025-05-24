@@ -21,7 +21,7 @@ Code examples that use the [async][pupil_labs.realtime_api] api interface.
 -   [Scene Camera Video with Overlayed Eyes Video and Gaze Circle](async/streaming/scene-camera.md##scene-camera-video-with-overlayed-eyes-video-and-gaze-circle)
 -   [Eyes Camera Video](async/streaming/eyes-camera-video)
 -   [IMU Data](async/streaming/imu-data.md)
--   [Eye Events: Blinks, Fixations & Saccades](async/streaming/eye_events.md)
+-   [Blinks, Fixations & Saccades](async/streaming/eye-events.md)
 
 ## Templates
 

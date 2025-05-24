@@ -6,7 +6,7 @@ Use [`device.receive_gaze_datum`][pupil_labs.realtime_api.simple.Device.receive_
 gaze = device.receive_gaze_datum()
 ```
 
-Can return different types of gaze data ([GazeDataType][pupil_labs.realtime_api.streaming.gaze.GazeDataType]):
+This function can return different types of gaze data ([GazeDataType][pupil_labs.realtime_api.streaming.gaze.GazeDataType]) depending on the device and its configuration:
 
 -   [GazeData][pupil_labs.realtime_api.streaming.gaze.GazeData] object for Pupil Invisible or Neon without "Compute eye state" enabled.
 -   [EyestateGazeData][pupil_labs.realtime_api.streaming.gaze.EyestateGazeData] or [EyestateEyelidGazeData][pupil_labs.realtime_api.streaming.gaze.EyestateEyelidGazeData] for Neon with "Compute eye state" enabled, depending on the version of the Neon Companion app.
@@ -61,7 +61,7 @@ See below samples for each type of gaze data.
 
     	::: pupil_labs.realtime_api.streaming.gaze.EyestateGazeData
 
-=== "With Eye State & Eye Lid data"
+=== "With Eye State & Eye Lid"
 
     <!-- badge:product Neon -->
     <!-- badge:companion +2.9.0 -->

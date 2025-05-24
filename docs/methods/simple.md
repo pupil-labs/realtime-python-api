@@ -21,7 +21,7 @@ Code examples that use the [simple][pupil_labs.realtime_api.simple] api interfac
 -   [Scene Camera Video with Overlayed Eyes Video and Gaze Circle](simple/streaming/scene-camera.md##scene-camera-video-with-overlayed-eyes-video-and-gaze-circle)
 -   [Eyes Camera Video](simple/streaming/eyes-camera-video.md)
 -   [IMU Data](simple/streaming/imu-data.md)
--   [Eye Events: Blinks, Fixations & Saccades](simple/streaming/eye_events.md)
+-   [Blinks, Fixations & Saccades](simple/streaming/eye-events.md)
 
 ## Templates
 

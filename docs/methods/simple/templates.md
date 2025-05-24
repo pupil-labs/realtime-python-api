@@ -4,7 +4,7 @@
 <!-- badge:version +1.3.0 -->
 <!-- badge:companion +2.8.25 -->
 
-You can access the response data entered into the template questionnaire on the phone and also set those responses remotely.
+You can access the response data entered into the [template questionnaire](https://docs.pupil-labs.com/neon/data-collection/templates/#templates) on the phone and also set those responses remotely.
 If the template is [properly configured](https://docs.pupil-labs.com/neon/data-collection/templates/#naming-scheme-for-recordings), this allows you to also define the recording name.
 
 ### Get Template Definition
@@ -29,7 +29,7 @@ Using the [`device.get_template_data`][pupil_labs.realtime_api.simple.Device.get
 
 ### Set Template Data
 
-Using the [`device.post_template_data`][pupil_labs.realtime_api.simple.Device.post_template_data] method, you can set the template responses remotely.
+And using the [`device.post_template_data`][pupil_labs.realtime_api.simple.Device.post_template_data] method, you can set the template responses remotely.
 
 ```py linenums="0"
 --8<-- "examples/simple/templates.py:112:112"

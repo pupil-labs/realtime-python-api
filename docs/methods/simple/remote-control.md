@@ -1,4 +1,4 @@
-You can remotely control your [device][pupil_labs.realtime_api.simple.Device], similarly to the [Monitor App](https://docs.pupil-labs.com/neon/data-collection/monitor-app/) and start, stop, save and annotate recordings.
+With the device connected, you can remotely control your [device][pupil_labs.realtime_api.simple.Device], similarly to the [Monitor App](https://docs.pupil-labs.com/neon/data-collection/monitor-app/) and start, stop, save and annotate recordings.
 
 ## Start a Recording
 
@@ -71,7 +71,7 @@ Error: Recording Watchdog failure
 
 ## Stop & Save a Recording
 
-Likewise you can stop and save a recording using [`device.recording_stop_and_save`][pupil_labs.realtime_api.simple.Device.recording_stop_and_save]. Note that if you have a mandatory question that is not filled, the recording will not be saved until that question is answered.
+Likewise you can stop and save a recording using [`device.recording_stop_and_save`][pupil_labs.realtime_api.simple.Device.recording_stop_and_save]. Note, that if you have a mandatory question that is not filled, the recording will not be saved until that question is answered.
 
 ```py linenums="0" title="start_stop_recordings.py"
 --8<-- "examples/simple/start_stop_recordings.py:24:24"
@@ -83,7 +83,7 @@ Recording stopped and saved
 
 ## Cancel a Recording
 
-You can also cancel ([`device.recording_cancel`][pupil_labs.realtime_api.simple.Device.recording_cancel]) a recording if you don't want to save it. This will delete the recording and all its data.
+You can also cancel ([`device.recording_cancel`][pupil_labs.realtime_api.simple.Device.recording_cancel]) a recording if you don't want to save it, just be aware that this will delete the recording and all its data.
 
 ```py linenums="0" title="start_stop_recordings.py"
 device.recording_cancel()
