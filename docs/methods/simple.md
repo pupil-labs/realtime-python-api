@@ -1,6 +1,6 @@
 # Simple Examples
 
-Code examples that use the [simple][pupil_labs.realtime_api.simple] api interface.
+Code examples and methods that use the [simple][pupil_labs.realtime_api.simple] api interface.
 
 ## Connect to a Device
 

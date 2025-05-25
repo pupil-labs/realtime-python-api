@@ -2,7 +2,7 @@
 
 <!-- badge:version 1.1.0 -->
 
-You can estimate the time offset between the device and your computer using the [`TimeOffsetEstimator.estimate`][pupil_labs.realtime_api.time_echo.TimeOffsetEstimator.estimate] method.
+Additionally, we offer you a convenient function to estimate the time offset between the device and your computer using the [`TimeOffsetEstimator.estimate`][pupil_labs.realtime_api.time_echo.TimeOffsetEstimator.estimate] method.
 
 See [`time_echo`][pupil_labs.realtime_api.time_echo] for details.
 
@@ -21,11 +21,15 @@ Mean roundtrip duration: 12.91 ms
     --8<-- "examples/async/device_time_offset.py"
     ```
 
+!!! question "Wanna get super precise time sync?"
+
+    Have a look at our tutorial [here](https://docs.pupil-labs.com/neon/data-collection/time-synchronization/#force-syncing-to-the-master-clock-on-demand).
+
 ## Camera calibration
 
 <!-- badge:product Neon -->
 
-You can receive camera calibration parameters using the [get_calibration][pupil_labs.realtime_api.device.Device.get_calibration] method. Especially the scene camera matrix and distortion coefficients are useful for undistorting the scene video.
+Getting the camera calibration coefficients can be extremely useful for undistorting the video. You can receive camera calibration parameters using the [get_calibration][pupil_labs.realtime_api.device.Device.get_calibration] method.
 
 ```py linenums="0"
 await device.get_calibration()
@@ -67,3 +71,7 @@ Calibration(
 	crc = np.uint32(734156985)
 )
 ```
+
+!!! question "Wanna know how to undistort the video?""
+
+    Get a look at [our tutorial](https://docs.pupil-labs.com/alpha-lab/undistort/).

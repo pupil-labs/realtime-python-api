@@ -1,6 +1,6 @@
 # Connect to a Device
 
-One of the first steps you need to carry to leverage the API is to connect to one device. This library offers you ways to find one ormultiple devices connected to your local network. See below the different ways to connect to a device:
+One of the first steps you need to carry to leverage the API is to connect to one device. This library offers you ways to find one or multiple devices connected to your local network. See below the different ways to connect to a device:
 
 === "Discover One Device"
 

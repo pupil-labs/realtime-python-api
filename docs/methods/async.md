@@ -1,6 +1,6 @@
 # Asynchronous Examples
 
-Code examples that use the [async][pupil_labs.realtime_api] api interface.
+Code examples and methods that use the [async][pupil_labs.realtime_api] api interface.
 
 ## Connect to a Device
 

@@ -1,4 +1,4 @@
-You can remotely control your [device][pupil_labs.realtime_api.device.Device], similarly to the [Monitor App](https://docs.pupil-labs.com/neon/data-collection/monitor-app/) and start, stop, save and annotate recordings.
+With the device connected, you can remotely control your [device][pupil_labs.realtime_api.device.Device], similarly to the [Monitor App](https://docs.pupil-labs.com/neon/data-collection/monitor-app/) and start, stop, save and annotate recordings.
 
 ## Start a Recording
 
@@ -70,7 +70,7 @@ Error: Recording Watchdog failure
 Likewise you can stop and save a recording using [`device.recording_stop_and_save`][pupil_labs.realtime_api.device.Device.recording_stop_and_save]. Note that if you have a mandatory question that is not filled, the recording will not be saved until that question is answered.
 
 ```py linenums="0" title="start_stop_recordings.py"
---8<-- "examples/async/start_stop_recordings.py:31:31"
+await device.recording_stop_and_save()
 ```
 
 ```linenums="0"

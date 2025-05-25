@@ -10,23 +10,23 @@ The package is available on PyPI and can be installed using pip or you can build
 
 === "pip"
 
-    ```
+    ```sh
     pip install pupil-labs-realtime-api
     ```
 
 === "pip + git"
 
-    ```bash
+    ```sh
     pip install -e git+https://github.com/pupil-labs/realtime-python-api.git
     ```
 
 === "uv"
 
-    ```bash
+    ```sh
     uv pip install -e git+https://github.com/pupil-labs/realtime-python-api.git
     ```
-    or start a Python shell with the package pre-installed:
-    ```bash
+    or start a Python shell with the package ready to use:
+    ```sh
     uv run --with pupil-labs-realtime-api python
     ```
 

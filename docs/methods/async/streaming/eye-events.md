@@ -1,4 +1,4 @@
-# Eye Events
+# Blinks, fixations & saccades
 
 <!-- badge:product Neon -->
 <!-- badge:companion +2.9.0 -->
@@ -6,9 +6,13 @@
 
 Using the [`receive_eye_events_data`][pupil_labs.realtime_api.streaming.receive_eye_events_data] method, you can receive eye events such as blinks, saccades or fixations. The data returned is either an instance of:
 
+!!! warnign
+
+    Requires the "Compute fixations" setting to be enabled in the Companion Device.
+
 ### [`FixationEventData`][pupil_labs.realtime_api.streaming.eye_events.FixationEventData]
 
-Defines a full [fixation or saccade](https://docs.pupil-labs.com/neon/data-collection/data-streams/#fixations-saccades) event. Requires the "Compute fixations" setting to be enabled in the Companion Device.
+Defines a full [fixation or saccade](https://docs.pupil-labs.com/neon/data-collection/data-streams/#fixations-saccades) event. They would look as follow, with event_type being either `0` for saccades or `1` for fixations.
 
 === "Saccade"
 
@@ -58,7 +62,7 @@ Defines a full [fixation or saccade](https://docs.pupil-labs.com/neon/data-colle
 
 ### [`FixationOnsetEventData`][pupil_labs.realtime_api.streaming.eye_events.FixationOnsetEventData]
 
-Defines a [fixation or saccade](https://docs.pupil-labs.com/neon/data-collection/data-streams/#fixations-saccades) onset event. Requires the "Compute fixations" setting to be enabled in the Companion Device.
+This defines a [fixation or saccade](https://docs.pupil-labs.com/neon/data-collection/data-streams/#fixations-saccades) onset event, and they would look as follows:
 
 === "Saccade Onset"
 
@@ -78,7 +82,7 @@ Defines a [fixation or saccade](https://docs.pupil-labs.com/neon/data-collection
 
 ### [`BlinkEventData`][pupil_labs.realtime_api.streaming.eye_events.BlinkEventData]
 
-Determines a [blink](https://docs.pupil-labs.com/neon/data-collection/data-streams/#blinks) event. Requires the "Compute eye states" setting to be enabled in the Companion Device.
+Finally, BlinkEventData determines a [blink](https://docs.pupil-labs.com/neon/data-collection/data-streams/#blinks) event.
 
 ```py linenums="0"
 BlinkEventData(
@@ -95,7 +99,7 @@ BlinkEventData(
 
 ## Example
 
-If you ran the example you will get:
+If you ran the example you will get an output simmilar to this:
 
 ```py linenums="0"
 [FIXATION] event with duration of 3.93 seconds.

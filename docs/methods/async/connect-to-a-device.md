@@ -1,6 +1,6 @@
 # Connect to a Device
 
-You can find one or multiple devices connected to your local network and connect to them using:
+One of the first steps you need to carry to leverage the API is to connect to one device. This library offers you ways to find one or multiple devices connected to your local network. See below the different ways to connect to a device:
 
 === "Discover Devices"
 
@@ -20,15 +20,9 @@ You can find one or multiple devices connected to your local network and connect
     device = Device(address=ip, port="8080")
     ```
 
-??? quote "Device"
-
-    ::: pupil_labs.realtime_api.device.Device
-
-??? quote "DeviceBase"
-
-    ::: pupil_labs.realtime_api.base.DeviceBase
-
 Make sure the Companion App is running! If no device can be found, please have a look at the [troubleshooting section](../../troubleshooting.md).
+
+Below you can find a link to the full code example and the API referece for the returned Device object.
 
 ## Device Information & Automatic Status Updates
 
@@ -43,10 +37,6 @@ This [`Status`][pupil_labs.realtime_api.models.Status] represents the full Compa
 -   [Sensors][pupil_labs.realtime_api.models.Sensor]
 
 -   [Recording][pupil_labs.realtime_api.models.Recording]
-
-??? quote "Status"
-
-    ::: pupil_labs.realtime_api.models.Status
 
 === "Get Current Status"
 
@@ -77,6 +67,18 @@ This [`Status`][pupil_labs.realtime_api.models.Status] represents the full Compa
     ```
 
 Refer to the [Device API documentation](::: pupil_labs.realtime_api.device.Device) for more details.
+
+??? quote "Device"
+
+    ::: pupil_labs.realtime_api.device.Device
+
+??? quote "DeviceBase"
+
+    ::: pupil_labs.realtime_api.base.DeviceBase
+
+??? quote "Status"
+
+    ::: pupil_labs.realtime_api.models.Status
 
 ## Full Code Examples
 

@@ -4,7 +4,7 @@
 <!-- badge:version +1.3.0 -->
 <!-- badge:companion +2.8.25 -->
 
-You can access the response data entered into the template questionnaire on the phone and also set those responses remotely.
+You can access the response data entered into the [template questionnaire](https://docs.pupil-labs.com/neon/data-collection/templates/#templates) on the phone and also set those responses remotely.
 If the template is [properly configured](https://docs.pupil-labs.com/neon/data-collection/templates/#naming-scheme-for-recordings), this allows you to also define the recording name.
 
 ### Get Template Definition

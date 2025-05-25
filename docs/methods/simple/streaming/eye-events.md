@@ -82,7 +82,7 @@ This defines a [fixation or saccade](https://docs.pupil-labs.com/neon/data-colle
 
 ### [`BlinkEventData`][pupil_labs.realtime_api.streaming.eye_events.BlinkEventData]
 
-Finally, BlinkEventData determines a [blink](https://docs.pupil-labs.com/neon/data-collection/data-streams/#blinks) event. Requires the "Compute eye states" setting to be enabled in the Companion Device.
+Finally, BlinkEventData determines a [blink](https://docs.pupil-labs.com/neon/data-collection/data-streams/#blinks) event.
 
 ```py linenums="0"
 BlinkEventData(
