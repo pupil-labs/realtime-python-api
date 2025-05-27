@@ -21,7 +21,7 @@ nav:
       - Simple vs Async API: guides/simple-vs-async-api.md
       - Under the Hood: guides/under-the-hood.md
       - License: license.md
-  - Quickstart: getting-started.md
+  - Getting Started: getting-started.md
   - Simple API:
       - Index: methods/simple.md
       - Connect to a Device: methods/simple/connect-to-a-device.md

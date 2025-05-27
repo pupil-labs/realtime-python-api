@@ -4,15 +4,17 @@
 <!-- badge:companion +2.9.0 -->
 <!-- badge:version +1.5.0 -->
 
-Using the [`device.receive_eye_events`][pupil_labs.realtime_api.simple.Device.receive_eye_events] method, you can receive eye events such as blinks, saccades or fixations. The data returned is either an instance of:
+Using the [`device.receive_eye_events`][pupil_labs.realtime_api.simple.Device.receive_eye_events] method, you can receive
+eye events such as blinks, saccades or fixations. The data returned is either an instance of:
 
-!!! warnign
+!!! warning
 
     Requires the "Compute fixations" setting to be enabled in the Companion Device.
 
 ### [`FixationEventData`][pupil_labs.realtime_api.streaming.eye_events.FixationEventData]
 
-Defines a complete [fixation or saccade](https://docs.pupil-labs.com/neon/data-collection/data-streams/#fixations-saccades) event. They would look as follow, with event_type being either `0` for saccades or `1` for fixations.
+Defines a complete [fixation or saccade](https://docs.pupil-labs.com/neon/data-collection/data-streams/#fixations-saccades)
+event. The data returned are structured as follows, with event_type being either `0` for saccades or `1` for fixations.
 
 === "Saccade"
 
@@ -62,7 +64,8 @@ Defines a complete [fixation or saccade](https://docs.pupil-labs.com/neon/data-c
 
 ### [`FixationOnsetEventData`][pupil_labs.realtime_api.streaming.eye_events.FixationOnsetEventData]
 
-This defines a [fixation or saccade](https://docs.pupil-labs.com/neon/data-collection/data-streams/#fixations-saccades) onset event, and they would look as follows:
+This defines a [fixation or saccade](https://docs.pupil-labs.com/neon/data-collection/data-streams/#fixations-saccades)
+onset event. The data returned are structured as follows:
 
 === "Saccade Onset"
 
@@ -99,7 +102,7 @@ BlinkEventData(
 
 ## Example
 
-If you ran the example you will get an output simmilar to this:
+If you run the example you will get an output like this:
 
 ```py linenums="0"
 [FIXATION] event with duration of 3.93 seconds.

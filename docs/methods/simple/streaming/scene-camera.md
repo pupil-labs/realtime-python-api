@@ -1,6 +1,7 @@
 ### Scene Camera Video
 
-Receive the scene camera feed with timestamps, is pretty straightforward, simply use the [`device.receive_scene_video_frame`][pupil_labs.realtime_api.simple.Device.receive_scene_video_frame] method.
+It's very easy to stream the scene camera feed with timestamps for real-time monitoring. Simply use the
+[`device.receive_scene_video_frame`][pupil_labs.realtime_api.simple.Device.receive_scene_video_frame] method.
 
 ```py linenums="0"
 bgr_pixels, frame_datetime = device.receive_scene_video_frame()
@@ -20,9 +21,12 @@ bgr_pixels, frame_datetime = device.receive_scene_video_frame()
     --8<-- "examples/simple/stream_scene_camera_video.py"
     ```
 
-### Scene Camera Video with Overlayed Gaze
+### Scene Camera Video with Overlaid Gaze
 
-Since the scene camera and gaze signal can have different sampling rates, one would need to be sure they are matched. For that we offer a commodity method ([`device.receive_matched_scene_video_frame_and_gaze`][pupil_labs.realtime_api.simple.Device.receive_matched_scene_video_frame_and_gaze]) that receives a pair of scene camera video and gaze data already matched.
+For additional context about where the wearer was gazing, it's useful to overlay gaze measurements onto the scene
+camera video stream. Since the scene camera and gaze signal can have different sampling rates, we need to be sure they
+are matched. For that, you can use ([`device.receive_matched_scene_video_frame_and_gaze`][pupil_labs.realtime_api.simple.Device.receive_matched_scene_video_frame_and_gaze]).
+This receives a pair of scene camera video and gaze data already matched.
 
 ```py linenums="0"
 frame, gaze = device.receive_matched_scene_video_frame_and_gaze()
@@ -46,7 +50,10 @@ frame, gaze = device.receive_matched_scene_video_frame_and_gaze()
 
 <!-- badge:product Neon -->
 
-Simmilarly, on Neon, you can obtain a matched triplet of scene camera video, eyes video frames and the gaze datum, using the [`device.receive_matched_scene_and_eyes_video_frames_and_gaze`][pupil_labs.realtime_api.simple.Device.receive_matched_scene_and_eyes_video_frames_and_gaze] method, so you can visualize the gaze point on the scene camera video, while also showing the eyes video frames.
+It might also be useful to overlay the eye camera video frames, e.g. if you want to manually inspect the eye data or
+blinking behaviour. This can be achieved using the
+[`device.receive_matched_scene_and_eyes_video_frames_and_gaze`][pupil_labs.realtime_api.simple.Device.receive_matched_scene_and_eyes_video_frames_and_gaze]
+method.
 
 ```py linenums="0"
 matched = device.receive_matched_scene_and_eyes_video_frames_and_gaze()
@@ -72,7 +79,8 @@ matched = device.receive_matched_scene_and_eyes_video_frames_and_gaze()
 <!-- badge:companion +2.9.0 -->
 <!-- badge:version +1.5.0 -->
 
-Although there is no convenient method to receive a matched scene camera video with fixation data, here is an example of how you can implement it yourself.
+Although there is no convenient method to receive a matched scene camera video with fixation data, here is an example of
+how you can implement it yourself.
 
 ??? example "Check the whole example code here"
 
