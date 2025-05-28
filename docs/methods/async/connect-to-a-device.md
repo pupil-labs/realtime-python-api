@@ -1,6 +1,12 @@
 # Connect to a Device
 
-One of the first steps you need to carry to leverage the API is to connect to one device. This library offers you ways to find one or multiple devices connected to your local network. See below the different ways to connect to a device:
+The first step when using the realtime API is to connect your client to a Companion device, enabling communication between them.
+
+The examples below demonstrate how to connect to one or more devices using our device discovery functions, as well as how
+to connect directly via a device’s IP address.
+
+Your device and the computer running the client must be connected to the same network, and the Companion app must be running.
+If no device can be found, please refer to the [troubleshooting section](./troubleshooting.md).
 
 === "Discover Devices"
 

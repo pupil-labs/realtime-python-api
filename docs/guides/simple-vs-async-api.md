@@ -2,7 +2,7 @@
 
 The module provides two conceptionally different APIs:
 
-1. The [`async`][pupil_labs.realtime_api] interface is using Python's [asyncio](https://docs.python.org/3/library/asyncio.html) in order to implement non-blocking asynchronous communication. It provides composable components for each feature of the Network API. This means that you need to select and combine the functionality for your own needs, e.g. [stream_video_with_overlayed_gaze][../methods/async/streaming/scene-camera.md#] example. The `async` functionality is implemented in the top-level [`pupil_labs.realtime_api`][pupil_labs.realtime_api] namespace.
+1. The [`async`][pupil_labs.realtime_api] interface is using Python's [asyncio](https://docs.python.org/3/library/asyncio.html) in order to implement non-blocking asynchronous communication. It provides composable components for each feature of the Network API. This means that you need to select and combine the functionality for your own needs, e.g. [stream_video_with_overlayed_gaze](../methods/async/streaming/scene-camera.md#). The `async` functionality is implemented in the top-level [`pupil_labs.realtime_api`][pupil_labs.realtime_api] namespace.
 
 2. The [`simple`][pupil_labs.realtime_api.simple] interface wraps around the `async` one, sacrificing flexibility for the sake of ease of use. It tries to anticipate and provide a solution for the most common use cases. Note, all `simple` API functionality can be found in the [`pupil_labs.realtime_api.simple`][pupil_labs.realtime_api.simple] namespace.
 

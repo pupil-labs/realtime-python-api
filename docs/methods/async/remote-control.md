@@ -1,8 +1,9 @@
-With the device connected, you can remotely control your [device][pupil_labs.realtime_api.device.Device], similarly to the [Monitor App](https://docs.pupil-labs.com/neon/data-collection/monitor-app/) and start, stop, save and annotate recordings.
+similarly to the [Monitor App](https://docs.pupil-labs.com/neon/data-collection/monitor-app/) and start, stop, save and annotate recordings.
 
 ## Start a Recording
 
-Use [`device.recording_start`][pupil_labs.realtime_api.device.Device.recording_start] to start a recording on the device and return the recording ID.
+Use [`device.recording_start`][pupil_labs.realtime_api.device.Device.recording_start] to start a recording on the device
+and return the recording ID.
 
 ```py linenums="1" title="start_stop_recordings.py" hl_lines="5"
 --8<-- "examples/async/start_stop_recordings.py:23:34"

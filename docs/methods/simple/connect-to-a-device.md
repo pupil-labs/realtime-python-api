@@ -71,6 +71,6 @@ This class automatically monitors the Companion device in the background and mir
     Scene camera connected: False
     ```
 
-??? quote "Device Reference"
+??? quote "Device"
 
     ::: pupil_labs.realtime_api.simple.Device

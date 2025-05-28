@@ -2,7 +2,9 @@
 
 <!-- badge:version 1.1.0 -->
 
-Additionally, we offer you a convenient function to estimate the time offset between the device and your computer using the [`device.estimate_time_offset `][pupil_labs.realtime_api.simple.Device.estimate_time_offset] method.
+Additionally, we offer you a convenient function to estimate the time offset between the device and your computer using
+the [`device.estimate_time_offset `][pupil_labs.realtime_api.simple.Device.estimate_time_offset] method. This is the same
+function you saw in the Save Events section.
 
 See [`time_echo`][pupil_labs.realtime_api.time_echo] for details.
 

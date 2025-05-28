@@ -28,7 +28,7 @@ Recording stopped and saved
 ## Cancel a Recording
 
 You can also cancel ([`device.recording_cancel`][pupil_labs.realtime_api.simple.Device.recording_cancel]) a recording if
-you don't want to save it, just be aware that this will delete the recording and all its data.
+you don't want to save it, just be aware that this will discard the recording and all its data.
 
 ```py linenums="0" title="start_stop_recordings.py"
 device.recording_cancel()
@@ -39,8 +39,8 @@ device.recording_cancel()
 A common requirement is to save [events](https://docs.pupil-labs.com/neon/data-collection/events/) with your recording.
 This is made possible using the [`device.send_event`][pupil_labs.realtime_api.simple.Device.send_event]
 method. By default, the Neon device receiving the event will assign a timestamp to it, using the time of arrival. Optionally,
-you can set a custom nanosecond timestamp for your event instead. We also show you how to measure the clock offset between
-the Neon device and client computer, which may be useful for synchronising third-party clocks with your Neon device.
+you can set a custom nanosecond timestamp for your event instead. We also show you how to measure the time offset between
+the device and your computer, which may be useful for synchronising third-party clocks with your Neon device.
 
 === "Timestamped on Arrival (Host/Companion Device)"
 

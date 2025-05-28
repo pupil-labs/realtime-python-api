@@ -6,8 +6,7 @@ how to use them.
 ## Connect to a Device
 
 -   [Discover Devices](async/connect-to-a-device.md)
--   [Device Information](async/connect-to-a-device.md#device-information)
--   [Automatic Status Updates](async/connect-to-a-device.md#automatic-status-updates)
+-   [Device Information & Updates](async/connect-to-a-device.md#device-information-automatic-status-updates)
 
 ## Remote Control Devices
 
