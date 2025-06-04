@@ -14,12 +14,11 @@ validation:
 
 nav:
   - Home:
-      - Overview: index.md
-      - Troubleshooting: troubleshooting.md
-      - License: license.md
-  - Getting Started:
+      - Home: index.md
       - Getting Started: getting-started.md
       - Simple vs Async API: guides/simple-vs-async-api.md
+      - Troubleshooting: troubleshooting.md
+      - License: license.md
   - Simple API:
       - Index: methods/simple.md
       - Connect to a Device: methods/simple/connect-to-a-device.md
