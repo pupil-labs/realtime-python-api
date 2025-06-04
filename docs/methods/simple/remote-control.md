@@ -2,7 +2,9 @@ With the device connected, you can remotely control your [device][pupil_labs.rea
 
 ## Start a Recording
 
-Use [`device.recording_start`][pupil_labs.realtime_api.simple.Device.recording_start] to start a recording on the device and return the recording ID.
+It is possible to remotely control your [device][pupil_labs.realtime_api.simple.Device].
+Use [`device.recording_start`][pupil_labs.realtime_api.simple.Device.recording_start] to start a recording on the device
+and return the recording ID.
 
 ```py linenums="0" title="start_stop_recordings.py"
 --8<-- "examples/simple/start_stop_recordings.py:12:13"
@@ -12,11 +14,32 @@ Use [`device.recording_start`][pupil_labs.realtime_api.simple.Device.recording_s
 Started recording with id 54e7d0bb-5b4c-40e6-baed-f2e11eb4f53b
 ```
 
-With a recording ongoing, you can:
+## Stop & Save a Recording
 
-## Send event
+You can stop and save a recording using [`device.recording_stop_and_save`][pupil_labs.realtime_api.simple.Device.recording_stop_and_save].
+Note that if you have a mandatory question that is not filled, the recording will not be saved until that question is answered.
 
-Save [events](https://docs.pupil-labs.com/neon/data-collection/events/) using the [`device.send_event`][pupil_labs.realtime_api.simple.Device.send_event] method. By default, the Neon device receiving the event will assign a timestamp to it, using the time of arrival. Optionally, you can set a custom nanosecond timestamp for your event instead.
+```py linenums="0" title="start_stop_recordings.py"
+--8<-- "examples/simple/start_stop_recordings.py:24:24"
+```
+
+```linenums="0"
+Recording stopped and saved
+```
+
+## Cancel a Recording
+
+You can also cancel ([`device.recording_cancel`][pupil_labs.realtime_api.simple.Device.recording_cancel]) a recording if
+you don't want to save it, just be aware that this will delete the recording and all its data.
+
+```py linenums="0" title="start_stop_recordings.py"
+device.recording_cancel()
+```
+
+## Save Events
+
+A common requirement is to save [events](https://docs.pupil-labs.com/neon/data-collection/events/) with your recording.
+This is made possible using the [`device.send_event`][pupil_labs.realtime_api.simple.Device.send_event] method. By default, the Neon device receiving the event will assign a timestamp to it, using the time of arrival. Optionally, you can set a custom nanosecond timestamp for your event instead. We also show you how to measure the clock offset between the Neon device and client computer, which may be useful for synchronising third-party clocks with your Neon device.
 
 === "Timestamped on Arrival (Host/Companion Device)"
 
@@ -46,7 +69,7 @@ Save [events](https://docs.pupil-labs.com/neon/data-collection/events/) using th
     Event(name=None recording_id=None timestamp_unix_ns=1744271293119536000 datetime=2025-04-10 09:48:13.119536)
     ```
 
-Events will **only** be saved if the recording is running. If you send an event while there is no recording, it will be discarded.
+Events will **only** be saved if a recording is running. If you send an event while the Companion app is not recording, it will be discarded.
 
 !!! info "Event's name"
 
@@ -55,11 +78,11 @@ Events will **only** be saved if the recording is running. If you send an event 
 
 ### Check for Errors
 
+You can also monitor the recording for potential errors. Add the [`device.get_errors`][pupil_labs.realtime_api.simple.Device.get_errors] method to your code to get notified of errors (if they happen) during your recording.
+
 <!-- badge:product Neon -->
 <!-- badge:companion +2.9.0 -->
 <!-- badge:version +1.5.0 -->
-
-Errors can happen, but now you can also monitor them remotely, by adding the [`device.get_errors`][pupil_labs.realtime_api.simple.Device.get_errors] method on your code, you can get notified of errors (if they happen) during your recording.
 
 ```py linenums="0" title="start_stop_recordings.py"
 --8<-- "examples/simple/start_stop_recordings.py:16:20"
@@ -67,26 +90,6 @@ Errors can happen, but now you can also monitor them remotely, by adding the [`d
 
 ```linenums="0"
 Error: Recording Watchdog failure
-```
-
-## Stop & Save a Recording
-
-Likewise you can stop and save a recording using [`device.recording_stop_and_save`][pupil_labs.realtime_api.simple.Device.recording_stop_and_save]. Note, that if you have a mandatory question that is not filled, the recording will not be saved until that question is answered.
-
-```py linenums="0" title="start_stop_recordings.py"
---8<-- "examples/simple/start_stop_recordings.py:24:24"
-```
-
-```linenums="0"
-Recording stopped and saved
-```
-
-## Cancel a Recording
-
-You can also cancel ([`device.recording_cancel`][pupil_labs.realtime_api.simple.Device.recording_cancel]) a recording if you don't want to save it, just be aware that this will delete the recording and all its data.
-
-```py linenums="0" title="start_stop_recordings.py"
-device.recording_cancel()
 ```
 
 ## Full Code Examples

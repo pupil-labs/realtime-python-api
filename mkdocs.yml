@@ -15,13 +15,11 @@ validation:
 nav:
   - Home:
       - Overview: index.md
-      - Getting Started: getting-started.md
-      - Simple API: methods/simple.md
-      - Async API: methods/async.md
-      - Simple vs Async API: guides/simple-vs-async-api.md
-      - Under the Hood: guides/under-the-hood.md
+      - Troubleshooting: troubleshooting.md
       - License: license.md
-  - Quickstart: getting-started.md
+  - Getting Started:
+      - Getting Started: getting-started.md
+      - Simple vs Async API: guides/simple-vs-async-api.md
   - Simple API:
       - Index: methods/simple.md
       - Connect to a Device: methods/simple/connect-to-a-device.md

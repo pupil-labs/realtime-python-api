@@ -3,8 +3,7 @@
 <!-- badge:product Neon -->
 <!-- badge:version +1.1.2 -->
 
-As you saw in the previous section, Neon allows you to receive the eye cameras video stream with timestamps.
-But you can also receive the eye cameras video stream alone by using the [`receive_eyes_video_frame`][pupil_labs.realtime_api.simple.Device.receive_eyes_video_frame] method.
+You can receive eye camera video frames using the [`receive_eyes_video_frame`][pupil_labs.realtime_api.simple.Device.receive_eyes_video_frame] method.
 
 ```py linenums="0"
 bgr_pixels, frame_datetime = device.receive_eyes_video_frame()

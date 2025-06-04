@@ -23,6 +23,8 @@ See below samples for each type of gaze data.
     	timestamp_unix_seconds=1744294828.3579288
     )
     ```
+
+    This method exposes gaze data
     ??? quote "GazeData"
 
     	::: pupil_labs.realtime_api.streaming.gaze.GazeData
@@ -55,7 +57,7 @@ See below samples for each type of gaze data.
     	timestamp_unix_seconds=1744294828.3579288
     )
     ```
-     This method also provides [pupil diameter](https://docs.pupil-labs.com/neon/data-collection/data-streams/#pupil-diameters) and [eye poses](https://docs.pupil-labs.com/neon/data-collection/data-streams/#_3d-eye-poses).
+     This method exposes gaze data, [pupil diameter](https://docs.pupil-labs.com/neon/data-collection/data-streams/#pupil-diameters), and [eye poses](https://docs.pupil-labs.com/neon/data-collection/data-streams/#_3d-eye-poses).
 
     ??? quote "EyestateGazeData"
 
@@ -95,13 +97,13 @@ See below samples for each type of gaze data.
     	timestamp_unix_seconds=1744294828.3579288
     )
     ```
-    This method also provides [eye openness](https://docs.pupil-labs.com/neon/data-collection/data-streams/#eye-openness) data.
+    This method exposes gaze data, pupil diameter, eye poses, and [eye openness](https://docs.pupil-labs.com/neon/data-collection/data-streams/#eye-openness) data.
 
     ??? quote "EyestateEyelidGazeData"
 
     	::: pupil_labs.realtime_api.streaming.gaze.EyestateEyelidGazeData
 
-You can learn more about the payload in the [Under the Hood](../../../guides/under-the-hood.md) guide.
+You can learn more about the payload in [Under the Hood](../../../guides/under-the-hood.md).
 
 ## Full Code Examples
 

@@ -1,6 +1,12 @@
 # Connect to a Device
 
-One of the first steps you need to carry to leverage the API is to connect to one device. This library offers you ways to find one or multiple devices connected to your local network. See below the different ways to connect to a device:
+The first step when using the Real-time API is to connect your client to a Companion device, enabling communication between them.
+
+The examples below demonstrate how to connect to one or more devices using our device discovery functions, as well as how
+to connect directly via a device’s IP address.
+
+Your device and the computer running the client must be connected to the same network, and the Companion app must be running.
+If no device can be found, please refer to the [troubleshooting section](./troubleshooting.md).
 
 === "Discover One Device"
 
@@ -36,9 +42,11 @@ Below you can find a link to the full code example and the API referece for the 
 
 ## Device Information & Automatic Status Updates
 
-Once connected, the [`Device`][pupil_labs.realtime_api.simple.Device] object provides access to various properties of the Companion Device or glasses, such as [battery level][pupil_labs.realtime_api.simple.Device.battery_level_percent], [free storage][pupil_labs.realtime_api.simple.Device.memory_num_free_bytes], or the [serial numbers][pupil_labs.realtime_api.simple.Device.module_serial] of connected components.
+Once connected, the [`Device`][pupil_labs.realtime_api.simple.Device] object provides access to various properties of he Companion device and connected glasses, such as [battery level][pupil_labs.realtime_api.simple.Device.battery_level_percent],
+[free storage][pupil_labs.realtime_api.simple.Device.memory_num_free_bytes],
+and [serial numbers][pupil_labs.realtime_api.simple.Device.module_serial].
 
-This class, will automatically monitor Neon / Pupil Invisible Companion's Device in the background and mirror its state accordingly.
+This class automatically monitors the Companion device in the background and mirrors its state accordingly.
 
 === "Get a snap of Status"
 
@@ -66,7 +74,7 @@ This class, will automatically monitor Neon / Pupil Invisible Companion's Device
     Scene camera connected: False
     ```
 
-??? quote "Device"
+??? quote "Device Reference"
 
     ::: pupil_labs.realtime_api.simple.Device
 
