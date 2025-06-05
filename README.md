@@ -26,4 +26,4 @@ pip install -e git+https://github.com/pupil-labs/pl-realtime-api.git
 > This package is only available for Pupil Invisible and Neon, Pupil Core uses a different API.
 > If you’re working with Pupil Core, please refer to the [Pupil Core Network API](https://docs.pupil-labs.com/core/developer/network-api/) if you need streaming capabilities.
 
-📚 Check out the [documentation here](https://pupil-labs.github.io/realtime-python-api)
+📚 Check out the [documentation here](https://pupil-labs.github.io/pl-realtime-api)
