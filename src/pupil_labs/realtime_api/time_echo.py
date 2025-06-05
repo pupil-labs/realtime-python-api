@@ -1,14 +1,13 @@
-"""Manual time offset estimation via the Pupil Labs Time Echo protocol
+"""Manual time offset estimation via the Pupil Labs Time Echo protocol.
 
 The Realtime Network API host device timestamps its data with nanoseconds since the
-`Unix epoch`_ (January 1, 1970, 00:00:00 UTC). This clock is kept in sync by the
-operating system through `NTP`_ (Network Time Protocol). For some use cases, this sync
-is not good enough. For more accurate time syncs, the Time Echo protocol allows the
-estimation of the direct offset between the host's and the client's clocks.
+[Unix epoch](https://docs.python.org/3/library/time.html#epoch)(January 1, 1970,
+00:00:00 UTC). This clock is kept in sync by the operating system through
+[NTP Network Time Protocol](https://en.wikipedia.org/wiki/Network_Time_Protocol#Clock_synchronization_algorithm).
+For some use cases, this sync is not good enough. For more accurate time syncs, the Time
+Echo protocol allows the estimation of the direct offset between the host's and the
+client's clocks.
 
-.. _Unix epoch: https://docs.python.org/3/library/time.html#epoch
-.. _NTP: https://en.wikipedia.org/wiki/Network_Time_Protocol#
-   Clock_synchronization_algorithm
 
 The Time Echo protocol works in the following way:
 
@@ -53,8 +52,9 @@ import collections
 import logging
 import statistics
 import struct
+from collections.abc import Callable, Iterable
 from time import time_ns
-from typing import Callable, Iterable, NamedTuple, Optional
+from typing import NamedTuple
 
 logger = logging.getLogger(__name__)
 
@@ -63,16 +63,27 @@ TimeFunction = Callable[[], int]
 
 
 class TimeEcho(NamedTuple):
-    """Measurement of a single time echo"""
+    """Measurement of a single time echo."""
 
     roundtrip_duration_ms: int
-    "Round trip duration of the time echo, in milliseconds"
+    """Round trip duration of the time echo, in milliseconds."""
     time_offset_ms: int
-    "Time offset between host and client, in milliseconds"
+    """Time offset between host and client, in milliseconds."""
 
 
 class Estimate:
-    """Provides easy access to statistics over a collection of measurements"""
+    """Provides easy access to statistics over a collection of measurements.
+
+    This class calculates descriptive statistics (mean, standard deviation, median)
+    over a collection of measurements.
+
+    Attributes:
+        measurements (tuple[int]): The raw measurements.
+        mean (float): Mean value of the measurements.
+        std (float): Standard deviation of the measurements.
+        median (float): Median value of the measurements.
+
+    """
 
     def __init__(self, measurements: Iterable[int]) -> None:
         self.measurements = tuple(measurements)
@@ -82,14 +93,17 @@ class Estimate:
 
     @property
     def mean(self) -> float:
+        """Mean value of the measurements."""
         return self._mean
 
     @property
     def std(self) -> float:
+        """Standard deviation of the measurements."""
         return self._std
 
     @property
     def median(self) -> float:
+        """Median value of the measurements."""
         return self._median
 
     def __repr__(self) -> str:
@@ -103,18 +117,31 @@ class Estimate:
 
 
 class TimeEchoEstimates(NamedTuple):
-    """Provides estimates for the roundtrip duration and time offsets"""
+    """Provides estimates for the roundtrip duration and time offsets."""
 
     roundtrip_duration_ms: Estimate
+    """Statistics for roundtrip durations."""
     time_offset_ms: Estimate
+    """Statistics for time offsets."""
 
 
-def time_ms():
+def time_ms() -> int:
     """Return milliseconds since `Unix epoch`_ (January 1, 1970, 00:00:00 UTC)"""
     return time_ns() // 1_000_000
 
 
 class TimeOffsetEstimator:
+    """Estimates the time offset between PC and Companion using the Time Echo protocol.
+
+    This class implements the Time Echo protocol to estimate the time offset
+    between the client and host clocks.
+
+    Attributes:
+        address (str): Host address.
+        port (int): Host port for the Time Echo protocol.
+
+    """
+
     def __init__(self, address: str, port: int) -> None:
         self.address = address
         self.port = port
@@ -122,9 +149,22 @@ class TimeOffsetEstimator:
     async def estimate(
         self,
         number_of_measurements: int = 100,
-        sleep_between_measurements_seconds: Optional[float] = None,
+        sleep_between_measurements_seconds: float | None = None,
         time_fn_ms: TimeFunction = time_ms,
-    ) -> Optional[TimeEchoEstimates]:
+    ) -> TimeEchoEstimates | None:
+        """Estimate the time offset between client and host.
+
+        Args:
+            number_of_measurements: Number of measurements to take.
+            sleep_between_measurements_seconds: Optional sleep time between
+                measurements.
+            time_fn_ms: Function that returns the current time in milliseconds.
+
+        Returns:
+            TimeEchoEstimates: Statistics for roundtrip durations and time offsets,
+                or None if estimation failed.
+
+        """
         measurements = collections.defaultdict(list)
 
         try:
@@ -173,8 +213,19 @@ class TimeOffsetEstimator:
         reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,
     ) -> TimeEcho:
-        """Request a time echo, measure the roundtrip time, and estimate the time
-        offset
+        """Request a time echo, measure the roundtrip time and estimate the time offset.
+
+        Args:
+            time_fn_ms: Function that returns the current time in milliseconds.
+            reader: Stream reader for receiving responses.
+            writer: Stream writer for sending requests.
+
+        Returns:
+            TimeEcho: Roundtrip duration and time offset.
+
+        Raises:
+            ValueError: If the response is invalid.
+
         """
         before_ms = time_fn_ms()
         before_ms_bytes = struct.pack("!Q", before_ms)
@@ -198,4 +249,4 @@ class TimeOffsetEstimator:
             )
         server_ts_in_client_time_ms = round((before_ms + after_ms) / 2)
         offset_ms = server_ts_in_client_time_ms - server_ms
-        return (after_ms - before_ms, offset_ms)
+        return TimeEcho(after_ms - before_ms, offset_ms)

@@ -1,14 +1,100 @@
+[project]
+name = "pupil-labs-realtime-api"
+description = "Python Client for the Pupil Labs Real-Time API"
+authors = [{ name = "Pupil Labs GmbH", email = "info@pupil-labs.com" }]
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.10, <4.0"
+keywords = []
+dynamic = ["version"]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+	"Development Status :: 5 - Production/Stable",
+	"License :: OSI Approved :: MIT License",
+]
+
+dependencies = [
+    "aiohttp[speedups]>=3.11.14",
+    "aiortsp>=1.4.0",
+    "av>=14.2.0",
+    "beaupy>=3.10.1",
+    "deprecated>=1.2.18",
+    "numpy",
+    "pupil-labs-neon-recording>=1.0.1",
+    "pupil-labs-video>=1.0.3",
+    "pydantic>=2.10.6",
+    "websockets>=15.0.1",
+    "zeroconf>=0.146.1",
+]
+
+[project.urls]
+Homepage = "https://pupil-labs.github.io/realtime-python-api"
+Documentation = "https://pupil-labs.github.io/realtime-python-api"
+Repository = "https://github.com/pupil-labs/realtime-python-api"
+Issues = "https://github.com/pupil-labs/realtime-python-api/issues"
+"Network API Specification"="https://github.com/pupil-labs/realtime-network-api"
+
+
+[dependency-groups]
+dev = [
+    "pytest>=8.2",
+    "pre-commit>=2.20.0",
+    "mypy>=0.991",
+    "deptry>=0.20.0",
+    "tox-uv>=1.11.3",
+    "pytest-cov>=4.0.0",
+    # stubs
+    # "opencv-stubs",
+    # "types-protobuf",
+    # "pandas-stubs",
+    # docs
+    "markdown-callouts>=0.4",
+    "markdown-exec>=1.8",
+    "mike",
+    "mkdocs>=1.6",
+    "mkdocs-coverage>=1.0",
+    "mkdocs-gen-files>=0.5",
+    "mkdocs-git-revision-date-localized-plugin>=1.2",
+    "mkdocs-literate-nav>=0.6",
+    "mkdocs-material>=9.6",
+    "mkdocs-minify-plugin>=0.8",
+    "mkdocstrings[python]>=0.25",
+    # YORE: EOL 3.10: Remove line.
+    "tomli>=2.0; python_version < '3.11'",
+    "types-deprecated>=1.2.15.20250304",
+]
+examples = [
+	"opencv-python",
+]
+
 [build-system]
-requires = ["setuptools>=56", "wheel", "setuptools_scm[toml]>=3.4.1"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling", "uv-dynamic-versioning"]
+build-backend = "hatchling.build"
 
-[tool.black]
-skip-string-normalization = false
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+log_format = '%(asctime)s %(levelname)7s %(name)-60s | %(message)-100s "%(pathname)s:%(lineno)s"'
 
-[tool.setuptools_scm]
+[tool.coverage.report]
+skip_empty = true
 
-[pytest.enabler.mypy]
-addopts = "--mypy"
+[tool.coverage.run]
+branch = true
+source = ["pupil_labs"]
 
-[pytest.enabler.cov]
-addopts = "--cov"
+[tool.deptry.per_rule_ignores]
+DEP001 = ["pupil_labs", "cv2"]
+DEP002 = ["opencv-python"]
+DEP003 = ["pupil_labs", "typing_extensions", "pydantic_core"]
+DEP004 = ["cv2", "mkdocs"]
+
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pupil_labs"]

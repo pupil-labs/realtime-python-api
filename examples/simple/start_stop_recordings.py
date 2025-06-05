@@ -9,7 +9,7 @@ if device is None:
     print("No device found.")
     raise SystemExit(-1)
 
-print(f"Starting recording")
+print("Starting recording")
 recording_id = device.recording_start()
 print(f"Started recording with id {recording_id}")
 

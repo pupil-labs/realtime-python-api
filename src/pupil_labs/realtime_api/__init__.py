@@ -1,6 +1,12 @@
-"""pupil_labs.realtime_api"""
+"""pupil_labs.realtime_api package.
 
-# .version is generated on install via setuptools_scm, see pyproject.toml
+Python Client for the Pupil Labs Real-Time API
+"""
+
+from __future__ import annotations
+
+import importlib.metadata
+
 from .device import APIPath, Device, DeviceError, StatusUpdateNotifier
 from .discovery import Network, discover_devices
 from .streaming import (
@@ -25,40 +31,35 @@ from .streaming import (
 )
 
 try:
-    from importlib.metadata import PackageNotFoundError, version
-except ImportError:
-    from importlib_metadata import PackageNotFoundError, version
-
-try:
-    __version__ = version("pupil_labs.realtime_api")
-except PackageNotFoundError:
+    __version__ = importlib.metadata.version(__name__)
+except importlib.metadata.PackageNotFoundError:
     __version__ = "unknown"
 
 __all__ = [
-    "__version__",
     "APIPath",
+    "BlinkEventData",
     "Device",
     "DeviceError",
-    "discover_devices",
-    "GazeData",
     "DualMonocularGazeData",
     "EyestateGazeData",
+    "FixationEventData",
+    "FixationOnsetEventData",
+    "GazeData",
     "Network",
-    "receive_gaze_data",
-    "receive_raw_rtsp_data",
-    "receive_video_frames",
     "RTSPData",
+    "RTSPEyeEventStreamer",
     "RTSPGazeStreamer",
+    "RTSPImuStreamer",
     "RTSPRawStreamer",
     "RTSPVideoFrameStreamer",
     "StatusUpdateNotifier",
     "VideoFrame",
-    "receive_imu_data",
-    "RTSPImuStreamer",
+    "__version__",
+    "discover_devices",
     "imu_pb2",
-    "RTSPEyeEventStreamer",
-    "FixationEventData",
-    "FixationOnsetEventData",
-    "BlinkEventData",
     "receive_eye_events_data",
+    "receive_gaze_data",
+    "receive_imu_data",
+    "receive_raw_rtsp_data",
+    "receive_video_frames",
 ]

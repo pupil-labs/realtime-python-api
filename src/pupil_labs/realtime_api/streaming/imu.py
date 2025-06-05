@@ -1,48 +1,82 @@
 import datetime
 import logging
-import typing as T
+from collections.abc import AsyncIterator
+from typing import Any, NamedTuple, cast
 
-from pupil_labs.neon_recording.stream.imu.imu_pb2 import ImuPacket
+from deprecated import deprecated
+
+from pupil_labs.neon_recording.stream.imu.imu_pb2 import ImuPacket  # type: ignore
 
 from .base import RTSPRawStreamer
 
 logger = logging.getLogger(__name__)
 
 
-class Data3D(T.NamedTuple):
+class Data3D(NamedTuple):
+    """3D data point with x, y, z coordinates."""
+
     x: float
     y: float
     z: float
 
 
-class Quaternion(T.NamedTuple):
+class Quaternion(NamedTuple):
+    """Quaternion data point with x, y, z, w coordinates."""
+
     x: float
     y: float
     z: float
     w: float
 
 
-class IMUData(T.NamedTuple):
+class IMUData(NamedTuple):
+    """Data from the Inertial Measurement Unit (IMU).
+
+    Contains gyroscope, accelerometer, and rotation data from the IMU sensor.
+    """
+
     gyro_data: Data3D
+    """Gyroscope data in deg/s."""
     accel_data: Data3D
+    """Accelerometer data in m/s²."""
     quaternion: Quaternion
+    """ Rotation represented as a quaternion."""
     timestamp_unix_seconds: float
+    """Timestamp in seconds since Unix epoch."""
 
     @property
-    def datetime(self):
+    def datetime(self) -> datetime.datetime:
+        """Get timestamp as a datetime object."""
         return datetime.datetime.fromtimestamp(self.timestamp_unix_seconds)
 
     @property
-    def timestamp_unix_ns(self):
+    def timestamp_unix_ns(self) -> int:
+        """Get timestamp in nanoseconds since Unix epoch."""
         return int(self.timestamp_unix_seconds * 1e9)
 
     # For backward compatibility
     @property
-    def timestamp_unix_nanoseconds(self):
+    @deprecated(version="1.5.1", reason="Use timestamp_unix_ns() instead.")
+    def timestamp_unix_nanoseconds(self) -> int:
+        """Get timestamp in nanoseconds since Unix epoch.
+
+        Warning: Deprecated
+            This class property is deprecated and will be removed in future versions.
+            Use timestamp_unix_ns() instead.
+        """
         return self.timestamp_unix_ns
 
 
-def IMUPacket_to_IMUData(imu_packet: ImuPacket) -> IMUData:
+def IMUPacket_to_IMUData(imu_packet: "ImuPacket") -> IMUData:  # type: ignore[no-any-unimported]
+    """Create an IMUData instance from a protobuf IMU packet.
+
+    Args:
+        imu_packet: Protobuf IMU packet.
+
+    Returns:
+        IMUData: Converted IMU data.
+
+    """
     gyro_data = Data3D(
         x=imu_packet.gyroData.x,
         y=imu_packet.gyroData.y,
@@ -68,16 +102,48 @@ def IMUPacket_to_IMUData(imu_packet: ImuPacket) -> IMUData:
     return imu_data
 
 
-async def receive_imu_data(url, *args, **kwargs) -> T.AsyncIterator[IMUData]:
+async def receive_imu_data(
+    url: str, *args: Any, **kwargs: Any
+) -> AsyncIterator[IMUData]:
+    """Receive IMU data from a given RTSP URL.
+
+    Args:
+        url: RTSP URL to connect to.
+        *args: Additional arguments for the streamer.
+        **kwargs: Additional keyword arguments for the streamer.
+
+    Yields:
+        IMUData: Parsed IMU data from the RTSP stream.
+
+    """
     async with RTSPImuStreamer(url, *args, **kwargs) as streamer:
+        assert isinstance(streamer, RTSPImuStreamer)
         async for datum in streamer.receive():
-            yield datum
+            yield cast(IMUData, datum)
 
 
 class RTSPImuStreamer(RTSPRawStreamer):
-    async def receive(
+    """Stream and parse IMU data from an RTSP source.
+
+    This class extends RTSPRawStreamer to parse raw RTSP data into structured
+    IMU data objects.
+    """
+
+    async def receive(  # type: ignore[override]
         self,
-    ) -> T.AsyncIterator[IMUData]:
+    ) -> AsyncIterator[IMUData]:
+        """Receive and parse IMU data from the RTSP stream.
+
+        This method parses the raw binary data into IMUData objects by using
+        the protobuf deserializer.
+
+        Yields:
+            IMUData: Parsed IMU data.
+
+        Raises:
+            Exception: If there is an error parsing the IMU data.
+
+        """
         async for data in super().receive():
             try:
                 imu_packet = ImuPacket()

@@ -1,0 +1,186 @@
+site_name: "Pupil Labs Real-Time Python API Client"
+site_description: "Python Client for the Pupil Labs Real-Time API"
+site_url: "https://pupil-labs.github.io/realtime-python-api"
+repo_url: "https://github.com/pupil-labs/realtime-python-api"
+repo_name: "pupil-labs/realtime-python-api"
+site_dir: "site"
+watch: [mkdocs.yml, README.md, CONTRIBUTING.md, src/pupil_labs/realtime_api]
+edit_uri: edit/main/docs/
+
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+
+nav:
+  - Home:
+      - Home: index.md
+      - Getting Started: getting-started.md
+      - Simple vs Async API: guides/simple-vs-async-api.md
+      - Troubleshooting: troubleshooting.md
+      - License: license.md
+  - Simple API:
+      - Index: methods/simple.md
+      - Connect to a Device: methods/simple/connect-to-a-device.md
+      - Remote Control: methods/simple/remote-control.md
+      - Streaming:
+          - Stream Gaze: methods/simple/streaming/gaze.md
+          - Scene Camera: methods/simple/streaming/scene-camera.md
+          - Eye Cameras: methods/simple/streaming/eye-cameras.md
+          - IMU Data: methods/simple/streaming/imu-data.md
+          - Eye Events: methods/simple/streaming/eye-events.md
+      - Templates: methods/simple/templates.md
+      - Others: methods/simple/others.md
+  - Async API:
+      - Index: methods/async.md
+      - Connect to a Device: methods/async/connect-to-a-device.md
+      - Remote Control: methods/async/remote-control.md
+      - Streaming:
+          - Stream Gaze: methods/async/streaming/gaze.md
+          - Scene Camera: methods/async/streaming/scene-camera.md
+          - Eye Cameras: methods/async/streaming/eye-cameras.md
+          - IMU Data: methods/async/streaming/imu-data.md
+          - Eye Events: methods/async/streaming/eye-events.md
+      - Templates: methods/async/templates.md
+      - Others: methods/async/others.md
+  - API reference:
+      - Index: modules.md
+      - Simple API reference: api/simple.md
+      - Async API reference: api/async.md
+  - Under the Hood: guides/under-the-hood.md
+  - Cookbook: cookbook.md
+  - Changelog: changelog.md
+
+theme:
+  name: material
+  custom_dir: docs/overrides
+  favicon: assets/favicon.ico
+  features:
+    - announce.dismiss
+    - content.action.edit
+    - content.code.copy
+    - content.code.annotate
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.footer
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: blue
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: blue
+      toggle:
+        icon: material/weather-night
+        name: Switch to system preference
+
+extra_css:
+  - css/material.css
+  - css/mkdocstrings.css
+  - css/badges.css
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - admonition
+  - callouts
+  - footnotes
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      options:
+        custom_icons:
+          - overrides/.icons
+  - pymdownx.magiclink
+  - pymdownx.snippets:
+      base_path: [!relative $config_dir]
+      check_paths: true
+  - pymdownx.superfences
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - toc:
+      permalink: true
+
+hooks:
+  - docs/overrides/hooks/shortcodes.py
+
+plugins:
+  - search
+  - markdown-exec
+  - coverage
+  - mike:
+      # These fields are all optional; the defaults are as below...
+      alias_type: symlink
+      redirect_template: null
+      deploy_prefix: ""
+      canonical_version: null
+      version_selector: true
+      css_dir: css
+      javascript_dir: js
+  - mkdocstrings:
+      handlers:
+        python:
+          inventories:
+            - https://docs.python.org/3/objects.inv
+          paths: [src]
+          options:
+            docstring_options:
+              ignore_init_summary: true
+            docstring_section_style: list
+            filters: ["!^_"]
+            heading_level: 1
+            inherited_members: true
+            merge_init_into_class: true
+            separate_signature: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_signature_annotations: true
+            show_source: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            signature_crossrefs: true
+            summary: true
+  - git-revision-date-localized:
+      enabled: !ENV [DEPLOY, false]
+      enable_creation_date: true
+      type: timeago
+  - minify:
+      minify_html: !ENV [DEPLOY, false]
+  - group:
+      enabled: !ENV [MATERIAL_INSIDERS, false]
+      plugins:
+        - typeset
+
+extra:
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/pupil-labs
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/pupil-labs-realtime-api/
+    - icon: fontawesome/brands/discord
+      link: https://pupil-labs.com/chat
+    - icon: logomark
+      link: https://pupil-labs.com/

@@ -1,6 +1,6 @@
-import typing as T
+from typing import TypeVar
 
-from pupil_labs.neon_recording.stream.imu.imu_pb2 import ImuPacket
+from pupil_labs.neon_recording.stream.imu.imu_pb2 import ImuPacket  # type: ignore
 
 from .base import (
     RTSPData,
@@ -17,37 +17,39 @@ from .eye_events import (
 )
 from .gaze import (
     DualMonocularGazeData,
+    EyestateEyelidGazeData,
     EyestateGazeData,
     GazeData,
     RTSPGazeStreamer,
     receive_gaze_data,
 )
-from .imu import RTSPImuStreamer, receive_imu_data
+from .imu import IMUData, RTSPImuStreamer, receive_imu_data
 from .video import RTSPVideoFrameStreamer, VideoFrame, receive_video_frames
 
-RTSPStreamerType = T.TypeVar("RTSPStreamerType", bound="RTSPRawStreamer")
+RTSPStreamerType = TypeVar("RTSPStreamerType", bound="RTSPRawStreamer")
 """Type annotation for RTSP Streamer classes"""
 
 __all__ = [
-    "GazeData",
+    "BlinkEventData",
     "DualMonocularGazeData",
+    "EyestateEyelidGazeData",
     "EyestateGazeData",
-    "receive_gaze_data",
-    "receive_raw_rtsp_data",
-    "receive_video_frames",
+    "FixationEventData",
+    "FixationOnsetEventData",
+    "GazeData",
+    "IMUData",
+    "ImuPacket",
     "RTSPData",
+    "RTSPEyeEventStreamer",
     "RTSPGazeStreamer",
+    "RTSPImuStreamer",
     "RTSPRawStreamer",
     "RTSPVideoFrameStreamer",
     "SDPDataNotAvailableError",
     "VideoFrame",
-    "RTSPImuStreamer",
-    "receive_imu_data",
-    "ImuPacket",
-    "imu_pb2",
-    "RTSPEyeEventStreamer",
-    "FixationEventData",
-    "FixationOnsetEventData",
-    "BlinkEventData",
     "receive_eye_events_data",
+    "receive_gaze_data",
+    "receive_imu_data",
+    "receive_raw_rtsp_data",
+    "receive_video_frames",
 ]

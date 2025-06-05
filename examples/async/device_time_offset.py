@@ -30,8 +30,7 @@ async def main():
         estimated_offset = await time_offset_estimator.estimate()
         print(f"Mean time offset: {estimated_offset.time_offset_ms.mean} ms")
         print(
-            "Mean roundtrip duration: "
-            f"{estimated_offset.roundtrip_duration_ms.mean} ms"
+            f"Mean roundtrip duration: {estimated_offset.roundtrip_duration_ms.mean} ms"
         )
 
 
