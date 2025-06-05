@@ -12,10 +12,10 @@ pip install pupil-labs-realtime-api
 
 !!! warning "Python Compatibility"
 
-    This package requires Python **3.10** or higher. For compatibility with Python 3.9 you can consider user older versions of this package `<2.0`.
+    This package requires Python **3.10** or higher. For compatibility with Python 3.9 you can consider user older versions of this package `<1.6`.
 
     ```python
-    pip install pupil-labs-realtime-api<2.0
+    pip install pupil-labs-realtime-api<1.6
     ```
 
 ## Connecting to a Device & Receiving Data
