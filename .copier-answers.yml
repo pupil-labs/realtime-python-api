@@ -1,5 +1,5 @@
 # Changes here will be overwritten by Copier
-_commit: bb8bd8d
+_commit: 523783b
 _src_path: git@github.com:pupil-labs/pl-template
 author_email: info@pupil-labs.com
 author_fullname: Pupil Labs GmbH
@@ -8,6 +8,7 @@ copyright_license: MIT
 debug_module: false
 project_description: Python Client for the Pupil Labs Real-Time API
 project_name: Real-Time Python API Client
+publish_to_pypi: true
 python_package_distribution_name: pupil-labs-realtime-api
 python_package_import_name: realtime_api
 repository_name: realtime-python-api
