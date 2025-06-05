@@ -47,7 +47,7 @@ This is made possible using the [`device.send_event`][pupil_labs.realtime_api.si
     --8<-- "examples/simple/send_event.py:12:12"
     ```
     ```py linenums="0"
-    Event(name=None recording_id=None timestamp_unix_ns=1744271292116000000 datetime=2025-04-10 09:48:12.116000)
+    Event(name=test event; timestamped at arrival recording_id=None timestamp_unix_ns=1744271292116000000 datetime=2025-04-10 09:48:12.116000)
     ```
 
 === "With Explicit Timestamp"
@@ -56,7 +56,7 @@ This is made possible using the [`device.send_event`][pupil_labs.realtime_api.si
     --8<-- "examples/simple/send_event.py:14:19"
     ```
     ```py linenums="0"
-    Event(name=None recording_id=None timestamp_unix_ns=1744271291692745000 datetime=2025-04-10 09:48:11.692745)
+    Event(name=test event; timestamped by the client, relying on NTP for sync recording_id=None timestamp_unix_ns=1744271291692745000 datetime=2025-04-10 09:48:11.692745)
     ```
 
 === "With Manual Clock Offset Correction"
@@ -66,15 +66,10 @@ This is made possible using the [`device.send_event`][pupil_labs.realtime_api.si
     ```
     ```py linenums="0"
     Clock offset: -437_790_000 ns
-    Event(name=None recording_id=None timestamp_unix_ns=1744271293119536000 datetime=2025-04-10 09:48:13.119536)
+    Event(name=test event; timestamped by the client, manual clock offset correction recording_id=None timestamp_unix_ns=1744271293119536000 datetime=2025-04-10 09:48:13.119536)
     ```
 
 Events will **only** be saved if a recording is running. If you send an event while the Companion app is not recording, it will be discarded.
-
-!!! info "Event's name"
-
-    Even though the returned `Event.name` is None, the name is being acknowledged by the device.
-    TODO:  Ask if we want to return it even though is not being returned in the response.
 
 ### Check for Errors
 

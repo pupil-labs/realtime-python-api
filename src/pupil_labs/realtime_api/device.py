@@ -210,6 +210,9 @@ class Device(DeviceBase):
             logger.debug(f"[{self}.send_event] Received response: {confirmation}")
             if response.status != 200:
                 raise DeviceError(response.status, confirmation["message"])
+            confirmation["result"]["name"] = (
+                event_name  # As the API does not return the name yet
+            )
             return Event.from_dict(confirmation["result"])
 
     async def get_template(self) -> Template:
