@@ -7,13 +7,13 @@ hide:
 
 This is the documentation for the Pupil Labs Real-Time Python client, which allows you to stream data from Neon and Pupil Invisible devices in real time, as well as remote control them.
 
-Head to the [Getting Started](./getting-started) section to start learning how to use this client!
+Head to the [Getting Started](./getting-started.md) section to start learning how to use this client!
 
 Real-time access to eye tracking data and control over the generating devices is critical for many applications, from gaze-driven interaction tools to tightly timed experiments. Neon and Pupil Invisible devices enable such applications via their [Real-Time Network API](https://github.com/pupil-labs/realtime-network-api).
 
 The Pupil Labs Real-Time Python client provides a high-level and very easy-to-use interface to this API, allowing developers and researchers to quickly build applications.
 
-Check out the [Cookbook](./cookbook) section for a list of example applications that use this library.
+Check out the [Cookbook](./cookbook.md) section for a list of example applications that use this library.
 
 !!! question "_Not a programmer?_"
 
