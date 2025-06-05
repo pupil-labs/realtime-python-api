@@ -14,8 +14,8 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Python Modules",
-	"Development Status :: 5 - Production/Stable",
-	"License :: OSI Approved :: MIT License",
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: MIT License",
 ]
 
 dependencies = [
@@ -33,11 +33,11 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://pupil-labs.github.io/realtime-python-api"
-Documentation = "https://pupil-labs.github.io/realtime-python-api"
-Repository = "https://github.com/pupil-labs/realtime-python-api"
-Issues = "https://github.com/pupil-labs/realtime-python-api/issues"
-"Network API Specification"="https://github.com/pupil-labs/realtime-network-api"
+Homepage = "https://pupil-labs.github.io/pl-realtime-api"
+Documentation = "https://pupil-labs.github.io/pl-realtime-api"
+Repository = "https://github.com/pupil-labs/pl-realtime-api"
+Issues = "https://github.com/pupil-labs/pl-realtime-api/issues"
+"Network API Specification" = "https://github.com/pupil-labs/realtime-network-api"
 
 
 [dependency-groups]
@@ -68,9 +68,7 @@ dev = [
     "tomli>=2.0; python_version < '3.11'",
     "types-deprecated>=1.2.15.20250304",
 ]
-examples = [
-	"opencv-python",
-]
+examples = ["opencv-python"]
 
 [build-system]
 requires = ["hatchling", "uv-dynamic-versioning"]

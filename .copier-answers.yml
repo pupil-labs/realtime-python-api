@@ -11,6 +11,6 @@ project_name: Real-Time Python API Client
 publish_to_pypi: true
 python_package_distribution_name: pupil-labs-realtime-api
 python_package_import_name: realtime_api
-repository_name: realtime-python-api
+repository_name: pl-realtime-api
 repository_namespace: pupil-labs
 repository_provider: github.com
