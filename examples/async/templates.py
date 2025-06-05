@@ -27,7 +27,7 @@ def prompt_checkbox_answer(item: TemplateItem, current_value):
 
 def prompt_radio_answer(item: TemplateItem, current_value):
     cursor_index = 0
-    if current_value and current_value[0] in item.choices:
+    if current_value and current_value in item.choices:
         cursor_index = item.choices.index(current_value[0])
 
     choice = beaupy.select(item.choices, cursor_index=cursor_index)
@@ -59,7 +59,7 @@ async def main():  # noqa: C901
         # Fetch current template definition
         template = await device.get_template()
         # Fetch data filled on the template
-        data = await device.get_template_data(format="simple")
+        data = await device.get_template_data(template_format="simple")
 
         print(f"[{template.name}] Data pre-filled:")
         print(LINE)
@@ -111,7 +111,7 @@ async def main():  # noqa: C901
             await device.post_template_data(questionnaire)
 
         # Fetch new data filled on the template
-        data = await device.get_template_data(format="api")
+        data = await device.get_template_data(template_format="api")
 
         # Iterate to check filled data
         print(f"[{template.name}] Data post:")

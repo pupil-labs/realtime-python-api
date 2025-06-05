@@ -628,7 +628,7 @@ class TemplateItem:
                         answer_input_type, StringConstraints(min_length=1)
                     ]
             else:
-                answer_input_type = [answer_input_type] | None  # type: ignore
+                answer_input_type = answer_input_type | None  # type: ignore
                 field.default = None
 
         return (answer_input_type, field)
