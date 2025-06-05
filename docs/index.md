@@ -23,7 +23,7 @@ Check out the [Cookbook](./cookbook) section for a list of example applications 
 
     We offer a [Matlab wrapper](https://github.com/pupil-labs/pl-neon-matlab), a [Unity3D (C#)](https://docs.pupil-labs.com/neon/neon-xr/neon-xr-core-package/) client, or you can always implement your own client.
 
-!!! question "_Using Pupil Core?_"
+!!! warning "_Using Pupil Core?_"
 
     This package is designed for use with Pupil Invisible and Neon.
     For Pupil Core, please check out the [Pupil Core Network API](https://docs.pupil-labs.com/core/developer/network-api/).
