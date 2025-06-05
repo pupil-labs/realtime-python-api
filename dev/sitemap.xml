@@ -1,139 +1,139 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/changelog/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/changelog/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/contributing/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/contributing/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/cookbook/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/cookbook/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/getting-started/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/getting-started/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/license/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/license/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/modules/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/modules/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/troubleshooting/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/troubleshooting/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/api/async/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/api/async/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/api/simple/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/api/simple/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/guides/simple-vs-async-api/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/guides/simple-vs-async-api/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/guides/under-the-hood/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/guides/under-the-hood/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/async/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/async/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/simple/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/simple/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/async/connect-to-a-device/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/async/connect-to-a-device/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/async/others/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/async/others/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/async/remote-control/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/async/remote-control/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/async/templates/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/async/templates/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/async/streaming/eye-cameras/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/async/streaming/eye-cameras/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/async/streaming/eye-events/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/async/streaming/eye-events/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/async/streaming/gaze/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/async/streaming/gaze/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/async/streaming/imu-data/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/async/streaming/imu-data/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/async/streaming/scene-camera/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/async/streaming/scene-camera/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/simple/connect-to-a-device/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/simple/connect-to-a-device/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/simple/others/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/simple/others/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/simple/remote-control/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/simple/remote-control/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/simple/templates/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/simple/templates/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/simple/streaming/eye-cameras/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/simple/streaming/eye-cameras/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/simple/streaming/eye-events/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/simple/streaming/eye-events/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/simple/streaming/gaze/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/simple/streaming/gaze/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/simple/streaming/imu-data/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/simple/streaming/imu-data/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/methods/simple/streaming/scene-camera/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/methods/simple/streaming/scene-camera/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
     <url>
-         <loc>https://pupil-labs.github.io/realtime-python-api/dev/coverage/</loc>
+         <loc>https://pupil-labs.github.io/pl-realtime-api/dev/coverage/</loc>
          <lastmod>2025-06-05</lastmod>
     </url>
 </urlset>
