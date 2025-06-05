@@ -1,8 +1,8 @@
 site_name: "Pupil Labs Real-Time Python API Client"
 site_description: "Python Client for the Pupil Labs Real-Time API"
-site_url: "https://pupil-labs.github.io/realtime-python-api"
-repo_url: "https://github.com/pupil-labs/realtime-python-api"
-repo_name: "pupil-labs/realtime-python-api"
+site_url: "https://pupil-labs.github.io/pl-realtime-api"
+repo_url: "https://github.com/pupil-labs/pl-realtime-api"
+repo_name: "pupil-labs/pl-realtime-api"
 site_dir: "site"
 watch: [mkdocs.yml, README.md, CONTRIBUTING.md, src/pupil_labs/realtime_api]
 edit_uri: edit/main/docs/
