@@ -10,7 +10,7 @@ how to use them.
 
 ## Remote Control Devices
 
--   [Start, Stop, Save, and Cancel Recordings](simple/remote-control.md#start-stop-and-save-and-cancel-recordings)Add commentMore actions
+-   [Start, Stop, Save, and Cancel Recordings](simple/remote-control.md#start-stop-and-save-and-cancel-recordings)
 -   [Save Events](simple/remote-control.md#save-events)
 
 ## Streaming
