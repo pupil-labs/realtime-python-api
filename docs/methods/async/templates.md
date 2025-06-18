@@ -42,7 +42,7 @@ You can also retrieve individual questions by their ID using the [`template.get_
 ## See it in action
 
 <div class="video-container" style="margin: 20px auto; text-align: center;">
-<iframe width="800" height="400" src="https://www.youtube-nocookie.com/embed/8jlXjLr1GGE?si=qnEFEnPkHlIp6z7X" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<iframe width="800" height="400" src="https://www.youtube-nocookie.com/embed/EblgXjsCMN4?si=qnEFEnPkHlIp6z7X" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 </div>
 
 ??? example "Check the whole example code here"
